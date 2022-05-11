@@ -2,12 +2,17 @@
 
 * install node dependencies (if not yet done): `npm install`
 * export env variables FORTYTWO_CLIENT_ID and FORTYTWO_CLIENT_SECRET
-* launch database container: `docker-compose up`
+* launch database container: `docker-compose up -d`
 * launch node server in watch mode: npm run start:dev
 
 
 ### Database client
 `docker exec -it db psql -U postgres`
+
+Useful commands:
+* \d (show tables)
+* \d [table name] (describe table)
+
 
 
 ----------------------
