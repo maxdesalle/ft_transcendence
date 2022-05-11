@@ -6,7 +6,7 @@
 * launch node server in watch mode: npm run start:dev
 
 
-### Database client
+#### How to access the database with the psql client:
 `docker exec -it db psql -U postgres`
 
 Useful commands:
