@@ -1,9 +1,8 @@
 import { Controller, Req, Res, Get, UseGuards } from '@nestjs/common';
-import { AppService } from './app.service';
 import { Response, Request } from 'express';
-import { Strategy } from 'passport-42';
-import { IntraGuard } from './guards/intra.guard';
 import { createParamDecorator, ExecutionContext } from '@nestjs/common';
+import { IntraGuard } from './guards/intra.guard';
+import { AuthService } from './auth.service';
 
 export const User = createParamDecorator(
 	(data: any, ctx: ExecutionContext) => {
@@ -13,12 +12,12 @@ export const User = createParamDecorator(
 );
 
 @Controller()
-export class AppController {
-	constructor(private readonly appService: AppService) {}
+export class AuthController {
+	constructor(private readonly authService: AuthService) {}
 
 	@Get()
 	getHomePage(): string {
-		return this.appService.getHomePage();
+		return this.authService.getHomePage();
 	}
 
 	@Get('/login/42')

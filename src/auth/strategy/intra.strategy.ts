@@ -1,10 +1,11 @@
 import { PassportStrategy } from '@nestjs/passport';
 import { Injectable } from '@nestjs/common';
 import { Strategy, Profile } from 'passport-42';
+import { UsersService } from 'src/users/users.service';
 
 @Injectable()
 export class IntraStrategy extends PassportStrategy(Strategy, '42') {
-	constructor() {
+	constructor(private usersService: UsersService) { // dependency injection
 		super({
 			clientID: process.env.FORTYTWO_CLIENT_ID,
 			clientSecret: process.env.FORTYTWO_CLIENT_SECRET,
@@ -14,6 +15,7 @@ export class IntraStrategy extends PassportStrategy(Strategy, '42') {
 	}
 
 	async validate(accessToken, refreshToken, user): Promise<any> {
+		this.usersService.createNewUser(user.username); // add new user
 		return user;
 	}
 }
