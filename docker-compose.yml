@@ -1,0 +1,12 @@
+version: '3.5'
+services:
+  db:
+    container_name: db
+    image: postgres
+    ports: 
+      - 5432:5432
+    environment:
+      POSTGRES_PASSWORD: 1234
+
+# how to access the database client:
+# docker exec -it db psql -U postgres
