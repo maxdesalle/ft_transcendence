@@ -12,12 +12,11 @@ export class UsersService {
 
 	async createNewUser(username: string) {
 		let user = await this.findByUsername(username);
-		if (user != undefined) {
-			return user;
+		if (user == undefined) {
+			user = new Users();
+			user.username = username;
+			await this.usersRepository.save(user);
 		}
-		user = new Users();
-		user.username = username;
-		await this.usersRepository.save(user);
 		return user;
 	}
 
@@ -28,6 +27,7 @@ export class UsersService {
 	findByUsername(username: string): Promise<Users | undefined> {
 		return this.usersRepository.findOne({ username });
 	}
+
 	findAll() {
 		return this.usersRepository.find();
 	}
