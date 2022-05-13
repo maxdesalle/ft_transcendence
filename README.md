@@ -1,7 +1,7 @@
 ## How to make stuff happen
 
 * install node dependencies (if not yet done): `npm install`
-* export env variables FORTYTWO_CLIENT_ID and FORTYTWO_CLIENT_SECRET
+* export env variables FORTYTWO_CLIENT_ID, FORTYTWO_CLIENT_SECRET, JWT_TOKEN_SECRET and JWT_TOKEN_EXPIRY
 * launch database container: `docker-compose up -d`
 * launch node server in watch mode: npm run start:dev
 
