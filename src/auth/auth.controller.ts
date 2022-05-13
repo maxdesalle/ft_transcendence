@@ -2,6 +2,7 @@ import { Query, Controller, Req, Res, Get, UseGuards } from '@nestjs/common';
 import { Response, Request } from 'express';
 import { createParamDecorator, ExecutionContext } from '@nestjs/common';
 import { IntraGuard } from './guards/intra.guard';
+import { JwtService } from '@nestjs/jwt';
 import { AuthService } from './auth.service';
 
 export const User = createParamDecorator((data: any, ctx: ExecutionContext) => {
@@ -11,7 +12,7 @@ export const User = createParamDecorator((data: any, ctx: ExecutionContext) => {
 
 @Controller()
 export class AuthController {
-	constructor(private readonly authService: AuthService) {}
+	constructor(private readonly authService: AuthService, private jwtService: JwtService) {}
 
 	@Get()
 	getHomePage(): string {
@@ -23,22 +24,15 @@ export class AuthController {
 		return this.authService.getLoginPage();
 	}
 
-	@Get('/login?')
-	getErrorLoginPage(@Query('error') error: string) {
-		return this.authService.getErrorLoginPage(
-			'A user with this username already exists',
-		);
-	}
-
 	@Get('/login/42')
 	@UseGuards(IntraGuard)
-	getUserLogin(): void {
-		console.log('test');
-	}
+	getUserLogin(): void {}
 
 	@Get('/login/42/return')
 	@UseGuards(IntraGuard)
 	getUserLoggedIn(@User() user, @Res({ passthrough: true }) res: Response) {
+		const jwt_token = this.jwtService.sign({id: user.id, username: user.username});
+		res.cookie('jwt_token', jwt_token);
 		const welcome = `Welcome ${user.username} 👋`;
 		return welcome;
 	}
