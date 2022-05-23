@@ -1,9 +1,12 @@
 import {
 	Query,
 	Controller,
+	Post,
 	Req,
+	Body,
 	Res,
 	Get,
+	HttpCode,
 	UseGuards,
 	createParamDecorator,
 	ExecutionContext,
@@ -13,18 +16,25 @@ import {
 	Catch,
 	ArgumentsHost,
 	HttpException,
+	StreamableFile,
 } from '@nestjs/common';
 import { Response, Request } from 'express';
 import { IntraGuard } from './guards/intra.guard';
 import { JwtGuard } from './guards/jwt.guard';
+import { JwtTwoFactorAuthenticationGuard } from './guards/tfa.guard';
 import { JwtService } from '@nestjs/jwt';
 import { AuthService } from './auth.service';
+import { toFileStream } from 'qrcode';
 import { UsersService } from '../users/users.service';
 
 export const User = createParamDecorator((data: any, ctx: ExecutionContext) => {
 	const req = ctx.switchToHttp().getRequest();
 	return req.user;
 });
+
+async function pipeQrCodeStream(stream: Response, otpauthUrl: string) {
+	return toFileStream(stream, otpauthUrl);
+}
 
 @Catch(UnauthorizedException)
 export class ViewAuthFilter implements ExceptionFilter {
@@ -58,18 +68,65 @@ export class AuthController {
 		return this.authService.getLoginPage();
 	}
 
-	@Get('/login/42')
+	@Get('/login/42/')
 	@UseGuards(IntraGuard)
 	getUserLogin(): void {}
 
-	@Get('/login/42/return')
+	@Get('/login/42/return/')
 	@UseGuards(IntraGuard)
 	getUserLoggedIn(@User() user, @Res({ passthrough: true }) res: Response) {
-		const jwt_token = this.jwtService.sign({
+		const jwtToken = this.jwtService.sign({
 			id: user.id,
 			username: user.username,
 		});
-		res.cookie('jwt_token', jwt_token);
+		res.cookie('jwt_token', jwtToken);
+		return res.redirect('/');
+	}
+
+	@Get('/settings/activate-2fa')
+	@UseGuards(JwtGuard)
+	async activateTwoFactorAuthentication(@User() user, @Res() res: Response) {
+		const { otpauthUrl } =
+			await this.usersService.generateTwoFactorAuthenticationSecret(user);
+
+		return pipeQrCodeStream(res, otpauthUrl);
+	}
+
+	@Get('/settings/deactivate-2fa')
+	@UseGuards(JwtGuard)
+	async deactivateTwoFactorAuthentication(@User() user, @Res() res: Response) {
+		await this.usersService.turnOffTwoFactorAuthentication(user.id);
+
+		return res.redirect('/login/');
+	}
+
+	@Post('/login/two-factor-authentication/')
+	@HttpCode(200)
+	@UseGuards(JwtTwoFactorAuthenticationGuard)
+	twoFactorAuthentication(
+		@User() user,
+		@Body() { twoFactorAuthenticationCode },
+		@Res({ passthrough: true }) res: Response,
+	) {
+		const isTwoFactorAuthenticationCodeValid =
+			this.usersService.check2FACodeValidity(
+				twoFactorAuthenticationCode,
+				user,
+			);
+
+		if (!isTwoFactorAuthenticationCodeValid) {
+			throw new UnauthorizedException('Invalid 2FA code');
+		}
+
+		const jwtToken = this.jwtService.sign({
+			id: user.id,
+			username: user.username,
+			validTwoFactorAuthentication: true,
+		});
+
+		res.clearCookie('jwt_token');
+		res.cookie('jwt_token', jwtToken);
+
 		return res.redirect('/');
 	}
 
@@ -78,5 +135,11 @@ export class AuthController {
 	getLogoutPage(@Res({ passthrough: true }) res: Response) {
 		res.clearCookie('jwt_token');
 		return res.redirect('/login/');
+	}
+
+	@Get('/settings/')
+	@UseGuards(JwtGuard)
+	getSettingsPage(): string {
+		return this.authService.getSettingsPage();
 	}
 }
