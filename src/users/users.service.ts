@@ -49,7 +49,8 @@ export class UsersService {
 		const secret = authenticator.generateSecret();
 		const otpauthUrl = authenticator.keyuri(
 			user.username,
-			this.configService.get('Transcendence'),
+			// this.configService.get('Transcendence'),
+			'Transcendence',
 			secret,
 		);
 
