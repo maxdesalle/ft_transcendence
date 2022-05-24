@@ -1,5 +1,5 @@
 import { DatabaseFile } from "src/database-files/entities/databaseFile.entity";
-import { Column, Entity, JoinColumn, OneToOne, PrimaryColumn, PrimaryGeneratedColumn } from "typeorm";
+import { Column, Entity, JoinColumn, OneToOne, PrimaryGeneratedColumn } from "typeorm";
 
 @Entity()
 export class Users {
@@ -15,4 +15,10 @@ export class Users {
 
 	@Column({ nullable: true })
 	avatarId?: number;
+
+	@Column({ default: false })
+	isTwoFactorAuthenticationEnabled: boolean;
+
+	@Column({ nullable: true })
+	twoFactorAuthenticationSecret?: string;
 }
