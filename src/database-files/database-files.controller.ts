@@ -7,20 +7,18 @@ import { DatabaseFilesService } from './database-files.service';
 export class DatabaseFilesController {
 	constructor(
 		private readonly databaseFilesService: DatabaseFilesService
-	) {}
+	) { }
 
 	@Get(':id')
 	async getDatabaseFileById(
-		@Param('id', ParseIntPipe)id: number,
+		@Param('id', ParseIntPipe) id: number,
 		@Res({ passthrough: true }) response: Response
 	) {
 
 		const file = await this.databaseFilesService.getFileById(id);
 		const stream = Readable.from(file.data);
 
-		response.set({
-			'Content-Type': 'image'
-		})
+		response.set({ 'Content-Type': 'image' })
 
 		return new StreamableFile(stream);
 	}

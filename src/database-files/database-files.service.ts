@@ -11,7 +11,7 @@ export class DatabaseFilesService {
 	) {}
 
 	async uploadDatabaseFile(dataBuffer: Buffer, filename: string) {
-		const newFile = await this.databaseFilesRespository.create({
+		const newFile = this.databaseFilesRespository.create({
 			filename,
 			data: dataBuffer
 		})
