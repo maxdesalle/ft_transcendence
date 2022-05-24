@@ -1,8 +1,12 @@
-import { Body, Controller, Get, Param, ParseIntPipe, Post, UploadedFile, UseGuards, UseInterceptors } from '@nestjs/common';
+import { Body, Controller, Get, Param, ParseIntPipe, Post, Res, StreamableFile, UploadedFile, UseGuards, UseInterceptors } from '@nestjs/common';
 import { JwtGuard } from 'src/auth/guards/jwt.guard';
 import { User } from 'src/auth/auth.controller';
 import { UsersService } from './users.service';
 import { FileInterceptor } from '@nestjs/platform-express';
+import { Response } from 'express';
+import { Readable } from 'stream';
+import { createReadStream, ReadStream } from 'fs';
+import { join } from 'path';
 
 @Controller('users')
 export class UsersController {
@@ -24,13 +28,36 @@ export class UsersController {
 		return await this.usersService.findById(user.id);
 	}
 
-	@Post('avatar/:id') // "":id is a temp solution before the authguard is used"
-	// @UseGuards(JwtGuard) // use @User to get request's user
+	@Get('upload_avatar')
+	@UseGuards(JwtGuard) 
+	uploadAvatar() {
+		return this.usersService.getAvatarUploadForm();
+	}
+
+	@Get('avatar')
+	@UseGuards(JwtGuard)
+	async getAvatar(
+		@User() user,
+		@Res({ passthrough: true }) response: Response) {
+		
+		let stream: Readable | ReadStream;
+		if (!user.avatarId) {
+			stream = createReadStream(join(process.cwd(), 'images/avatardefault.png'));
+		} else {
+			const file = await this.usersService.getAvatar(user.avatarId)
+			stream = Readable.from(file.data);
+		}
+		response.set({ 'Content-Type': 'image' });
+		return new StreamableFile(stream);
+	}
+
+	@Post('avatar') 
+	@UseGuards(JwtGuard)
 	@UseInterceptors(FileInterceptor('file'))
-	async addAvatar(@Param('id', ParseIntPipe) id: number,
+	async addAvatar(@User() user,
 					@UploadedFile() file: Express.Multer.File) {
 		return this.usersService.addAvatar(
-			id, file.buffer, file.originalname);
+			user.id, file.buffer, file.originalname);
 	}
 
 	// route for testing purposes
@@ -38,4 +65,6 @@ export class UsersController {
 	addUser(@Body('username') username: string) {
 		return this.usersService.createNewUser(username);
 	}
+
+
 }

@@ -71,6 +71,7 @@ export class UsersService {
 	}
 
 	findByUsername(username: string): Promise<Users | undefined> {
+
 		return this.usersRepository.findOne({ username });
 	}
 
@@ -82,7 +83,25 @@ export class UsersService {
 		const avatar = await this.databaseFilesService.uploadDatabaseFile(
 			imageBuffer, filename);
 		await this.usersRepository.update(userId, { avatarId: avatar.id });
-		return avatar;
+		return `${avatar.filename} uploaded succesfully`;
+	}
+
+	async getAvatar(avatarId: number) {
+		return this.databaseFilesService.getFileById(avatarId);
+	}
+
+	getAvatarUploadForm() {
+		return `
+			<!DOCTYPE html>
+			<html>
+			<body>
+			<form action="/users/avatar" method="post" enctype="multipart/form-data">
+			<p><input type="file" name="file"
+			<p><button type="submit">Upload</button>
+			</form> 
+			</body>
+			</html>
+		`
 	}
 
 }
