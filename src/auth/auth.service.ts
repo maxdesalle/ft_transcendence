@@ -3,7 +3,9 @@ import { Injectable } from '@nestjs/common';
 @Injectable()
 export class AuthService {
 	getHomePage(username: string): string {
-		return `<p>Good to see you here ${username} 👋</p><p>You can check your settings <a href="/settings/">here</a> or log out <a href="/logout/">here</a>.</p>`;
+		return `<p>Good to see you here ${username} 👋</p><p>You can check your settings <a href="/settings/">here</a> or log out <a href="/logout/">here</a>.</p>
+			<p>You can check your avatar <a href="/users/avatar">here</a> or change it <a href="/users/upload_avatar">here</a>.</p>
+			`;
 	}
 
 	getLoginPage(): string {
