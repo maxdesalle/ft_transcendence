@@ -5,7 +5,10 @@ import { Strategy, ExtractJwt } from 'passport-jwt';
 import { UsersService } from 'src/users/users.service';
 
 @Injectable()
-export class JwtStrategy extends PassportStrategy(Strategy) {
+export class JwtTwoFactorStrategy extends PassportStrategy(
+	Strategy,
+	'jwt-two-factor',
+) {
 	constructor(private usersService: UsersService) {
 		const getJwtToken = (req: Request) => {
 			let token = null;
@@ -28,13 +31,9 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
 		const user = await this.usersService.findByUsername(payload.username);
 
 		if (user) {
-			if (
-				user.isTwoFactorAuthenticationEnabled == false ||
-				payload.validTwoFactorAuthentication
-			) {
-				return user;
-			}
+			return user;
+		} else {
+			throw new UnauthorizedException();
 		}
-		throw new UnauthorizedException();
 	}
 }
