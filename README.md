@@ -5,6 +5,9 @@
 * launch database container: `docker-compose up -d`
 * launch node server in watch mode: npm run start:dev
 
+OR: `./launch.sh` (have an **env_vars** file containing the export commmands)
+
+
 
 #### How to access the database with the psql client:
 `docker exec -it db psql -U postgres`
