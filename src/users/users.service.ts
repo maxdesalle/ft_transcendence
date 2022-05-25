@@ -1,7 +1,7 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, InternalServerErrorException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { DatabaseFilesService } from 'src/database-files/database-files.service';
-import { Repository } from 'typeorm';
+import { Connection, Repository } from 'typeorm';
 import { authenticator } from 'otplib';
 import { Users } from './entities/user.entity';
 import { toFileStream } from 'qrcode';
@@ -14,6 +14,7 @@ export class UsersService {
 		private usersRepository: Repository<Users>,
 		private readonly databaseFilesService: DatabaseFilesService,
 		private readonly configService: ConfigService,
+		private connection: Connection
 	) {}
 
 	async createNewUser(username: string) {
@@ -79,11 +80,38 @@ export class UsersService {
 		return this.usersRepository.find();
 	}
 
+	// changes file in database as transaction.
+	// old avatar is deleted.
 	async addAvatar(userId: number, imageBuffer: Buffer, filename: string) {
-		const avatar = await this.databaseFilesService.uploadDatabaseFile(
-			imageBuffer, filename);
-		await this.usersRepository.update(userId, { avatarId: avatar.id });
-		return `${avatar.filename} uploaded succesfully`;
+		const queryRunner = this.connection.createQueryRunner();
+
+		await queryRunner.connect();
+		await queryRunner.startTransaction();
+
+		try {
+			const user = await queryRunner.manager.findOne(Users, userId);
+			const currentAvatarId = user.avatarId;
+			const avatar = await this.databaseFilesService.uploadDBFileWithQueryRunner(
+				imageBuffer, filename, queryRunner);
+			await queryRunner.manager.update(Users, userId, {
+				avatarId: avatar.id
+			});
+
+			if (currentAvatarId) {
+				await this.databaseFilesService.deleteFileWithQueryRunner(
+					currentAvatarId, queryRunner);
+			}
+
+			await queryRunner.commitTransaction();
+
+			// return avatar
+			return `Avatar was succesfully updated. New avatar: ${avatar.filename}`;
+		} catch {
+			await queryRunner.rollbackTransaction();
+			throw new InternalServerErrorException();
+		} finally {
+			await queryRunner.release();
+		}
 	}
 
 	async getAvatar(avatarId: number) {
