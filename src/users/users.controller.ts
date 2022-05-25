@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Param, ParseIntPipe, Post, Res, StreamableFile, UploadedFile, UseGuards, UseInterceptors } from '@nestjs/common';
+import { BadRequestException, Body, Controller, Get, Param, ParseIntPipe, Post, Res, StreamableFile, UploadedFile, UseGuards, UseInterceptors } from '@nestjs/common';
 import { JwtGuard } from 'src/auth/guards/jwt.guard';
 import { User } from 'src/auth/auth.controller';
 import { UsersService } from './users.service';
@@ -7,6 +7,7 @@ import { Response } from 'express';
 import { Readable } from 'stream';
 import { createReadStream, ReadStream } from 'fs';
 import { join } from 'path';
+import { imageFileFilter } from './utils/file-upload.utils';
 
 @Controller('users')
 export class UsersController {
@@ -53,9 +54,16 @@ export class UsersController {
 
 	@Post('avatar') 
 	@UseGuards(JwtGuard)
-	@UseInterceptors(FileInterceptor('file'))
-	async addAvatar(@User() user,
-					@UploadedFile() file: Express.Multer.File) {
+	@UseInterceptors(FileInterceptor('file', { 
+		limits: {fileSize: 1000000}, 
+		fileFilter: imageFileFilter
+		}))
+	async addAvatar(
+		@User() user,
+		@UploadedFile() file: Express.Multer.File) {
+
+		if (!file)
+			throw new BadRequestException();
 		return this.usersService.addAvatar(
 			user.id, file.buffer, file.originalname);
 	}
