@@ -8,6 +8,7 @@ import { Readable } from 'stream';
 import { createReadStream, ReadStream } from 'fs';
 import { join } from 'path';
 import { ConfigService } from '@nestjs/config';
+import { User } from './entities/user.entity';
 
 @Controller('users')
 @UseInterceptors(ClassSerializerInterceptor)
@@ -71,6 +72,5 @@ export class UsersController {
 	addUser(@Body('username') username: string) {
 		return this.usersService.createNewUser(username);
 	}
-
 
 }
