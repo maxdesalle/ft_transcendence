@@ -11,12 +11,10 @@ import { typeormConfig } from 'src/config/typeorm.config';
 	imports: [
 		AuthModule, 
 		UsersModule, 
-		TypeOrmModule.forRootAsync(typeormConfig), 
 		DatabaseFilesModule, 
 		HtmlModule,
-		ConfigModule.forRoot({
-			isGlobal: true
-		})
+		ConfigModule.forRoot({isGlobal: true}),
+		TypeOrmModule.forRootAsync(typeormConfig), 
 	],
 	controllers: [],
 	providers: [],

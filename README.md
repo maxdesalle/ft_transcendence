@@ -2,11 +2,15 @@
 
 First you need a .env file at the repo's root, like this: (cannot put secret stuff in a public repo, sorry)
 ```
+    # auth
     FORTYTWO_CLIENT_ID=<you gotta provide the right one>  
     FORTYTWO_CLIENT_SECRET=<you gotta provide the right one>  
     FORTYTWO_CALLBACK_URL="http://127.0.0.1:3000/login/42/return"  
     JWT_TOKEN_SECRET=<whatever you wish>  
     JWT_TOKEN_EXPIRY=<some time, like "3600s"> 
+
+    # database
+    DB_PASSWORD=<whatever you wish, but DON'T USE QUOTES around it>
 ```
 Then:
 * install node dependencies (if not yet done): `npm install`
