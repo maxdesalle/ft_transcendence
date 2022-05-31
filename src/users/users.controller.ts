@@ -1,6 +1,6 @@
 import { BadRequestException, Body, Controller, Get, Param, ParseIntPipe, Post, Res, StreamableFile, UploadedFile, UseGuards, UseInterceptors } from '@nestjs/common';
 import { JwtGuard } from 'src/auth/guards/jwt.guard';
-import { User } from 'src/auth/auth.controller';
+import { Usr } from './decorators/user.decorator';
 import { UsersService } from './users.service';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { Response } from 'express';
@@ -25,7 +25,7 @@ export class UsersController {
 
 	@Get('/current_user/')
 	@UseGuards(JwtGuard)
-	async getProfile(@User() user) {
+	async getProfile(@Usr() user) {
 		return await this.usersService.findById(user.id);
 	}
 
@@ -38,7 +38,7 @@ export class UsersController {
 	@Get('avatar')
 	@UseGuards(JwtGuard)
 	async getAvatar(
-		@User() user,
+		@Usr() user,
 		@Res({ passthrough: true }) response: Response) {
 		
 		let stream: Readable | ReadStream;
@@ -59,7 +59,7 @@ export class UsersController {
 		fileFilter: imageFileFilter
 		}))
 	async addAvatar(
-		@User() user,
+		@Usr() user,
 		@UploadedFile() file: Express.Multer.File) {
 
 		if (!file)

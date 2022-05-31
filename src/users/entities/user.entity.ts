@@ -2,7 +2,7 @@ import { DatabaseFile } from "src/database-files/entities/databaseFile.entity";
 import { Column, Entity, JoinColumn, OneToOne, PrimaryGeneratedColumn } from "typeorm";
 
 @Entity()
-export class Users {
+export class User {
 	@PrimaryGeneratedColumn()
 	id: number;
 

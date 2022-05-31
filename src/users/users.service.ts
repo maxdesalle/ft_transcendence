@@ -3,15 +3,15 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { DatabaseFilesService } from 'src/database-files/database-files.service';
 import { Connection, Repository } from 'typeorm';
 import { authenticator } from 'otplib';
-import { Users } from './entities/user.entity';
+import { User } from './entities/user.entity';
 import { toFileStream } from 'qrcode';
 import { ConfigService } from '@nestjs/config';
 
 @Injectable()
 export class UsersService {
 	constructor(
-		@InjectRepository(Users)
-		private usersRepository: Repository<Users>,
+		@InjectRepository(User)
+		private usersRepository: Repository<User>,
 		private readonly databaseFilesService: DatabaseFilesService,
 		private readonly configService: ConfigService,
 		private connection: Connection
@@ -20,7 +20,7 @@ export class UsersService {
 	async createNewUser(username: string) {
 		let user = await this.findByUsername(username);
 		if (user == undefined) {
-			user = new Users();
+			user = new User();
 			user.username = username;
 			await this.usersRepository.save(user);
 		}
@@ -39,14 +39,14 @@ export class UsersService {
 		});
 	}
 
-	check2FACodeValidity(twoFactorAuthenticationCode: string, user: Users) {
+	check2FACodeValidity(twoFactorAuthenticationCode: string, user: User) {
 		return authenticator.verify({
 			token: twoFactorAuthenticationCode,
 			secret: user.twoFactorAuthenticationSecret,
 		});
 	}
 
-	async generateTwoFactorAuthenticationSecret(user: Users) {
+	async generateTwoFactorAuthenticationSecret(user: User) {
 		const secret = authenticator.generateSecret();
 		const otpauthUrl = authenticator.keyuri(
 			user.username,
@@ -71,7 +71,7 @@ export class UsersService {
 		return this.usersRepository.findOne(id);
 	}
 
-	findByUsername(username: string): Promise<Users | undefined> {
+	findByUsername(username: string): Promise<User | undefined> {
 
 		return this.usersRepository.findOne({ username });
 	}
@@ -89,11 +89,11 @@ export class UsersService {
 		await queryRunner.startTransaction();
 
 		try {
-			const user = await queryRunner.manager.findOne(Users, userId);
+			const user = await queryRunner.manager.findOne(User, userId);
 			const currentAvatarId = user.avatarId;
 			const avatar = await this.databaseFilesService.uploadDBFileWithQueryRunner(
 				imageBuffer, filename, queryRunner);
-			await queryRunner.manager.update(Users, userId, {
+			await queryRunner.manager.update(User, userId, {
 				avatarId: avatar.id
 			});
 
