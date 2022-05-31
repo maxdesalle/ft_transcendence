@@ -1,11 +1,15 @@
 import { Injectable } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import { authenticator } from 'otplib';
 import { User } from 'src/users/entities/user.entity';
 import { UsersService } from 'src/users/users.service';
 
 @Injectable()
 export class AuthService {
-	constructor(private usersService: UsersService) {}
+	constructor(
+		private usersService: UsersService,
+		private configService: ConfigService,
+	) {}
 
 	check2FACodeValidity(twoFactorAuthenticationCode: string, user: User) {
 		return authenticator.verify({
@@ -19,7 +23,7 @@ export class AuthService {
 		const otpauthUrl = authenticator.keyuri(
 			user.username,
 			// this.configService.get('Transcendence'),
-			'Transcendence',
+			this.configService.get<string>('TWOFA_ISSUER'),
 			secret,
 		);
 

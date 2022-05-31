@@ -11,6 +11,10 @@ First you need a .env file at the repo's root, like this: (cannot put secret stu
 
     # database
     DB_PASSWORD=<whatever you wish, but DON'T USE QUOTES around it>
+
+    # avatar photo
+    AVATAR_DEFAULT_FILE="images/avatardefault.png"
+    AVATAR_MAX_SIZE=1000000
 ```
 Then:
 * install node dependencies (if not yet done): `npm install`

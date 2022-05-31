@@ -8,10 +8,14 @@ import { Readable } from 'stream';
 import { createReadStream, ReadStream } from 'fs';
 import { join } from 'path';
 import { imageFileFilter } from './utils/file-upload.utils';
+import { ConfigService } from '@nestjs/config';
 
 @Controller('users')
 export class UsersController {
-	constructor(private usersService: UsersService) {}
+	constructor(
+		private usersService: UsersService,
+		private configService: ConfigService,
+	) {}
 
 	@Get('/all/')
 	async getAllUsers() {
@@ -43,7 +47,9 @@ export class UsersController {
 		
 		let stream: Readable | ReadStream;
 		if (!user.avatarId) {
-			stream = createReadStream(join(process.cwd(), 'images/avatardefault.png'));
+			stream = createReadStream(join(
+				process.cwd(),
+				this.configService.get<string>('AVATAR_DEFAULT_FILE')));
 		} else {
 			const file = await this.usersService.getAvatar(user.avatarId)
 			stream = Readable.from(file.data);
@@ -54,10 +60,7 @@ export class UsersController {
 
 	@Post('avatar') 
 	@UseGuards(JwtGuard)
-	@UseInterceptors(FileInterceptor('file', { 
-		limits: {fileSize: 1000000}, 
-		fileFilter: imageFileFilter
-		}))
+	@UseInterceptors(FileInterceptor('file'))
 	async addAvatar(
 		@Usr() user,
 		@UploadedFile() file: Express.Multer.File) {
