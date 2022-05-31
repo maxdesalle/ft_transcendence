@@ -6,7 +6,7 @@ services:
     ports: 
       - 5432:5432
     environment:
-      POSTGRES_PASSWORD: 1234
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
 
 # how to access the database client:
 # docker exec -it db psql -U postgres

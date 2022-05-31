@@ -25,7 +25,6 @@ import { AuthService } from './auth.service';
 import { toFileStream } from 'qrcode';
 import { UsersService } from '../users/users.service';
 import { Usr } from '../users/decorators/user.decorator';
-import { HtmlService } from 'src/html/html.service';
 
 async function pipeQrCodeStream(stream: Response, otpauthUrl: string) {
 	return toFileStream(stream, otpauthUrl);
@@ -38,7 +37,6 @@ export class AuthController {
 		private readonly authService: AuthService,
 		private jwtService: JwtService,
 		private usersService: UsersService,
-		private htmlService: HtmlService
 	) {}
 
 	@Get('login/42')
