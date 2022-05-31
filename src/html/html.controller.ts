@@ -4,6 +4,7 @@ import { Usr } from 'src/users/decorators/user.decorator';
 import { Response } from 'express';
 import { UsersService } from 'src/users/users.service';
 import { HtmlService } from './html.service';
+import { ApiTags } from '@nestjs/swagger';
 
 @Catch(UnauthorizedException)
 export class ViewAuthFilter implements ExceptionFilter {
@@ -18,6 +19,7 @@ export class ViewAuthFilter implements ExceptionFilter {
 
 
 @Controller()
+@ApiTags('HTML pages (for testing)')
 export class HtmlController {
 	constructor(
 		private usersService: UsersService,

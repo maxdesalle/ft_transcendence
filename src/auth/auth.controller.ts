@@ -25,6 +25,7 @@ import { AuthService } from './auth.service';
 import { toFileStream } from 'qrcode';
 import { UsersService } from '../users/users.service';
 import { Usr } from '../users/decorators/user.decorator';
+import { ApiTags } from '@nestjs/swagger';
 
 async function pipeQrCodeStream(stream: Response, otpauthUrl: string) {
 	return toFileStream(stream, otpauthUrl);
@@ -32,6 +33,7 @@ async function pipeQrCodeStream(stream: Response, otpauthUrl: string) {
 
 
 @Controller()
+@ApiTags('auth')
 export class AuthController {
 	constructor(
 		private readonly authService: AuthService,

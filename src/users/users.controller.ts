@@ -9,8 +9,10 @@ import { createReadStream, ReadStream } from 'fs';
 import { join } from 'path';
 import { ConfigService } from '@nestjs/config';
 import { User } from './entities/user.entity';
+import { ApiTags } from '@nestjs/swagger';
 
 @Controller('users')
+@ApiTags('users')
 @UseInterceptors(ClassSerializerInterceptor)
 export class UsersController {
 	constructor(
