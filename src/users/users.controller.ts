@@ -1,4 +1,4 @@
-import { BadRequestException, Body, Controller, Get, Param, ParseIntPipe, Post, Res, StreamableFile, UploadedFile, UseGuards, UseInterceptors } from '@nestjs/common';
+import { BadRequestException, Body, ClassSerializerInterceptor, Controller, Get, Param, ParseIntPipe, Post, Res, StreamableFile, UploadedFile, UseGuards, UseInterceptors } from '@nestjs/common';
 import { JwtGuard } from 'src/auth/guards/jwt.guard';
 import { Usr } from './decorators/user.decorator';
 import { UsersService } from './users.service';
@@ -7,37 +7,26 @@ import { Response } from 'express';
 import { Readable } from 'stream';
 import { createReadStream, ReadStream } from 'fs';
 import { join } from 'path';
-import { imageFileFilter } from './utils/file-upload.utils';
 import { ConfigService } from '@nestjs/config';
 
 @Controller('users')
+@UseInterceptors(ClassSerializerInterceptor)
 export class UsersController {
 	constructor(
 		private usersService: UsersService,
 		private configService: ConfigService,
 	) {}
 
-	@Get('/all/')
+	@Get()
 	async getAllUsers() {
 		return await this.usersService.findAll();
 	}
 
-	@Get('/all/:id')
-	async getUserById(@Param('id', ParseIntPipe) id: number) {
-		return await this.usersService.findById(id);
-	}
-
-	@Get('/current_user/')
+	@Get('me')
 	@UseGuards(JwtGuard)
 	async getProfile(@Usr() user) {
 		return await this.usersService.findById(user.id);
 	}
-
-	// @Get('upload_avatar')
-	// @UseGuards(JwtGuard) 
-	// uploadAvatar() {
-	// 	return this.usersService.getAvatarUploadForm();
-	// }
 
 	@Get('avatar')
 	@UseGuards(JwtGuard)
@@ -57,6 +46,12 @@ export class UsersController {
 		response.set({ 'Content-Type': 'image' });
 		return new StreamableFile(stream);
 	}
+
+	@Get(':id')
+	async getUserById(@Param('id', ParseIntPipe) id: number) {
+		return await this.usersService.findById(id);
+	}
+
 
 	@Post('avatar') 
 	@UseGuards(JwtGuard)
