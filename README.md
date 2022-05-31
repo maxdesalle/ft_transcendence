@@ -1,11 +1,19 @@
 ## How to make stuff happen
 
+First you need a .env file at the repo's root, like this: (cannot put secret stuff in a public repo, sorry)
+```
+    FORTYTWO_CLIENT_ID=<you gotta provide the right one>  
+    FORTYTWO_CLIENT_SECRET=<you gotta provide the right one>  
+    FORTYTWO_CALLBACK_URL="http://127.0.0.1:3000/login/42/return"  
+    JWT_TOKEN_SECRET=<whatever you wish>  
+    JWT_TOKEN_EXPIRY=<some time, like "3600s"> 
+```
+Then:
 * install node dependencies (if not yet done): `npm install`
-* export env variables FORTYTWO_CLIENT_ID, FORTYTWO_CLIENT_SECRET, JWT_TOKEN_SECRET and JWT_TOKEN_EXPIRY
 * launch database container: `docker-compose up -d`
 * launch node server in watch mode: npm run start:dev
 
-OR: `./launch.sh` (have an **env_vars** file containing the export commmands)
+OR: `./launch.sh` (have the **.env** file ready)
 
 
 
