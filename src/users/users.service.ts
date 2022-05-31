@@ -118,18 +118,4 @@ export class UsersService {
 		return this.databaseFilesService.getFileById(avatarId);
 	}
 
-	getAvatarUploadForm() {
-		return `
-			<!DOCTYPE html>
-			<html>
-			<body>
-			<form action="/users/avatar" method="post" enctype="multipart/form-data">
-			<p><input type="file" name="file"
-			<p><button type="submit">Upload</button>
-			</form> 
-			</body>
-			</html>
-		`
-	}
-
 }

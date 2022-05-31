@@ -29,11 +29,11 @@ export class UsersController {
 		return await this.usersService.findById(user.id);
 	}
 
-	@Get('upload_avatar')
-	@UseGuards(JwtGuard) 
-	uploadAvatar() {
-		return this.usersService.getAvatarUploadForm();
-	}
+	// @Get('upload_avatar')
+	// @UseGuards(JwtGuard) 
+	// uploadAvatar() {
+	// 	return this.usersService.getAvatarUploadForm();
+	// }
 
 	@Get('avatar')
 	@UseGuards(JwtGuard)

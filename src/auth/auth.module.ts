@@ -7,12 +7,13 @@ import { AuthService } from './auth.service';
 import { IntraStrategy } from './strategy/intra.strategy';
 import { JwtStrategy } from './strategy/jwt.strategy';
 import { JwtTwoFactorStrategy } from './strategy/tfa.strategy';
+import { HtmlModule } from 'src/html/html.module';
 
 @Module({
-	imports: [PassportModule, UsersModule, JwtModule.register({
+	imports:[PassportModule, UsersModule, HtmlModule, JwtModule.register({
       secret: process.env.JWT_TOKEN_SECRET,
       signOptions: { expiresIn: process.env.JWT_TOKEN_EXPIRY }
-    })
+    }),
 ],
 	controllers: [AuthController],
 	providers: [AuthService, IntraStrategy, JwtStrategy, JwtTwoFactorStrategy]

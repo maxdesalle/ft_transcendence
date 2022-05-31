@@ -25,21 +25,12 @@ import { AuthService } from './auth.service';
 import { toFileStream } from 'qrcode';
 import { UsersService } from '../users/users.service';
 import { Usr } from '../users/decorators/user.decorator';
+import { HtmlService } from 'src/html/html.service';
 
 async function pipeQrCodeStream(stream: Response, otpauthUrl: string) {
 	return toFileStream(stream, otpauthUrl);
 }
 
-@Catch(UnauthorizedException)
-export class ViewAuthFilter implements ExceptionFilter {
-	catch(exception: HttpException, host: ArgumentsHost) {
-		const ctx = host.switchToHttp();
-		const response = ctx.getResponse<Response>();
-		const status = exception.getStatus();
-
-		response.status(status).redirect('/login');
-	}
-}
 
 @Controller()
 export class AuthController {
@@ -47,26 +38,14 @@ export class AuthController {
 		private readonly authService: AuthService,
 		private jwtService: JwtService,
 		private usersService: UsersService,
+		private htmlService: HtmlService
 	) {}
 
-	@Get()
-	@UseFilters(ViewAuthFilter)
-	@UseGuards(JwtGuard)
-	async getHomePage(@Usr() user): Promise<string> {
-		const user_object = await this.usersService.findById(user.id);
-		return this.authService.getHomePage(user_object.username);
-	}
-
-	@Get('/login/')
-	getLoginPage(): string {
-		return this.authService.getLoginPage();
-	}
-
-	@Get('/login/42/')
+	@Get('login/42')
 	@UseGuards(IntraGuard)
 	getUserLogin(): void {}
 
-	@Get('/login/42/return/')
+	@Get('login/42/return')
 	@UseGuards(IntraGuard)
 	getUserLoggedIn(@Usr() user, @Res({ passthrough: true }) res: Response) {
 		const jwtToken = this.jwtService.sign({
@@ -124,16 +103,11 @@ export class AuthController {
 		return res.redirect('/');
 	}
 
-	@Get('/logout/')
+	@Get('logout')
 	@UseGuards(JwtGuard)
 	getLogoutPage(@Res({ passthrough: true }) res: Response) {
 		res.clearCookie('jwt_token');
 		return res.redirect('/login/');
 	}
 
-	@Get('/settings/')
-	@UseGuards(JwtGuard)
-	getSettingsPage(): string {
-		return this.authService.getSettingsPage();
-	}
 }
