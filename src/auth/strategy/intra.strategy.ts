@@ -19,11 +19,7 @@ export class IntraStrategy extends PassportStrategy(Strategy, '42') {
 	}
 
 	async validate(accessToken, refreshToken, user): Promise<any> {
-<<<<<<< HEAD
 		const new_user = this.usersService.createNewUser(user.username);
-=======
-		let new_user = this.usersService.createNewUser(user.username); // add new user
->>>>>>> main
 		return new_user;
 	}
 }
