@@ -2,10 +2,7 @@ import { Injectable, InternalServerErrorException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { DatabaseFilesService } from 'src/database-files/database-files.service';
 import { Connection, Repository } from 'typeorm';
-import { authenticator } from 'otplib';
 import { User } from './entities/user.entity';
-import { toFileStream } from 'qrcode';
-import { ConfigService } from '@nestjs/config';
 
 @Injectable()
 export class UsersService {
@@ -13,7 +10,6 @@ export class UsersService {
 		@InjectRepository(User)
 		private usersRepository: Repository<User>,
 		private readonly databaseFilesService: DatabaseFilesService,
-		private readonly configService: ConfigService,
 		private connection: Connection
 	) {}
 
@@ -39,28 +35,6 @@ export class UsersService {
 		});
 	}
 
-	check2FACodeValidity(twoFactorAuthenticationCode: string, user: User) {
-		return authenticator.verify({
-			token: twoFactorAuthenticationCode,
-			secret: user.twoFactorAuthenticationSecret,
-		});
-	}
-
-	async generateTwoFactorAuthenticationSecret(user: User) {
-		const secret = authenticator.generateSecret();
-		const otpauthUrl = authenticator.keyuri(
-			user.username,
-			// this.configService.get('Transcendence'),
-			'Transcendence',
-			secret,
-		);
-
-		await this.setTwoFactorAuthenticationSecret(secret, user.id);
-
-		await this.turnOnTwoFactorAuthentication(user.id);
-		return { secret, otpauthUrl };
-	}
-
 	async setTwoFactorAuthenticationSecret(secret: string, userId: number) {
 		return this.usersRepository.update(userId, {
 			twoFactorAuthenticationSecret: secret,
@@ -82,7 +56,7 @@ export class UsersService {
 
 	// changes file in database as transaction.
 	// old avatar is deleted.
-	async addAvatar(userId: number, imageBuffer: Buffer, filename: string) {
+	async changeAvatar(userId: number, imageBuffer: Buffer, filename: string) {
 		const queryRunner = this.connection.createQueryRunner();
 
 		await queryRunner.connect();

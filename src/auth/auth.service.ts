@@ -1,12 +1,32 @@
 import { Injectable } from '@nestjs/common';
+import { authenticator } from 'otplib';
+import { User } from 'src/users/entities/user.entity';
+import { UsersService } from 'src/users/users.service';
 
 @Injectable()
 export class AuthService {
+	constructor(private usersService: UsersService) {}
 
-
-
-	// this function has NO references to it (not used anywhere!)
-	getErrorLoginPage(error: string): string {
-		return `<p>${error}<br><br>Click <a href="/auth/42">here</a> to log in.</p>`;
+	check2FACodeValidity(twoFactorAuthenticationCode: string, user: User) {
+		return authenticator.verify({
+			token: twoFactorAuthenticationCode,
+			secret: user.twoFactorAuthenticationSecret,
+		});
 	}
+
+	async generateTwoFactorAuthenticationSecret(user: User) {
+		const secret = authenticator.generateSecret();
+		const otpauthUrl = authenticator.keyuri(
+			user.username,
+			// this.configService.get('Transcendence'),
+			'Transcendence',
+			secret,
+		);
+
+		await this.usersService.setTwoFactorAuthenticationSecret(secret, user.id);
+
+		await this.usersService.turnOnTwoFactorAuthentication(user.id);
+		return { secret, otpauthUrl };
+	}
+
 }

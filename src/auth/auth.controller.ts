@@ -60,7 +60,7 @@ export class AuthController {
 	@UseGuards(JwtGuard)
 	async activateTwoFactorAuthentication(@Usr() user, @Res() res: Response) {
 		const { otpauthUrl } =
-			await this.usersService.generateTwoFactorAuthenticationSecret(user);
+			await this.authService.generateTwoFactorAuthenticationSecret(user);
 
 		return pipeQrCodeStream(res, otpauthUrl);
 	}
@@ -82,7 +82,7 @@ export class AuthController {
 		@Res({ passthrough: true }) res: Response,
 	) {
 		const isTwoFactorAuthenticationCodeValid =
-			this.usersService.check2FACodeValidity(
+			this.authService.check2FACodeValidity(
 				twoFactorAuthenticationCode,
 				user,
 			);

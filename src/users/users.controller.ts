@@ -64,7 +64,7 @@ export class UsersController {
 
 		if (!file)
 			throw new BadRequestException();
-		return this.usersService.addAvatar(
+		return this.usersService.changeAvatar(
 			user.id, file.buffer, file.originalname);
 	}
 
