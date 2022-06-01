@@ -8,8 +8,6 @@ import {
 	Get,
 	HttpCode,
 	UseGuards,
-	createParamDecorator,
-	ExecutionContext,
 	UnauthorizedException,
 	UseFilters,
 	ExceptionFilter,
@@ -26,28 +24,16 @@ import { JwtService } from '@nestjs/jwt';
 import { AuthService } from './auth.service';
 import { toFileStream } from 'qrcode';
 import { UsersService } from '../users/users.service';
-
-export const User = createParamDecorator((data: any, ctx: ExecutionContext) => {
-	const req = ctx.switchToHttp().getRequest();
-	return req.user;
-});
+import { Usr } from '../users/decorators/user.decorator';
+import { ApiTags } from '@nestjs/swagger';
 
 async function pipeQrCodeStream(stream: Response, otpauthUrl: string) {
 	return toFileStream(stream, otpauthUrl);
 }
 
-@Catch(UnauthorizedException)
-export class ViewAuthFilter implements ExceptionFilter {
-	catch(exception: HttpException, host: ArgumentsHost) {
-		const ctx = host.switchToHttp();
-		const response = ctx.getResponse<Response>();
-		const status = exception.getStatus();
-
-		response.status(status).redirect('/login');
-	}
-}
 
 @Controller()
+@ApiTags('auth')
 export class AuthController {
 	constructor(
 		private readonly authService: AuthService,
@@ -55,26 +41,13 @@ export class AuthController {
 		private usersService: UsersService,
 	) {}
 
-	@Get()
-	@UseFilters(ViewAuthFilter)
-	@UseGuards(JwtGuard)
-	async getHomePage(@User() user): Promise<string> {
-		const user_object = await this.usersService.findById(user.id);
-		return this.authService.getHomePage(user_object.username);
-	}
-
-	@Get('/login/')
-	getLoginPage(): string {
-		return this.authService.getLoginPage();
-	}
-
-	@Get('/login/42/')
+	@Get('login/42')
 	@UseGuards(IntraGuard)
 	getUserLogin(): void {}
 
-	@Get('/login/42/return/')
+	@Get('login/42/return')
 	@UseGuards(IntraGuard)
-	getUserLoggedIn(@User() user, @Res({ passthrough: true }) res: Response) {
+	getUserLoggedIn(@Usr() user, @Res({ passthrough: true }) res: Response) {
 		const jwtToken = this.jwtService.sign({
 			id: user.id,
 			username: user.username,
@@ -85,16 +58,16 @@ export class AuthController {
 
 	@Get('/settings/activate-2fa')
 	@UseGuards(JwtGuard)
-	async activateTwoFactorAuthentication(@User() user, @Res() res: Response) {
+	async activateTwoFactorAuthentication(@Usr() user, @Res() res: Response) {
 		const { otpauthUrl } =
-			await this.usersService.generateTwoFactorAuthenticationSecret(user);
+			await this.authService.generateTwoFactorAuthenticationSecret(user);
 
 		return pipeQrCodeStream(res, otpauthUrl);
 	}
 
 	@Get('/settings/deactivate-2fa')
 	@UseGuards(JwtGuard)
-	async deactivateTwoFactorAuthentication(@User() user, @Res() res: Response) {
+	async deactivateTwoFactorAuthentication(@Usr() user, @Res() res: Response) {
 		await this.usersService.turnOffTwoFactorAuthentication(user.id);
 
 		return res.redirect('/login/');
@@ -104,12 +77,12 @@ export class AuthController {
 	@HttpCode(200)
 	@UseGuards(JwtTwoFactorAuthenticationGuard)
 	twoFactorAuthentication(
-		@User() user,
+		@Usr() user,
 		@Body() { twoFactorAuthenticationCode },
 		@Res({ passthrough: true }) res: Response,
 	) {
 		const isTwoFactorAuthenticationCodeValid =
-			this.usersService.check2FACodeValidity(
+			this.authService.check2FACodeValidity(
 				twoFactorAuthenticationCode,
 				user,
 			);
@@ -130,16 +103,11 @@ export class AuthController {
 		return res.redirect('/');
 	}
 
-	@Get('/logout/')
+	@Get('logout')
 	@UseGuards(JwtGuard)
 	getLogoutPage(@Res({ passthrough: true }) res: Response) {
 		res.clearCookie('jwt_token');
 		return res.redirect('/login/');
 	}
 
-	@Get('/settings/')
-	@UseGuards(JwtGuard)
-	getSettingsPage(): string {
-		return this.authService.getSettingsPage();
-	}
 }

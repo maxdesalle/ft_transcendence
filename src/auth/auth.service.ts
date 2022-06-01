@@ -1,22 +1,36 @@
 import { Injectable } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
+import { authenticator } from 'otplib';
+import { User } from 'src/users/entities/user.entity';
+import { UsersService } from 'src/users/users.service';
 
 @Injectable()
 export class AuthService {
-	getHomePage(username: string): string {
-		return `<p>Good to see you here ${username} 👋</p><p>You can check your settings <a href="/settings/">here</a> or log out <a href="/logout/">here</a>.</p>
-			<p>You can check your avatar <a href="/users/avatar">here</a> or change it <a href="/users/upload_avatar">here</a>.</p>
-			`;
+	constructor(
+		private usersService: UsersService,
+		private configService: ConfigService,
+	) {}
+
+	check2FACodeValidity(twoFactorAuthenticationCode: string, user: User) {
+		return authenticator.verify({
+			token: twoFactorAuthenticationCode,
+			secret: user.twoFactorAuthenticationSecret,
+		});
 	}
 
-	getLoginPage(): string {
-		return `<p>Click <a href="/login/42">here</a> to log in.</p><form action="/login/two-factor-authentication/" method="POST"><div><label for="say">What's your 2FA code?</label><input name="twoFactorAuthenticationCode" id="twoFactorAuthenticationCode" value="twoFactorAuthenticationCode"></div><div><button>Confirm</button></div></form>`;
+	async generateTwoFactorAuthenticationSecret(user: User) {
+		const secret = authenticator.generateSecret();
+		const otpauthUrl = authenticator.keyuri(
+			user.username,
+			// this.configService.get('Transcendence'),
+			this.configService.get<string>('TWOFA_ISSUER'),
+			secret,
+		);
+
+		await this.usersService.setTwoFactorAuthenticationSecret(secret, user.id);
+
+		await this.usersService.turnOnTwoFactorAuthentication(user.id);
+		return { secret, otpauthUrl };
 	}
 
-	getErrorLoginPage(error: string): string {
-		return `<p>${error}<br><br>Click <a href="/login/42">here</a> to log in.</p>`;
-	}
-
-	getSettingsPage(): string {
-		return `<p>To activate 2FA, click <a href="/settings/activate-2fa">here</a> and scan the following QR code. Then, return to the login page and put in your authentication code.</p><p>To deactivate 2FA, simply click <a href="/settings/deactivate-2fa">here</a></p><p>To go back to the homepage, click <a href="/">here</a>.</pa>`;
-	}
 }

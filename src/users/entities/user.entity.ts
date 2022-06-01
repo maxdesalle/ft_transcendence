@@ -1,8 +1,9 @@
+import { Exclude } from "class-transformer";
 import { DatabaseFile } from "src/database-files/entities/databaseFile.entity";
 import { Column, Entity, JoinColumn, OneToOne, PrimaryGeneratedColumn } from "typeorm";
 
 @Entity()
-export class Users {
+export class User {
 	@PrimaryGeneratedColumn()
 	id: number;
 
@@ -20,5 +21,6 @@ export class Users {
 	isTwoFactorAuthenticationEnabled: boolean;
 
 	@Column({ nullable: true })
+	@Exclude()
 	twoFactorAuthenticationSecret?: string;
 }
