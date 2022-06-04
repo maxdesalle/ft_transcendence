@@ -1,4 +1,5 @@
 import { Injectable } from '@nestjs/common';
+import { Response } from 'express';
 import { Connection } from 'typeorm';
 
 @Injectable()
@@ -15,20 +16,21 @@ export class ChatService {
 		return(result);
 	}
 
-	async userExists(username: string): Promise<boolean> {
+	// return user object or NULL
+	async getUser(username: string) {
 		const manager = this.connection.manager;
 		const search: Array<any> = await manager.createQueryBuilder()
-			.select()
+			.select("")
 			.from("chat_user", "")
 			.where("name = :x", {x: username})
 			.execute();
 		if (search.length)
-			return (true);
-		return (false);
+			return (search[0]);
+		return (null);
 	}
 
 	async createChatUser(username: string) {
-		if (await this.userExists(username))
+		if (await this.getUser(username))
 			return "User already exists"
 
 		const manager = this.connection.manager;
@@ -43,4 +45,5 @@ export class ChatService {
 
 		return `User ${username} was created`;
 	}
+
 }
