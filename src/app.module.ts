@@ -6,6 +6,7 @@ import { DatabaseFilesModule } from './database-files/database-files.module';
 import { HtmlModule } from './html/html.module';
 import { ConfigModule } from '@nestjs/config';
 import { typeormConfig } from 'src/config/typeorm.config';
+import { ChatModule } from './chat/chat.module';
 
 @Module({
 	imports: [
@@ -14,7 +15,8 @@ import { typeormConfig } from 'src/config/typeorm.config';
 		DatabaseFilesModule, 
 		HtmlModule,
 		ConfigModule.forRoot({isGlobal: true}),
-		TypeOrmModule.forRootAsync(typeormConfig), 
+		TypeOrmModule.forRootAsync(typeormConfig),
+		ChatModule, 
 	],
 	controllers: [],
 	providers: [],
