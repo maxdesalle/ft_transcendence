@@ -3,13 +3,13 @@ import { Injectable  } from '@nestjs/common';
 import { Request  } from 'express';
 import { Strategy } from 'passport-jwt';
 import { ConfigService } from '@nestjs/config';
-import { ChatService } from '../chat.service';
+import { ChatUserService } from '../chat-user.service';
 
 @Injectable()
 export class JwtChatStrategy extends PassportStrategy(Strategy, "chat-jwt") {
 	constructor(
 		private configService: ConfigService,
-		private chatService: ChatService
+		private chatService: ChatUserService
 	) {
 		const getJwtToken = (req: Request) => {
 			let token = null;

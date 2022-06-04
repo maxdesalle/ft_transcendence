@@ -1,19 +1,16 @@
 import { Injectable } from '@nestjs/common';
-import { Response } from 'express';
 import { Connection } from 'typeorm';
 
 @Injectable()
-export class ChatService {
+export class ChatUserService {
 	constructor(
 		private connection: Connection,
 	) {}
 
-	async testDBconnection() {
+	async getAll() {
 		const manager = this.connection.manager;
 
-		const result = await manager.query("SELECT * FROM chat_user;");
-		console.log(result);
-		return(result);
+		return await manager.query("SELECT * FROM chat_user;");
 	}
 
 	// return user object or NULL

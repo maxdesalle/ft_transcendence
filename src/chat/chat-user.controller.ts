@@ -2,24 +2,24 @@ import { Body, Controller, Get, Post, Req, Request, Res, UseGuards } from '@nest
 import { JwtService } from '@nestjs/jwt';
 import { Response } from 'express';
 import { Usr } from 'src/users/decorators/user.decorator';
-import { ChatService } from './chat.service';
+import { ChatUserService } from './chat-user.service';
 import { JwtChatGuard } from './guards/jwt.guard';
 
 @Controller('chat')
-export class ChatController {
+export class ChatUserController {
 	constructor(
-		private chatService: ChatService,
+		private chatUserService: ChatUserService,
 		private jwtService: JwtService,
 	) {}
 
-	@Get('test')
+	@Get('users')
 	test() {
-		return this.chatService.testDBconnection();
+		return this.chatUserService.getAll();
 	}
 
 	@Post('register')
 	newChatUser(@Body('value') name: string) {
-		return this.chatService.createChatUser(name);
+		return this.chatUserService.createChatUser(name);
 	}
 
 	@Post('login')
@@ -27,7 +27,7 @@ export class ChatController {
 		@Body('value') username: string,
 		@Res({ passthrough: true }) res: Response
 	) {
-		const user = await this.chatService.getUser(username);
+		const user = await this.chatUserService.getUser(username);
 		if (!user)
 			return "user not registered";
 
@@ -36,13 +36,18 @@ export class ChatController {
 			username: username,
 		});
 		res.cookie('jwt_token', jwtToken);
-		return "ok?";
+		return `logged in as ${username}`;
 	}
 
-	@Get('test_logged')
+	@Get('me')
 	@UseGuards(JwtChatGuard)
-	testLoggedUser(@Request() req)
-	{
+	currentUser(@Request() req) {
 		return req.user;
+	}
+
+	@Get('logout')
+	logout(@Res({ passthrough: true }) res: Response) {
+		res.clearCookie('jwt_token');
+		return ("logged out")
 	}
 }
