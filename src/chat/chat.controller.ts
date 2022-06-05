@@ -42,6 +42,23 @@ export class ChatController {
 		return `new message= ${msg}`;
 	}
 
+	@Post('dm')
+	async dm(
+		@Usr() me: Session,
+		@Body('to') destUserId,
+		@Body('message') message
+	) {
+		return this.chatService.dm_to_user(me, destUserId, message);
+	}
+
+	@Get('dm/:friend_id')
+	getDMs(
+		@Usr() me: Session,
+		@Param('friend_id') friend_id: number
+	) {
+		return this.chatService.getDMbyUser(me, friend_id);
+	}
+
 	@Get('message')
 	async getMessages(
 		@Usr() user: Session,
@@ -95,19 +112,20 @@ export class ChatController {
 		@Usr() user: Session,
 		@Body('value') friend_id: number,
 	) {
-		await this.chatService.add_friend(user, friend_id);
+		await this.chatService.create_dm_room(user, friend_id);
 
 		// possibly move this call to inside addFriend()
 		await this.chatService.get_convs(user);
 		return user;
 	}
 
+	// route for debug only, no point in removing a dm_room
 	@Post('rm_friend')
 	async removeFriend(
 		@Usr() user: Session,
 		@Body('value') friend_id: number,
 	) {
-		await this.chatService.rm_friend(user, friend_id);
+		await this.chatService.rm_dm_room(user, friend_id);
 
 		// possibly move this call to inside addFriend()
 		await this.chatService.get_convs(user);

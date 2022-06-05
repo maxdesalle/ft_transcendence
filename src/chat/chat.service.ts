@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { BadRequestException, HttpException, Injectable } from '@nestjs/common';
 import { Connection, EntityManager } from 'typeorm';
 import { Conversation, GroupConfig, Session } from './DTO/chat-user.dto';
 
@@ -84,6 +84,42 @@ export class ChatService {
 		await this.pool.query(`INSERT INTO message(user_id, timestamp, message, room_id) VALUES(${me.id}, NOW(), '${message}', ${me.selected_room})`)
 	}
 
+
+	async get_room_msgs(me: Session, room_id: number) {
+		const query = await this.pool.query(
+			`SELECT id, user_id, message, timestamp FROM message
+			WHERE room_id = ${room_id}
+			AND user_id NOT IN (SELECT blocked_id FROM blocked WHERE user_id= ${me.id})
+			ORDER BY timestamp DESC`
+		);
+		return query.rows;
+	}
+
+	async getDMbyUser(me: Session, friend_id: number) {
+		const room_id = await this.get_dm_room(me, friend_id);
+		if (!room_id)
+			return [];
+		return this.get_room_msgs(me, room_id);
+	}
+
+
+	async dm_to_user(me: Session, toId: number, msg: string) {
+		if (me.id === toId)
+			throw new BadRequestException("You shall not talk to yourself");
+		// check if room exists
+		let room_id = await this.get_dm_room(me, toId);
+		// create room if necessary
+		console.log(room_id);
+		if (!room_id) 
+			room_id = await this.create_dm_room(me, toId);
+		// insert to database	
+		await this.pool.query(`
+			INSERT INTO message(user_id, timestamp, message, room_id)
+			VALUES(${me.id}, NOW(), '${msg}', ${room_id})`
+		);
+		return this.get_room_msgs(me, room_id);
+	}
+
 	// populates Session.blocked with users ids
 	async get_blocked(me: Session) {
 		let my_query = await this.pool.query(
@@ -150,7 +186,7 @@ export class ChatService {
 	}
 
 	// returns room_id of dm room between user, null in non-existant
-	async get_dm_room(me: Session, friend_id: number) {
+	async get_dm_room(me: Session, friend_id: number): Promise<null|number> {
 		const dm_room = await this.pool.query(`
 			SELECT id FROM room
 			JOIN participants ON id=room_id
@@ -183,9 +219,8 @@ export class ChatService {
 	}
 
 
-	// this function might duplicate direct message rooms
-	// see rm_friends
-	async add_friend(me: Session, friend_id: number) {
+	// TODO: throw exceptions if new room is not created
+	async create_dm_room(me: Session, friend_id: number) {
 		let tmp = await this.pool.query(
 			`SELECT blocked_id FROM blocked WHERE user_id = ${me.id}`
 		);
@@ -197,13 +232,12 @@ export class ChatService {
 			`SELECT name FROM chat_user WHERE id= ${friend_id}`
 		);
 		if (!tmp.rowCount) {
-			console.log("user does not exist");
-			return;
+			throw new BadRequestException("user does not exist");
 		}
-		if (await this.get_dm_room(me, friend_id)) {
-			console.log("DM room already exists");
-			return;
-		}
+		// if (await this.get_dm_room(me, friend_id)) {
+		// 	console.log("DM room already exists");
+		// 	return;
+		// }
 
 		const username: string = tmp.rows[0].name;
 		await this.pool.query(
@@ -219,17 +253,20 @@ export class ChatService {
 		await this.pool.query(
 			`INSERT INTO participants (user_id, room_id) VALUES(${friend_id}, ${new_room_id})`
 		);
+		return (new_room_id);
 	}
 
-	async rm_friend(me: Session, friend_id: number) {
-		let tmp = await this.pool.query(
-			`SELECT room_id FROM participants
-			WHERE room_id in (SELECT room_id FROM participants WHERE user_id = ${friend_id})
-			AND user_id =${me.id} AND room_id NOT IN (SELECT id FROM room WHERE NOT owner=0)`
-		);
-		if (!tmp.rowCount)
+	async rm_dm_room(me: Session, friend_id: number) {
+		// let tmp = await this.pool.query(
+		// 	`SELECT room_id FROM participants
+		// 	WHERE room_id in (SELECT room_id FROM participants WHERE user_id = ${friend_id})
+		// 	AND user_id =${me.id} AND room_id NOT IN (SELECT id FROM room WHERE NOT owner=0)`
+		// );
+		const friend_room = await this.get_dm_room(me, friend_id);
+		if (!friend_room)
+		// if (!tmp.rowCount)
 			return console.log(`no conversation between ${me.id} and ${friend_id} in rm_friend`);
-		let friend_room = tmp.rows[0].room_id;
+		// let friend_room = tmp.rows[0].room_id;
 		await this.pool.query(`DELETE FROM message WHERE room_id= ${friend_room}`);
 		await this.pool.query(`DELETE FROM participants WHERE room_id = ${friend_room}`);
 		await this.pool.query(`DELETE FROM room WHERE id= ${friend_room}`);
