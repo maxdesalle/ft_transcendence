@@ -50,4 +50,34 @@ export class ChatController {
 		return user;
 	}
 
+	@Post('block')
+	async blockUser(
+		@Usr() user: Session,
+		@Body('value') blocked_id: number,
+	) {
+		await this.chatService.block(user, blocked_id);
+
+		await this.chatService.get_blocked(user);
+		return user;
+	}
+
+	@Post('unblock')
+	async unblockUser(
+		@Usr() user: Session,
+		@Body('value') blocked_id: number,
+	) {
+		await this.chatService.unblock(user, blocked_id);
+
+		await this.chatService.get_blocked(user);
+		return user;
+	}
+
+	@Get('blocked')
+	async checkBlocked(
+		@Usr() user: Session,
+	) {
+		await this.chatService.get_blocked(user);
+		return user;
+	}
+
 }

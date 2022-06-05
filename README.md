@@ -45,17 +45,25 @@ Useful commands:
 * \d [table name] (describe table)
 
 
-
 ----------------------
 ### Chat
 
 a room must be selected via /chat/select before you do anything. This will be stored in the
 user Session (JWT)
+Obs: a direct conversation also has a room id
 
 POST /select : select a room
-value: number : room id
+value: number : room_id
 
 POST /message : sends a direct message (to the selected room stored in the session)
 value: string: message
 
 GET /message : gets all messages for the selected room
+
+GET /blocked: checks all blocks ( = users you blocked + users that blocked you)
+
+POST /block: blocks a user
+value: number : user_id to be blocked
+
+POST /unblock: unblocks a user
+value: number : user_id to be unblocked
