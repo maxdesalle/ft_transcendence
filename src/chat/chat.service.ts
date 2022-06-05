@@ -294,4 +294,30 @@ export class ChatService {
 		await this.get_convs(me);
 		return me;
 	}
+
+	async send_group_msg(me: Session, room_id: number, message: string) {
+		let tmp = await this.pool.query(
+			`SELECT banned_id, unban FROM banned WHERE room_id= ${room_id}
+			AND mute=true AND banned_id=${me.id}`
+		);
+		let now = await this.pool.query(`SELECT NOW()`);
+		if (tmp.rowCount)
+		{
+			if (tmp.rows[0].unban < now.rows[0].now)
+				await this.pool.query(`
+					DELETE FROM banned WHERE banned_id=${me.id}
+					AND mute=true AND room_id=${room_id}`
+				);
+			else
+				return ("you are still muted");
+		}
+		await this.pool.query(`
+			INSERT INTO message(user_id, timestamp, message, room_id)
+			VALUES(${me.id}, NOW(), '${message}', ${room_id})`
+		);
+		await this.pool.query(`
+			UPDATE room SET activity=NOW() WHERE id=${room_id}`);
+
+		return (`message sent to room ${room_id}: ${message}`);
+	}
 }

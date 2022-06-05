@@ -146,5 +146,12 @@ export class ChatController {
 		return this.chatService.add_user_group(me, room_id, user_id);
 	}
 
-
+	@Post('group_message')
+	sendGroupMessage(
+		@Usr() me: Session,
+		@Body('room_id') room_id: number,
+		@Body('message') message: string,
+	) {
+		return this.chatService.send_group_msg(me, room_id, message);
+	}
 }
