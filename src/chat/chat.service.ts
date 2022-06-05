@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { Connection, EntityManager } from 'typeorm';
 import { Conversation, Session } from './DTO/chat-user.dto';
 
-// adapts typeORM manager.query results to pq.Pool.query results format 
+// adapts typeORM's EntityManager.query results to pq.Pool.query results format 
 // so I can use dszklarz's code without too many changes
 class queryAdaptor {
 	constructor(private manager: EntityManager) {}
@@ -129,4 +129,49 @@ export class ChatService {
 			me.conversations.push(tmp);
 		}
 	}
+
+	// this function might duplicate direct message rooms
+	// see rm_friends
+	async add_friend(me: Session, friend_id: number) {
+		let tmp = await this.pool.query(
+			`SELECT blocked_id FROM blocked WHERE user_id = ${me.id}`
+		);
+		for (let i = 0; i < tmp.rowCount; i++)
+			if (tmp.rows[i].blocked_id === friend_id) // chaged == to ===
+				return await this.unblock(me, friend_id);
+		tmp = await this.pool.query(
+			`SELECT name FROM chat_user WHERE id= ${friend_id}`
+		);
+		if (!tmp.rowCount)
+			return;
+		const username: string = tmp.rows[0].name;
+		await this.pool.query(
+			`INSERT INTO room(name) VALUES('${me.username}-${username}');`
+		);
+		let new_room = await this.pool.query(
+			`SELECT id from room WHERE name = '${me.username}-${username}'`
+		);
+		let new_room_id	= new_room.rows[0].id;
+		await this.pool.query(
+			`INSERT INTO participants (user_id, room_id) VALUES(${me.id}, ${new_room_id})`
+		);
+		await this.pool.query(
+			`INSERT INTO participants (user_id, room_id) VALUES(${friend_id}, ${new_room_id})`
+		);
+	}
+
+	async rm_friend(me: Session, friend_id: number) {
+		let tmp = await this.pool.query(
+			`SELECT room_id FROM participants
+			WHERE room_id in (SELECT room_id FROM participants WHERE user_id = ${friend_id})
+			AND user_id =${me.id} AND room_id NOT IN (SELECT id FROM room WHERE NOT owner=0)`
+		);
+		if (!tmp.rowCount)
+			return console.log(`no conversation between ${me.id} and ${friend_id} in rm_friend`);
+		let friend_room = tmp.rows[0].room_id;
+		await this.pool.query(`DELETE FROM message WHERE room_id= ${friend_room}`);
+		await this.pool.query(`DELETE FROM participants WHERE room_id = ${friend_room}`);
+		await this.pool.query(`DELETE FROM room WHERE id= ${friend_room}`);
+	}
+
 }

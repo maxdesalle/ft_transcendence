@@ -57,6 +57,7 @@ export class ChatController {
 	) {
 		await this.chatService.block(user, blocked_id);
 
+		// possibly move this call to inside block()
 		await this.chatService.get_blocked(user);
 		return user;
 	}
@@ -68,6 +69,7 @@ export class ChatController {
 	) {
 		await this.chatService.unblock(user, blocked_id);
 
+		// possibly move this call to inside block()
 		await this.chatService.get_blocked(user);
 		return user;
 	}
@@ -87,4 +89,29 @@ export class ChatController {
 		await this.chatService.get_convs(user);
 		return user;
 	}
+
+	@Post('add_friend')
+	async addFriend(
+		@Usr() user: Session,
+		@Body('value') friend_id: number,
+	) {
+		await this.chatService.add_friend(user, friend_id);
+
+		// possibly move this call to inside addFriend()
+		await this.chatService.get_convs(user);
+		return user;
+	}
+
+	@Post('rm_friend')
+	async removeFriend(
+		@Usr() user: Session,
+		@Body('value') friend_id: number,
+	) {
+		await this.chatService.rm_friend(user, friend_id);
+
+		// possibly move this call to inside addFriend()
+		await this.chatService.get_convs(user);
+		return user;
+	}
+
 }
