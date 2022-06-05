@@ -4,6 +4,7 @@ import { Request  } from 'express';
 import { Strategy } from 'passport-jwt';
 import { ConfigService } from '@nestjs/config';
 import { ChatUserService } from '../chat-user.service';
+import { userJwtPayload } from '../DTO/chat-user.dto';
 
 @Injectable()
 export class JwtChatStrategy extends PassportStrategy(Strategy, "chat-jwt") {
@@ -28,7 +29,8 @@ export class JwtChatStrategy extends PassportStrategy(Strategy, "chat-jwt") {
 		});
 	}
 
-	async validate(payload: any) {
-		return {id: payload.id, username: payload.username};
+	async validate(payload: any): Promise<userJwtPayload> {
+		const {iat, exp, ...user} = payload;
+		return user;
 	}
 }

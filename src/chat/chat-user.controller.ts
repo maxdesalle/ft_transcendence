@@ -3,7 +3,7 @@ import { JwtService } from '@nestjs/jwt';
 import { Response } from 'express';
 import { Usr } from 'src/users/decorators/user.decorator';
 import { ChatUserService } from './chat-user.service';
-import { Session } from './DTO/chat-user.dto';
+import { userJwtPayload, Session } from './DTO/chat-user.dto';
 import { JwtChatGuard } from './guards/jwt.guard';
 
 @Controller('chat_user')
@@ -31,18 +31,19 @@ export class ChatUserController {
 		const user = await this.chatUserService.getUser(username);
 		if (!user)
 			return "user not registered";
-		const payload: Session = {
+		const payload: userJwtPayload = {
 			id: user.id,
-			username
+			username,
+			selected_room: 0,
 		}
 		const jwtToken = this.jwtService.sign(payload);
 		res.cookie('jwt_token', jwtToken);
 		return `logged in as ${username}`;
 	}
 
-	@Get('me')
+	@Get('my_session')
 	@UseGuards(JwtChatGuard)
-	currentUser(@Usr() user) {
+	currentUser(@Usr() user: userJwtPayload): userJwtPayload {
 		return user;
 	}
 

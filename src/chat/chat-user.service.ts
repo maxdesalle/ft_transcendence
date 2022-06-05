@@ -1,5 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { Connection } from 'typeorm';
+import { chatUserDB } from './DTO/chat-user.dto';
 
 @Injectable()
 export class ChatUserService {
@@ -7,14 +8,13 @@ export class ChatUserService {
 		private connection: Connection,
 	) {}
 
-	async getAll() {
+	async getAll(): Promise<chatUserDB[]> {
 		const manager = this.connection.manager;
 
 		return await manager.query("SELECT * FROM chat_user;");
 	}
 
-	// return user object or NULL
-	async getUser(username: string) {
+	async getUser(username: string): Promise<chatUserDB|null> {
 		const manager = this.connection.manager;
 		const search: Array<any> = await manager.createQueryBuilder()
 			.select("")
@@ -26,7 +26,7 @@ export class ChatUserService {
 		return (null);
 	}
 
-	async createChatUser(username: string) {
+	async createChatUser(username: string): Promise<string> {
 		if (await this.getUser(username))
 			return "User already exists"
 
