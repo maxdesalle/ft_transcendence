@@ -72,3 +72,5 @@ value: number : user_id to be unblocked
 
 GET /conversations: checks conversations in which I am a participant
 
+POST add_friend: creates a "<your-username>-<friend_username>" room
+value: number: friend_id

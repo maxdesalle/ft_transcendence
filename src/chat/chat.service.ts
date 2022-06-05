@@ -130,6 +130,40 @@ export class ChatService {
 		}
 	}
 
+	// returns room_id of dm room between user, null in non-existant
+	async get_dm_room(me: Session, friend_id: number) {
+		const dm_room = await this.pool.query(`
+			SELECT id FROM room
+			JOIN participants ON id=room_id
+			WHERE id IN
+				(SELECT id from room
+				JOIN participants ON id=room_id
+				WHERE owner IS NULL
+				AND user_id=${me.id})
+			AND user_id=${friend_id};`
+		);
+		if (!dm_room.rowCount)
+			return null;
+		return dm_room.rows[0].id;
+	}
+
+	async get_friends(me: Session) {
+		const friends = await this.pool.query(`
+			SELECT user_id FROM room
+			JOIN participants ON id=room_id
+			WHERE id IN
+				(SELECT id from room
+				JOIN participants ON id=room_id
+				WHERE owner IS NULL
+				AND user_id=${me.id})
+			AND user_id!=${me.id};`
+		);
+
+		console.log(friends);
+		return (friends.rows);
+	}
+
+
 	// this function might duplicate direct message rooms
 	// see rm_friends
 	async add_friend(me: Session, friend_id: number) {
@@ -137,13 +171,21 @@ export class ChatService {
 			`SELECT blocked_id FROM blocked WHERE user_id = ${me.id}`
 		);
 		for (let i = 0; i < tmp.rowCount; i++)
-			if (tmp.rows[i].blocked_id === friend_id) // chaged == to ===
+			if (tmp.rows[i].blocked_id === friend_id) // changed == to ===
 				return await this.unblock(me, friend_id);
+
 		tmp = await this.pool.query(
 			`SELECT name FROM chat_user WHERE id= ${friend_id}`
 		);
-		if (!tmp.rowCount)
+		if (!tmp.rowCount) {
+			console.log("user does not exist");
 			return;
+		}
+		if (await this.get_dm_room(me, friend_id)) {
+			console.log("DM room already exists");
+			return;
+		}
+
 		const username: string = tmp.rows[0].name;
 		await this.pool.query(
 			`INSERT INTO room(name) VALUES('${me.username}-${username}');`

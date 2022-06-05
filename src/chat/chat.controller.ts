@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Post, Res, UseGuards} from '@nestjs/common';
+import { Body, Controller, Get, Param, Post, Res, UseGuards} from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { Response } from 'express';
 import { Usr } from 'src/users/decorators/user.decorator';
@@ -112,6 +112,21 @@ export class ChatController {
 		// possibly move this call to inside addFriend()
 		await this.chatService.get_convs(user);
 		return user;
+	}
+
+	@Get('friends')
+	getFriends(
+		@Usr() user: Session
+	) {
+		return this.chatService.get_friends(user);
+	}
+
+	@Get('dm_room/:friend_id')
+	getDmRoom(
+		@Usr() user: Session,
+		@Param('friend_id') friend_id: number,
+	) {
+		return this.chatService.get_dm_room(user, friend_id);
 	}
 
 }
