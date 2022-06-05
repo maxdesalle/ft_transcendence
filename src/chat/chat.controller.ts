@@ -80,4 +80,11 @@ export class ChatController {
 		return user;
 	}
 
+	@Get('conversations')
+	async getConvs(
+		@Usr() user: Session,
+	) {
+		await this.chatService.get_convs(user);
+		return user;
+	}
 }

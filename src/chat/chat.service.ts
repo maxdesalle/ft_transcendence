@@ -1,7 +1,9 @@
 import { Injectable } from '@nestjs/common';
 import { Connection, EntityManager } from 'typeorm';
-import { Session } from './DTO/chat-user.dto';
+import { Conversation, Session } from './DTO/chat-user.dto';
 
+// adapts typeORM manager.query results to pq.Pool.query results format 
+// so I can use dszklarz's code without too many changes
 class queryAdaptor {
 	constructor(private manager: EntityManager) {}
 
@@ -96,4 +98,35 @@ export class ChatService {
 		// await refresh(me);
 	}
 
+	// populates Session.conversations
+	async  get_convs(me: Session) {
+		await this.get_blocked(me);
+		let room_query = await this.pool.query(
+			`SELECT id, name, owner FROM room
+			WHERE id IN (SELECT room_id FROM participants WHERE user_id = ${me.id})
+			ORDER BY activity DESC`
+		);
+		me.conversations = [];
+		for (let i = 0; i < room_query.rowCount; i++) //for every conversation
+		{
+			let room_row = room_query.rows[i];
+			let room_id = room_row.id;
+			let part_q = await this.pool.query(`
+				SELECT user_id FROM participants
+				WHERE room_id = ${room_row.id}`
+			);
+			if (!room_row.owner && (me.blocked.includes(part_q.rows[0].user_id) || me.blocked.includes(part_q.rows[1].user_id)))
+				continue;
+			let my_status = await this.pool.query(`
+				SELECT status FROM chat_user WHERE id= ${part_q.rows[0].user_id}`
+			);
+			let tmp = new Conversation(room_id, room_row.name, my_status.rows[0].status);
+			// tmp.id		= room_id;
+			// tmp.name	= room_row.name;
+			// tmp.status	= my_status.rows[0].status;
+			for (let n = 0; n < part_q.rowCount; n++) //get all participants of a given conversation
+				tmp.participants.push(part_q.rows[n].user_id);
+			me.conversations.push(tmp);
+		}
+	}
 }

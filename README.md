@@ -52,6 +52,8 @@ a room must be selected via /chat/select before you do anything. This will be st
 user Session (JWT)
 Obs: a direct conversation also has a room id
 
+for every POST request, the body must be a JSON containing a "value" attribute.
+
 POST /select : select a room
 value: number : room_id
 
@@ -67,3 +69,6 @@ value: number : user_id to be blocked
 
 POST /unblock: unblocks a user
 value: number : user_id to be unblocked
+
+GET /conversations: checks conversations in which I am a participant
+
