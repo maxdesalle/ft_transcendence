@@ -1,6 +1,10 @@
 import { Injectable } from '@nestjs/common';
 import { Connection, EntityManager } from 'typeorm';
-import { Conversation, Session } from './DTO/chat-user.dto';
+import { Conversation, GroupConfig, Session } from './DTO/chat-user.dto';
+
+const PARTICIPANT = 0;
+const ADMIN = 1;
+const OWNER = 2;
 
 // adapts typeORM's EntityManager.query results to pq.Pool.query results format 
 // so I can use dszklarz's code without too many changes
@@ -16,6 +20,21 @@ class queryAdaptor {
 	}
 }
 
+// class Group {
+// 	name: string;
+// 	owner: number;
+// 	private: boolean;
+// 	password: string
+// 	participants: number[];
+	
+// 	constructor(owner_id: number, config: GroupConfig) {
+// 		this.name = config.name;
+// 		this.owner = owner_id;
+// 		this.private = config.private 
+// 		this.password = config.password;
+// 		this.participants = [owner_id];
+// 	}
+// }
 
 @Injectable()
 export class ChatService {
@@ -38,7 +57,7 @@ export class ChatService {
 	// room must be previously selected
 	async get_message(me: Session) {
 		// let last_time;
-		let my_query;
+		let my_query: { rowCount: any; rows: any; };
 		// if (me.messages.length > 0) {
 		// 	last_time = new Date(me.messages[0].timestamp).getTime() / 1000;
 		// 	my_query = await this.pool.query(
@@ -216,4 +235,63 @@ export class ChatService {
 		await this.pool.query(`DELETE FROM room WHERE id= ${friend_room}`);
 	}
 
+	async create_group(me: Session, group: GroupConfig) {
+		try {
+			await this.pool.query(`
+				INSERT INTO room (name, owner, private, password, activity)
+				VALUES('${group.name}', ${me.id}, ${group.private}, crypt('${group.password}', gen_salt('bf')), NOW())`
+			);
+		}
+		catch {
+			return 'group name already exists';
+		}
+		let tmp = await this.pool.query(`SELECT id FROM room WHERE name='${group.name}'`);
+		let room_id = tmp.rows[0].id;
+		// for (i = 0; i < group.participants.length; i++)
+		await this.pool.query(`INSERT INTO participants(user_id, room_id) VALUES(${me.id}, ${room_id})`);
+
+		await this.get_convs(me);
+		return(me);
+	}
+	async get_role(id: number, room_id: number) {
+		let tmp = await this.pool.query(`SELECT owner FROM room WHERE id=${room_id}`);
+		if (tmp.rows[0].owner == id)
+			return OWNER;
+		tmp = await this.pool.query(`SELECT user_id FROM admins WHERE room_id=${room_id}`);
+		{
+			for (let i = 0; i < tmp.rowCount; i++)
+				if (tmp.rows[i].user_id == id)
+					return ADMIN;
+		}
+		tmp = await this.pool.query(`SELECT user_id FROM participants WHERE room_id=${room_id}`);
+		{
+			for (let i = 0; i < tmp.rowCount; i++)
+				if (tmp.rows[i].user_id == id)
+					return PARTICIPANT;
+		}
+		return -1;
+	}
+
+	async add_user_group(me: Session, room_id: number, user_id: number) {
+		let tmp = await this.pool.query(`
+			SELECT role, banned_id FROM banned
+			WHERE room_id=${room_id} AND banned_id=${user_id}`
+		);
+		if (tmp.rowCount === 0) // changed == to ===
+		{
+			await this.pool.query(`
+				INSERT INTO participants(user_id, room_id)
+				VALUES(${user_id}, ${room_id})`
+			);
+			await this.get_convs(me);
+			return me;
+		}
+		let role1 = await this.get_role(me.id, room_id);
+		let role2 = tmp.rows[0].role;
+		if (role1 >= role2 /* && role1 >= ADMIN */)  //option for who can invite into group
+			await this.pool.query(`INSERT INTO participants(user_id, room_id) VALUES(${user_id}, ${room_id})`);
+
+		await this.get_convs(me);
+		return me;
+	}
 }

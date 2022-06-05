@@ -11,7 +11,6 @@ export class Conversation {
 	}
 }
 
-
 export class Session {
 	id: number;
 	username: string;
@@ -31,4 +30,10 @@ export class chatUserDB {
 	id: number;
 	name: string;
 	status: boolean;
+}
+
+export class GroupConfig {
+	name: string;
+	private: boolean;
+	password: string;
 }

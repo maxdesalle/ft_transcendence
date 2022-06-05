@@ -3,7 +3,7 @@ import { JwtService } from '@nestjs/jwt';
 import { Response } from 'express';
 import { Usr } from 'src/users/decorators/user.decorator';
 import { ChatService } from './chat.service';
-import { Session, userJwtPayload } from './DTO/chat-user.dto';
+import { GroupConfig, Session, userJwtPayload } from './DTO/chat-user.dto';
 import { JwtChatGuard } from './guards/jwt.guard';
 
 @Controller('chat')
@@ -128,5 +128,23 @@ export class ChatController {
 	) {
 		return this.chatService.get_dm_room(user, friend_id);
 	}
+
+	@Post('create_group')
+	createGroup(
+		@Usr() user: Session,
+		@Body() group_config: GroupConfig 
+	) {
+		return this.chatService.create_group(user, group_config);
+	}
+
+	@Post('add_group_user')
+	addGroupUser(
+		@Usr() me: Session,
+		@Body('room_id') room_id: number,
+		@Body('user_id') user_id: number,
+	) {
+		return this.chatService.add_user_group(me, room_id, user_id);
+	}
+
 
 }
