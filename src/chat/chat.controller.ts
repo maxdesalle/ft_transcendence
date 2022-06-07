@@ -183,14 +183,44 @@ export class ChatController {
 		return this.chatService.get_convs(me);
 	}
 
+	@Post('rm_group_user')
+	async rmGroupUser(
+		@Usr() me: Session,
+		@Body('room_id', ParseIntPipe, GroupValidationPipe) room_id: number,
+		@Body('user_id') user_id: number,
+		@Body('unban_hours') unban_hours: number
+	) {
+		await this.chatService.rm_user_group(me, room_id, user_id, unban_hours);
+		return this.chatService.get_convs(me);
+	}
+
 	@Post('group_message')
 	async sendGroupMessage(
 		@Usr() me: Session,
-		@Body('room_id') room_id: number,
+		@Body('room_id', ParseIntPipe, GroupValidationPipe) room_id: number,
 		@Body('message') message: string,
 	) {
 		await this.chatService.send_group_msg(me, room_id, message);
 		return this.chatService.getMessagesByRoomId(me, room_id);
+	}
+
+	@Post('mute_group_user')
+	async mute(
+		@Usr() me: Session,
+		@Body('room_id', ParseIntPipe, GroupValidationPipe) room_id: number,
+		@Body('user_id') user_id: number,
+		@Body('unban_hours') unban_hours: number
+	) {
+		this.chatService.mute_user(me, room_id, user_id, unban_hours);
+	}
+
+	@Post("unmute_group_user")
+	async unmute(
+		@Usr() me: Session,
+		@Body('room_id', ParseIntPipe, GroupValidationPipe) room_id: number,
+		@Body('user_id') user_id: number,
+	) {
+		this.chatService.unmute_user(me, room_id, user_id);
 	}
 
 

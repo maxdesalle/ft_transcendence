@@ -313,7 +313,7 @@ export class ChatService {
 			);
 		}
 		catch {
-			throw new BadRequestException('group name already exists');
+			throw new BadRequestException('invalid group settings');
 		}
 		let tmp = await this.pool.query(`SELECT id FROM room WHERE name='${group.name}'`);
 		let room_id = tmp.rows[0].id;
@@ -358,9 +358,9 @@ export class ChatService {
 			if (role1 < role2 /* && role1 >= ADMIN */)  //option for who can invite into group
 				throw new ForbiddenException("not enough rights");
 		}
-			await this.pool.query(`
-				INSERT INTO participants(user_id, room_id)
-				VALUES(${user_id}, ${room_id})`);
+		await this.pool.query(`
+			INSERT INTO participants(user_id, room_id)
+			VALUES(${user_id}, ${room_id})`);
 	}
 
 	async send_group_msg(me: Session, room_id: number, message: string) {
@@ -410,4 +410,47 @@ export class ChatService {
 		await this.pool.query(`DELETE FROM room WHERE id=${room_id}`);
 	}
 
+	//needs a drop-down menu to chose length of ban, either fixed or input but then check for negatives, 0 means just kick from group
+	async rm_user_group(me:Session, room_id: number, user_id: number, unban_hours: number) {
+		let role1 = await this.get_role(me.id, room_id);
+		let role2 = await this.get_role(user_id, room_id);
+		if (role1 < ADMIN || role1 <= role2)
+			throw new ForbiddenException("insufficient rights");
+
+		let unban_date = new Date;
+		if (unban_hours > 0)
+			unban_date.setHours(unban_date.getHours() + unban_hours);
+		// else
+		// 	unban_date = "NOW()";
+
+		// await this.pool.query(`DELETE FROM message WHERE user_id=${user_id} AND room_id=${room_id}`);	//delete messages (option)
+		await this.pool.query(`DELETE FROM participants WHERE user_id=${user_id} AND room_id=${room_id}`);
+		await this.pool.query(`DELETE FROM banned WHERE banned_id=${user_id} AND room_id=${room_id} AND mute=true`);
+		await this.pool.query(`INSERT INTO banned (user_id, banned_id, room_id, unban, mute, role) VALUES(${me.id}, ${user_id}, ${room_id}, to_timestamp(${unban_date.getTime() / 1000}), false, ${role1})`);
+	}
+
+	async mute_user(me: Session, room_id: number, user_id: number, unban_hours: number) {
+		let role1 = await this.get_role(me.id, room_id);
+		let role2 = await this.get_role(user_id, room_id);
+		if (role1 < ADMIN || role1 <= role2)
+			throw new ForbiddenException("insufficient rights");
+		
+		let unban_date = new Date;
+		unban_date.setHours(unban_date.getHours() + unban_hours);
+
+		await this.pool.query(`
+			INSERT INTO banned (user_id, banned_id, room_id, unban, mute, role)
+			VALUES(${me.id}, ${user_id}, ${room_id}, to_timestamp(${unban_date.getTime() / 1000}), true, ${role1})`);
+	}
+
+	async unmute_user(me: Session, room_id: number, user_id: number) {
+		let role1 = await this.get_role(me.id, room_id);
+		let role2 = await this.get_role(user_id, room_id);
+		if (role1 < ADMIN || role1 <= role2)
+			throw new ForbiddenException("insufficient rights");
+		await this.pool.query(`
+			DELETE FROM banned
+			WHERE banned_id= ${user_id}
+			AND room_id= ${room_id}`);
+	}
 }
