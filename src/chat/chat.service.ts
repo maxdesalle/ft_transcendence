@@ -510,19 +510,23 @@ export class ChatService {
 		return false;
 	}
 
-	async roomUsersStatus(room_id: number) {
+	async roomInfo(room_id: number) {
 		const roles: string[] = ['participant', 'admin', 'owner'];
-		const users = await this.getRoomParcipants(room_id);
-		const res = [];
-		for (let user_id of users){
-			res.push({
+		const userIDs = await this.getRoomParcipants(room_id);
+		const users = [];
+		for (let user_id of userIDs){
+			users.push({
 				user_id,
 				role: roles[await this.get_role(user_id, room_id)],
 				muted: await this.is_muted(user_id, room_id),
-				banned: await this.is_banned(user_id, room_id)
 			})
 		}
-		return res;
+		return {
+			room_id,
+			private: await this.is_group_private(room_id),
+			password_protected: await this.is_group_pswd_protected(room_id),
+			users,
+		};
 	}
 
 	async leave_group(me: Session, room_id: number) {
@@ -561,7 +565,13 @@ export class ChatService {
 		await this.pool.query(`DELETE FROM participants WHERE user_id=${me.id} AND room_id=${room_id}`);
 	}
 	
-	async set_password(room_id: number, password: string) {
+	async set_password(room_id: number, password?: string) {
+		if (!password)
+			return this.pool.query(`
+				UPDATE room
+				SET password=NULL
+				WHERE id=${room_id}`);
+
 		return this.pool.query(`
 			UPDATE room
 			SET password=crypt('${password}', gen_salt('bf')) 
@@ -580,7 +590,7 @@ export class ChatService {
 			throw new BadRequestException("user is not a participant in the room");
 
 		await this.pool.query(`UPDATE room SET owner=${user_id} WHERE id=${room_id}`);
-		await this.pool.query(`INSERT INTO admins(user_id, room_id) VALUES(${me.id, room_id})`);
+		await this.pool.query(`INSERT INTO admins(user_id, room_id) VALUES(${me.id}, ${room_id})`);
 		await this.pool.query(`DELETE FROM admins WHERE user_id=${user_id} AND room_id=${room_id}`);
 	}
 

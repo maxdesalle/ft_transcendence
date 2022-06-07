@@ -182,7 +182,7 @@ export class ChatController {
 		@Body('user_id') user_id: number,
 	) {
 		await this.chatService.addGroupUser(me, room_id, user_id);
-		return this.chatService.roomUsersStatus(room_id);
+		return this.chatService.roomInfo(room_id);
 	}
 
 	@Post('rm_group_user')
@@ -193,7 +193,7 @@ export class ChatController {
 		@Body('unban_hours') unban_hours: number
 	) {
 		await this.chatService.rm_user_group(me, room_id, user_id, unban_hours);
-		return this.chatService.roomUsersStatus(room_id);
+		return this.chatService.roomInfo(room_id);
 	}
 
 	@Post('group_message')
@@ -214,7 +214,7 @@ export class ChatController {
 		@Body('unban_hours') unban_hours: number
 	) {
 		this.chatService.mute_user(me, room_id, user_id, unban_hours);
-		return this.chatService.roomUsersStatus(room_id);
+		return this.chatService.roomInfo(room_id);
 	}
 
 	@Post('unmute_group_user')
@@ -224,14 +224,14 @@ export class ChatController {
 		@Body('user_id') user_id: number,
 	) {
 		this.chatService.unmute_user(me, room_id, user_id);
-		return this.chatService.roomUsersStatus(room_id);
+		return this.chatService.roomInfo(room_id);
 	}
 
-	@Get('group_users/:room_id')
-	checkGroupUser(
+	@Get('group_info/:room_id')
+	groupInfo(
 		@Param('room_id', ParseIntPipe, GroupValidationPipe) room_id: number,
 	) {
-		return this.chatService.roomUsersStatus(room_id);
+		return this.chatService.roomInfo(room_id);
 	}
 
 	@Post('promote_group_user')
@@ -241,7 +241,7 @@ export class ChatController {
 		@Body('user_id') user_id: number,
 	) {
 		await this.chatService.add_admin_group(me, room_id, user_id);
-		return this.chatService.roomUsersStatus(room_id);
+		return this.chatService.roomInfo(room_id);
 	}
 
 	@Post('demote_group_user')
@@ -251,7 +251,7 @@ export class ChatController {
 		@Body('user_id') user_id: number,
 	) {
 		await this.chatService.rm_admin_group(me, room_id, user_id);
-		return this.chatService.roomUsersStatus(room_id);
+		return this.chatService.roomInfo(room_id);
 	}
 
 	@Post('leave_group')
@@ -280,7 +280,7 @@ export class ChatController {
 		@Body('private') is_private: boolean
 	) {
 		await this.chatService.set_private(room_id, is_private);
-		return `room ${room_id} set to private=${is_private}`
+		return this.chatService.roomInfo(room_id);
 	}
 	
 	@Post('set_owner')
@@ -291,7 +291,7 @@ export class ChatController {
 		@Body('user_id') user_id: number,
 	) {
 		await this.chatService.set_owner(me, room_id, user_id);
-		return `room ${room_id} owner set to user ${user_id}`;
+		return this.chatService.roomInfo(room_id);
 	}
 
 	@Post('join_group')
@@ -301,6 +301,6 @@ export class ChatController {
 		@Body('password') password: string,
 	) {
 		await this.chatService.join_public_group(me, room_id, password);
-		return `joined room ${room_id}`;
+		return this.chatService.roomInfo(room_id);
 	}
 }
