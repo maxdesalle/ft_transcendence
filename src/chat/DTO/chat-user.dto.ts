@@ -34,6 +34,6 @@ export class chatUserDB {
 
 export class GroupConfig {
 	name: string;
-	private: boolean;
-	password: string;
+	private?: boolean;
+	password?: string;
 }

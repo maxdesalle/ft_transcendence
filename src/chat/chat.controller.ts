@@ -5,6 +5,7 @@ import { Usr } from 'src/users/decorators/user.decorator';
 import { ChatService } from './chat.service';
 import { GroupConfig, Session, userJwtPayload } from './DTO/chat-user.dto';
 import { JwtChatGuard } from './guards/jwt.guard';
+import { GroupOwnerGuard } from './guards/owner.guard';
 import { IsParticipant } from './guards/participant.guard';
 import { GroupValidationPipe } from './pipes/group.pipe';
 
@@ -165,6 +166,7 @@ export class ChatController {
 	}
 
 	@Post('rm_group')
+	@UseGuards(GroupOwnerGuard)
 	async removeGroup(
 		@Usr() me: Session,
 		@Body('room_id', ParseIntPipe, GroupValidationPipe) room_id: number 
@@ -259,5 +261,42 @@ export class ChatController {
 	) {
 		await this.chatService.leave_group(me, room_id);
 		return this.getConvs(me); 
+	}
+
+	@Post('set_password')
+	@UseGuards(GroupOwnerGuard)
+	async set_pswd(
+		@Body('room_id', ParseIntPipe, GroupValidationPipe) room_id: number,
+		@Body('password') password: string
+	) {
+		await this.chatService.set_password(room_id, password);
+		return `new password set for room ${room_id}`
+	}
+
+	@Post('set_private')
+	@UseGuards(GroupOwnerGuard)
+	async set_private(
+		@Body('room_id', ParseIntPipe, GroupValidationPipe) room_id: number,
+		@Body('private') is_private: boolean
+	) {
+		await this.chatService.set_private(room_id, is_private);
+		return `room ${room_id} set to private=${is_private}`
+	}
+	
+	@Post('set_owner')
+	@UseGuards(GroupOwnerGuard)
+	async set_owner(
+		@Usr() me: Session,
+		@Body('room_id', ParseIntPipe, GroupValidationPipe) room_id: number,
+		@Body('user_id') user_id: number,
+	) {
+		await this.chatService.set_owner(me, room_id, user_id);
+		return `room ${room_id} owner set to user ${user_id}`;
+	}
+
+
+	@Get('test')
+	async test() {
+		return await this.chatService.check_password_match(65, 'hey');
 	}
 }

@@ -305,23 +305,35 @@ export class ChatService {
 		await this.pool.query(`DELETE FROM room WHERE id= ${friend_room}`);
 	}
 
+	async groupNameExists(group_name: string) {
+		const query = await this.pool.query(`
+			SELECT * FROM room
+			WHERE name = '${group_name}';`);
+		return !!query.rowCount;
+	}
+
 	async create_group(me: Session, group: GroupConfig) {
-		try {
-			await this.pool.query(`
-				INSERT INTO room (name, owner, private, password, activity)
-				VALUES('${group.name}', ${me.id}, ${group.private}, crypt('${group.password}', gen_salt('bf')), NOW())`
-			);
-		}
-		catch {
-			throw new BadRequestException('invalid group settings');
-		}
-		let tmp = await this.pool.query(`SELECT id FROM room WHERE name='${group.name}'`);
-		let room_id = tmp.rows[0].id;
+		if (await this.groupNameExists(group.name))
+			throw new BadRequestException('group name already taken');
+
+		const query = await this.pool.query(`
+			INSERT INTO room (name, owner, activity)
+			VALUES('${group.name}', ${me.id}, NOW())
+			RETURNING id`);
+
+		// let tmp = await this.pool.query(`SELECT id FROM room WHERE name='${group.name}'`);
+		const room_id = query.rows[0].id;
 		// for (i = 0; i < group.participants.length; i++)
 		await this.pool.query(`INSERT INTO participants(user_id, room_id) VALUES(${me.id}, ${room_id})`);
+		if (group.password)
+			await this.set_password(room_id, group.password);
+		if (group.private)
+			await this.set_private(room_id, group.private);
 	}
 
 	async get_role(id: number, room_id: number) {
+		if (!(await this.roomExists(room_id)))
+			throw new BadRequestException("bad room_id");
 		let tmp = await this.pool.query(`SELECT owner FROM room WHERE id=${room_id}`);
 		if (tmp.rows[0].owner == id)
 			return OWNER;
@@ -399,9 +411,14 @@ export class ChatService {
 		return rooms;
 	}
 
+	async roomExists(room_id: number) {
+		const rooms = this.getRoomsList();
+		return (await rooms).includes(room_id);
+	}
+
 	async rm_group(me: Session, room_id: number) {
-		if (await this.get_role(me.id, room_id) != OWNER)
-			throw new ForbiddenException("you must be the group owner to remove it");
+		// if (await this.get_role(me.id, room_id) != OWNER)
+			// throw new ForbiddenException("you must be the group owner to remove it");
 			
 		await this.pool.query(`DELETE FROM message WHERE room_id=${room_id}`);
 		await this.pool.query(`DELETE FROM participants WHERE room_id=${room_id}`);
@@ -544,5 +561,35 @@ export class ChatService {
 		await this.pool.query(`DELETE FROM participants WHERE user_id=${me.id} AND room_id=${room_id}`);
 	}
 	
+	async set_password(room_id: number, password: string) {
+		return this.pool.query(`
+			UPDATE room
+			SET password=crypt('${password}', gen_salt('bf')) 
+			WHERE id=${room_id}`);
+	}
+	
+	async set_private(room_id: number, cond: boolean) { //condition true = private false = public
+		return this.pool.query(`
+			UPDATE room SET private=${cond}
+			WHERE id=${room_id}`);
+	}
+	
+	async set_owner(me: Session, room_id: number, user_id: number) {
+		const participants = await this.getRoomParcipants(room_id);
+		if (!participants.includes(user_id))
+			throw new BadRequestException("user is not a participant in the room");
 
+		await this.pool.query(`UPDATE room SET owner=${user_id} WHERE id=${room_id}`);
+		await this.pool.query(`INSERT INTO admins(user_id, room_id) VALUES(${me.id, room_id})`);
+		await this.pool.query(`DELETE FROM admins WHERE user_id=${user_id} AND room_id=${room_id}`);
+	}
+
+	async check_password_match(room_id: number, password: string) {
+		const query = await this.pool.query(`
+			SELECT (password = crypt('${password}', password))
+			AS pswmatch
+			FROM room
+			WHERE id = ${room_id};`);
+		return query.rows[0].pswmatch;
+	}
 }

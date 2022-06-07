@@ -52,4 +52,5 @@ export class ChatUserController {
 		res.clearCookie('jwt_token');
 		return ("logged out")
 	}
+
 }
