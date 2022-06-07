@@ -180,7 +180,7 @@ export class ChatController {
 		@Body('user_id') user_id: number,
 	) {
 		await this.chatService.addGroupUser(me, room_id, user_id);
-		return this.chatService.get_convs(me);
+		return this.chatService.roomUsersStatus(room_id);
 	}
 
 	@Post('rm_group_user')
@@ -191,7 +191,7 @@ export class ChatController {
 		@Body('unban_hours') unban_hours: number
 	) {
 		await this.chatService.rm_user_group(me, room_id, user_id, unban_hours);
-		return this.chatService.get_convs(me);
+		return this.chatService.roomUsersStatus(room_id);
 	}
 
 	@Post('group_message')
@@ -212,16 +212,43 @@ export class ChatController {
 		@Body('unban_hours') unban_hours: number
 	) {
 		this.chatService.mute_user(me, room_id, user_id, unban_hours);
+		return this.chatService.roomUsersStatus(room_id);
 	}
 
-	@Post("unmute_group_user")
+	@Post('unmute_group_user')
 	async unmute(
 		@Usr() me: Session,
 		@Body('room_id', ParseIntPipe, GroupValidationPipe) room_id: number,
 		@Body('user_id') user_id: number,
 	) {
 		this.chatService.unmute_user(me, room_id, user_id);
+		return this.chatService.roomUsersStatus(room_id);
 	}
 
+	@Get('group_users/:room_id')
+	checkGroupUser(
+		@Param('room_id', ParseIntPipe, GroupValidationPipe) room_id: number,
+	) {
+		return this.chatService.roomUsersStatus(room_id);
+	}
 
+	@Post('promote_group_user')
+	async promote(
+		@Usr() me: Session,
+		@Body('room_id', ParseIntPipe, GroupValidationPipe) room_id: number,
+		@Body('user_id') user_id: number,
+	) {
+		await this.chatService.add_admin_group(me, room_id, user_id);
+		return this.chatService.roomUsersStatus(room_id);
+	}
+
+	@Post('demote_group_user')
+	async demote(
+		@Usr() me: Session,
+		@Body('room_id', ParseIntPipe, GroupValidationPipe) room_id: number,
+		@Body('user_id') user_id: number,
+	) {
+		await this.chatService.rm_admin_group(me, room_id, user_id);
+		return this.chatService.roomUsersStatus(room_id);
+	}
 }

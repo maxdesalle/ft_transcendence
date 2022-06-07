@@ -453,4 +453,59 @@ export class ChatService {
 			WHERE banned_id= ${user_id}
 			AND room_id= ${room_id}`);
 	}
+
+	async add_admin_group(me: Session, room_id: number, user_id: number) {
+		if (await this.get_role(me.id, room_id) == OWNER)
+			await this.pool.query(`
+				INSERT INTO admins(user_id, room_id)
+				VALUES(${user_id}, ${room_id})`);
+	}
+	
+	async rm_admin_group(me: Session, room_id: number, user_id: number) {
+		if (await this.get_role(me.id, room_id) == OWNER)
+			await this.pool.query(`
+				DELETE FROM admins
+				WHERE user_id=${user_id}
+				AND room_id=${room_id}`);
+	}
+
+	async is_muted(user_id: number, room_id: number) {
+		const query = await this.pool.query(`
+			SELECT * FROM banned
+			WHERE room_id = ${room_id}
+			AND banned_id = ${user_id}
+			AND mute = true;
+		`)
+		if (query.rowCount)
+			return true;
+		return false;
+	}
+
+	async is_banned(user_id: number, room_id: number) {
+		const query = await this.pool.query(`
+			SELECT * FROM banned
+			WHERE room_id = ${room_id}
+			AND banned_id = ${user_id}
+			AND mute = false;
+		`)
+		if (query.rowCount)
+			return true;
+		return false;
+	}
+
+	async roomUsersStatus(room_id: number) {
+		const roles: string[] = ['participant', 'admin', 'owner'];
+		const users = await this.getRoomParcipants(room_id);
+		const res = [];
+		for (let user_id of users){
+			res.push({
+				user_id,
+				role: roles[await this.get_role(user_id, room_id)],
+				muted: await this.is_muted(user_id, room_id),
+				banned: await this.is_banned(user_id, room_id)
+			})
+		}
+		return res;
+	}
+
 }
