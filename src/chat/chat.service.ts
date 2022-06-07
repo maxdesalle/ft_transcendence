@@ -592,4 +592,41 @@ export class ChatService {
 			WHERE id = ${room_id};`);
 		return query.rows[0].pswmatch;
 	}
+
+	async is_group_private(room_id: number) {
+		const query = await this.pool.query(`
+			SELECT private FROM room
+			WHERE id = ${room_id};`);
+		return query.rows[0].private;
+	}
+
+	async is_group_pswd_protected(room_id: number) {
+		const query = await this.pool.query(`
+			SELECT (password IS NOT NULL)
+			AS protected FROM room
+			WHERE id = ${room_id};`);
+		return query.rows[0].protected;
+	}
+
+	async join_public_group(me: Session, room_id: number, password?: string) {
+		// check if private
+		if (await this.is_group_private(room_id))
+			throw new ForbiddenException("private group, buddy");
+
+		// check if password protected && pswd match
+		if (await this.is_group_pswd_protected(room_id) && 
+			! await this.check_password_match(room_id, password)) 
+			throw new ForbiddenException("bad password");
+
+		// check if user already in group
+		const participants = await this.getRoomParcipants(room_id);
+		if (participants.includes(me.id))
+			throw new BadRequestException("user is already in the room");
+
+		// todo: check if banned
+
+		await this.pool.query(`
+			INSERT INTO participants(user_id, room_id)
+			VALUES(${me.id}, ${room_id})`);
+	}
 }

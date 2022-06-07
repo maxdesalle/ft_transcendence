@@ -294,9 +294,13 @@ export class ChatController {
 		return `room ${room_id} owner set to user ${user_id}`;
 	}
 
-
-	@Get('test')
-	async test() {
-		return await this.chatService.check_password_match(65, 'hey');
+	@Post('join_group')
+	async join_group(
+		@Usr() me: Session,
+		@Body('room_id', ParseIntPipe, GroupValidationPipe) room_id: number,
+		@Body('password') password: string,
+	) {
+		await this.chatService.join_public_group(me, room_id, password);
+		return `joined room ${room_id}`;
 	}
 }
