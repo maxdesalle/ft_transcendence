@@ -3,8 +3,8 @@
 export class Conversation {
 	participants: number[]
 	constructor(
-		public id: number,
-		public name: string,
+		public room_id: number,
+		public room_name: string,
 		public status: boolean
 	) {
 		this.participants = [];

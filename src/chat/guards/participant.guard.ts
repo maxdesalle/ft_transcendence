@@ -1,5 +1,4 @@
 import { CanActivate, ExecutionContext, Inject } from "@nestjs/common";
-import { Observable } from "rxjs";
 import { ChatService } from "../chat.service";
 
 // checks if user is a participant in request's parameter room_id

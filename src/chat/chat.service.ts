@@ -91,7 +91,9 @@ export class ChatService {
 	}
 
 	async send_dm(me: Session, message: string) {
-		await this.pool.query(`INSERT INTO message(user_id, timestamp, message, room_id) VALUES(${me.id}, NOW(), '${message}', ${me.selected_room})`)
+		await this.pool.query(`
+			INSERT INTO message(user_id, timestamp, message, room_id)
+			VALUES(${me.id}, NOW(), '${message}', ${me.selected_room})`);
 	}
 
 
@@ -106,6 +108,8 @@ export class ChatService {
 	}
 
 	async getDMbyUser(me: Session, friend_id: number) {
+		if (me.id === friend_id)
+			throw new BadRequestException("No talking to yourself, plz...")
 		const room_id = await this.get_dm_room(me, friend_id);
 		if (!room_id)
 			return [];
@@ -113,38 +117,42 @@ export class ChatService {
 	}
 
 
-	async dm_to_user(me: Session, toId: number, msg: string) {
+	async sendDMtoUser(me: Session, toId: number, msg: string) {
 		if (me.id === toId)
 			throw new BadRequestException("You shall not talk to yourself");
 		// check if room exists
 		let room_id = await this.get_dm_room(me, toId);
 		// create room if necessary
-		console.log(room_id);
+		// console.log(room_id);
 		if (!room_id) 
 			room_id = await this.create_dm_room(me, toId);
-		// insert to database	
+		// insert message into table	
 		await this.pool.query(`
 			INSERT INTO message(user_id, timestamp, message, room_id)
 			VALUES(${me.id}, NOW(), '${msg}', ${room_id})`
 		);
-		return this.get_room_msgs(me, room_id);
+		return await this.get_room_msgs(me, room_id);
 	}
 
-	// populates Session.blocked with users ids
+	// returns list of blocked users ID
 	async get_blocked(me: Session) {
 		let my_query = await this.pool.query(
 			`SELECT blocked_id FROM blocked WHERE user_id=${me.id}
 			UNION SELECT user_id FROM blocked WHERE blocked_id=${me.id}`
 		);
-		me.blocked = [];
+		const blocked = [];
 		for (let i = 0; i < my_query.rowCount; i++)
-			me.blocked.push(my_query.rows[i].blocked_id);
+			blocked.push(my_query.rows[i].blocked_id);
+		return blocked;
 	}
 
 	async block(me: Session, block_id: number) {
+		if (me.id === block_id)
+			throw new BadRequestException("blocking yourself... that's kinda weird");
 		await this.pool.query(
 			`INSERT INTO blocked(user_id, blocked_id)
-			VALUES(${me.id}, ${block_id})`
+			VALUES(${me.id}, ${block_id})
+			ON CONFLICT DO NOTHING`
 		);
 		// //friend_id is referenced but does not exist -> changed to block_id
 		// let tmp = await pool.query(`SELECT room_id FROM participants WHERE room_id in (SELECT room_id FROM participants WHERE user_id = ${block_id}) AND user_id =${me.id} AND room_id NOT IN (SELECT id FROM room WHERE NOT owner=0)`);
@@ -178,13 +186,13 @@ export class ChatService {
 
 	// populates Session.conversations
 	async  get_convs(me: Session) {
-		await this.get_blocked(me);
+		const blocked = await this.get_blocked(me);
 		let room_query = await this.pool.query(
 			`SELECT id, name, owner FROM room
 			WHERE id IN (SELECT room_id FROM participants WHERE user_id = ${me.id})
 			ORDER BY activity DESC`
 		);
-		me.conversations = [];
+		const conversations = [];
 		for (let i = 0; i < room_query.rowCount; i++) //for every conversation
 		{
 			let room_row = room_query.rows[i];
@@ -193,7 +201,7 @@ export class ChatService {
 				SELECT user_id FROM participants
 				WHERE room_id = ${room_row.id}`
 			);
-			if (!room_row.owner && (me.blocked.includes(part_q.rows[0].user_id) || me.blocked.includes(part_q.rows[1].user_id)))
+			if (!room_row.owner && (blocked.includes(part_q.rows[0].user_id) || blocked.includes(part_q.rows[1].user_id)))
 				continue;
 			let my_status = await this.pool.query(`
 				SELECT status FROM chat_user WHERE id= ${part_q.rows[0].user_id}`
@@ -204,8 +212,9 @@ export class ChatService {
 			// tmp.status	= my_status.rows[0].status;
 			for (let n = 0; n < part_q.rowCount; n++) //get all participants of a given conversation
 				tmp.participants.push(part_q.rows[n].user_id);
-			me.conversations.push(tmp);
+			conversations.push(tmp);
 		}
+		return conversations;
 	}
 
 	// returns room_id of dm room between user, null if non-existant
@@ -225,7 +234,7 @@ export class ChatService {
 		return dm_room.rows[0].id;
 	}
 
-	async get_friends(me: Session) {
+	async getDMusersID(me: Session) {
 		const friends = await this.pool.query(`
 			SELECT user_id FROM room
 			JOIN participants ON id=room_id
@@ -244,23 +253,22 @@ export class ChatService {
 
 	// TODO: throw exceptions if new room is not created
 	async create_dm_room(me: Session, friend_id: number) {
-		let tmp = await this.pool.query(
-			`SELECT blocked_id FROM blocked WHERE user_id = ${me.id}`
-		);
-		for (let i = 0; i < tmp.rowCount; i++)
-			if (tmp.rows[i].blocked_id === friend_id) // changed == to ===
-				return await this.unblock(me, friend_id);
+		// this has apparently something to do with unblocking someone if
+		// you decide to send him a DM
+		// let tmp = await this.pool.query(
+		// 	`SELECT blocked_id FROM blocked WHERE user_id = ${me.id}`
+		// );
+		// for (let i = 0; i < tmp.rowCount; i++)
+		// 	if (tmp.rows[i].blocked_id === friend_id) // changed == to ===
+		// 		return await this.unblock(me, friend_id);
 
-		tmp = await this.pool.query(
+		// added const here
+		const tmp = await this.pool.query(
 			`SELECT name FROM chat_user WHERE id= ${friend_id}`
 		);
 		if (!tmp.rowCount) {
 			throw new BadRequestException("user does not exist");
 		}
-		// if (await this.get_dm_room(me, friend_id)) {
-		// 	console.log("DM room already exists");
-		// 	return;
-		// }
 
 		const username: string = tmp.rows[0].name;
 		await this.pool.query(

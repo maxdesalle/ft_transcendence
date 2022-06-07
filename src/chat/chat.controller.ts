@@ -12,61 +12,91 @@ import { IsParticipant } from './guards/participant.guard';
 export class ChatController {
 	constructor(
 		private chatService: ChatService,
-		private jwtService: JwtService,
+		// private jwtService: JwtService,
 	) {}
 
-	@Post('select')
-	async select_room(
-		@Usr() user: Session,
-		@Body('value') room_id: number,
-		@Res({ passthrough: true }) res: Response
-	) {
+	// @Post('select')
+	// async select_room(
+	// 	@Usr() user: Session,
+	// 	@Body('value') room_id: number,
+	// 	@Res({ passthrough: true }) res: Response
+	// ) {
 
-		await this.chatService.on_select(user, room_id, true);
-		// update JWT with select room
-		const payload: userJwtPayload = {
-			id: user.id,
-			username: user.username,
-			selected_room: user.selected_room
-		}
-		const jwtToken = this.jwtService.sign(payload);
-		res.cookie('jwt_token', jwtToken);
-		return user; // instead of loggin to the terminal, I'm returning it for debugging purposes
-	}
+	// 	await this.chatService.on_select(user, room_id, true);
+	// 	// update JWT with select room
+	// 	const payload: userJwtPayload = {
+	// 		id: user.id,
+	// 		username: user.username,
+	// 		selected_room: user.selected_room
+	// 	}
+	// 	const jwtToken = this.jwtService.sign(payload);
+	// 	res.cookie('jwt_token', jwtToken);
+	// 	return user; // instead of loggin to the terminal, I'm returning it for debugging purposes
+	// }
 
-	@Post('message')
-	async sendDirectMsg(
-		@Usr() user: Session,
-		@Body('value') msg: string,
-	) {
-		await this.chatService.send_dm(user, msg);
-		return `new message= ${msg}`;
-	}
+	// @Post('message')
+	// async sendDirectMsg(
+	// 	@Usr() user: Session,
+	// 	@Body('value') msg: string,
+	// ) {
+	// 	await this.chatService.send_dm(user, msg);
+	// 	return `new message= ${msg}`;
+	// }
+
+	// ============ DM ===========
 
 	@Post('dm')
-	async dm(
+	postDM(
 		@Usr() me: Session,
 		@Body('to') destUserId,
 		@Body('message') message
 	) {
-		return this.chatService.dm_to_user(me, destUserId, message);
+		return this.chatService.sendDMtoUser(me, destUserId, message);
 	}
 
 	@Get('dm/:friend_id')
 	getDMs(
 		@Usr() me: Session,
-		@Param('friend_id') friend_id: number
+		@Param('friend_id', ParseIntPipe) friend_id: number
 	) {
 		return this.chatService.getDMbyUser(me, friend_id);
 	}
 
-	@Get('message')
-	async getMessages(
+	@Post('block')
+	async blockUser(
+		@Usr() user: Session,
+		@Body('user_id') blocked_id: number,
+	) {
+		await this.chatService.block(user, blocked_id);
+		return this.chatService.get_blocked(user);
+	}
+
+	@Post('unblock')
+	async unblockUser(
+		@Usr() user: Session,
+		@Body('user_id') blocked_id: number,
+	) {
+		await this.chatService.unblock(user, blocked_id);
+		return this.chatService.get_blocked(user);
+	}
+
+	@Get('blocked')
+	checkBlocked(
 		@Usr() user: Session,
 	) {
-		await this.chatService.get_message(user);
-		return user;
+		return this.chatService.get_blocked(user);
 	}
+
+
+	// @Get('message')
+	// async getMessages(
+	// 	@Usr() user: Session,
+	// ) {
+	// 	await this.chatService.get_message(user);
+	// 	return user;
+	// }
+
+	// ============ Channels ===========
 
 	@Get('room_messages/:room_id')
 	@UseGuards(IsParticipant)
@@ -77,85 +107,52 @@ export class ChatController {
 		return this.chatService.getMessagesByRoomId(user, room_id);
 	}
 
-	@Post('block')
-	async blockUser(
-		@Usr() user: Session,
-		@Body('value') blocked_id: number,
-	) {
-		await this.chatService.block(user, blocked_id);
-
-		// possibly move this call to inside block()
-		await this.chatService.get_blocked(user);
-		return user;
-	}
-
-	@Post('unblock')
-	async unblockUser(
-		@Usr() user: Session,
-		@Body('value') blocked_id: number,
-	) {
-		await this.chatService.unblock(user, blocked_id);
-
-		// possibly move this call to inside block()
-		await this.chatService.get_blocked(user);
-		return user;
-	}
-
-	@Get('blocked')
-	async checkBlocked(
-		@Usr() user: Session,
-	) {
-		await this.chatService.get_blocked(user);
-		return user;
-	}
-
 	@Get('conversations')
-	async getConvs(
+	getConvs(
 		@Usr() user: Session,
 	) {
-		await this.chatService.get_convs(user);
-		return user;
+		return this.chatService.get_convs(user);
 	}
 
-	@Post('add_friend')
-	async addFriend(
-		@Usr() user: Session,
-		@Body('value') friend_id: number,
-	) {
-		await this.chatService.create_dm_room(user, friend_id);
+	// @Post('add_friend')
+	// async addFriend(
+	// 	@Usr() user: Session,
+	// 	@Body('value') friend_id: number,
+	// ) {
+	// 	await this.chatService.create_dm_room(user, friend_id);
 
-		// possibly move this call to inside addFriend()
-		await this.chatService.get_convs(user);
-		return user;
-	}
+	// 	// possibly move this call to inside addFriend()
+	// 	await this.chatService.get_convs(user);
+	// 	return user;
+	// }
 
-	// route for debug only, no point in removing a dm_room
-	@Post('rm_friend')
-	async removeFriend(
-		@Usr() user: Session,
-		@Body('value') friend_id: number,
-	) {
-		await this.chatService.rm_dm_room(user, friend_id);
+	// // route for debug only, no point in removing a dm_room
+	// @Post('rm_friend')
+	// async removeFriend(
+	// 	@Usr() user: Session,
+	// 	@Body('value') friend_id: number,
+	// ) {
+	// 	await this.chatService.rm_dm_room(user, friend_id);
 
-		// possibly move this call to inside addFriend()
-		await this.chatService.get_convs(user);
-		return user;
-	}
+	// 	// possibly move this call to inside addFriend()
+	// 	await this.chatService.get_convs(user);
+	// 	return user;
+	// }
 
-	@Get('friends')
-	getFriends(
-		@Usr() user: Session
-	) {
-		return this.chatService.get_friends(user);
-	}
+	// @Get('friends')
+	// getFriends(
+	// 	@Usr() user: Session
+	// ) {
+	// 	return this.chatService.getDMusersID(user);
+	// }
 
-	@Get('dm_room/:friend_id')
-	getDmRoom(
-		@Usr() user: Session,
-		@Param('friend_id') friend_id: number,
-	) {
-		return this.chatService.get_dm_room(user, friend_id);
-	}
+	// @Get('dm_room/:friend_id')
+	// getDmRoom(
+	// 	@Usr() user: Session,
+	// 	@Param('friend_id') friend_id: number,
+	// ) {
+	// 	return this.chatService.get_dm_room(user, friend_id);
+	// }
 
 	@Post('create_group')
 	createGroup(
