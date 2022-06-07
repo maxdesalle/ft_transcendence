@@ -1,10 +1,11 @@
-import { Body, Controller, Get, Param, Post, Res, UseGuards} from '@nestjs/common';
+import { Body, Controller, Get, Param, ParseIntPipe, Post, Res, UseGuards} from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { Response } from 'express';
 import { Usr } from 'src/users/decorators/user.decorator';
 import { ChatService } from './chat.service';
 import { GroupConfig, Session, userJwtPayload } from './DTO/chat-user.dto';
 import { JwtChatGuard } from './guards/jwt.guard';
+import { IsParticipant } from './guards/participant.guard';
 
 @Controller('chat')
 @UseGuards(JwtChatGuard)
@@ -65,6 +66,15 @@ export class ChatController {
 	) {
 		await this.chatService.get_message(user);
 		return user;
+	}
+
+	@Get('room_messages/:room_id')
+	@UseGuards(IsParticipant)
+	getMessagesByRoomId(
+		@Usr() user: Session,
+		@Param('room_id', ParseIntPipe) room_id: number
+	) {
+		return this.chatService.getMessagesByRoomId(user, room_id);
 	}
 
 	@Post('block')

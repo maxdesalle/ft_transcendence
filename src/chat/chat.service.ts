@@ -80,6 +80,16 @@ export class ChatService {
 			me.messages.push(my_query.rows[i]);
 	}
 
+	async getMessagesByRoomId(me: Session, room_id: number) {
+		const my_query = await this.pool.query(
+			`SELECT id, user_id, message, timestamp FROM message
+			WHERE room_id = ${room_id}
+			AND user_id NOT IN (SELECT blocked_id FROM blocked WHERE user_id= ${me.id})
+			ORDER BY timestamp DESC`
+		);
+		return my_query.rows;
+	}
+
 	async send_dm(me: Session, message: string) {
 		await this.pool.query(`INSERT INTO message(user_id, timestamp, message, room_id) VALUES(${me.id}, NOW(), '${message}', ${me.selected_room})`)
 	}
@@ -153,6 +163,19 @@ export class ChatService {
 		// await refresh(me);
 	}
 
+	async getRoomParcipants(room_id: number) {
+		const query = await this.pool.query(
+			`SELECT user_id FROM participants
+			WHERE room_id=${room_id};
+			`
+		);
+		const res = [];
+		for (let i = 0; i < query.rowCount; i++) {
+			res.push(query.rows[i].user_id);
+		}
+		return res;
+	}
+
 	// populates Session.conversations
 	async  get_convs(me: Session) {
 		await this.get_blocked(me);
@@ -185,7 +208,7 @@ export class ChatService {
 		}
 	}
 
-	// returns room_id of dm room between user, null in non-existant
+	// returns room_id of dm room between user, null if non-existant
 	async get_dm_room(me: Session, friend_id: number): Promise<null|number> {
 		const dm_room = await this.pool.query(`
 			SELECT id FROM room
