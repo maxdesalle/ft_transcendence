@@ -173,7 +173,7 @@ export class ChatService {
 		// await refresh(me);
 	}
 
-	async getRoomParcipants(room_id: number) {
+	async getRoomParcipants(room_id: number): Promise<number[]> {
 		const query = await this.pool.query(
 			`SELECT user_id FROM participants
 			WHERE room_id=${room_id};
@@ -507,5 +507,42 @@ export class ChatService {
 		}
 		return res;
 	}
+
+	async leave_group(me: Session, room_id: number) {
+		let participants = await this.getRoomParcipants(room_id);
+		// remove "me" from participants
+		participants = participants.filter((value) => value !== me.id);
+		if (!participants.length)	//last person in group
+		{
+			await this.pool.query(`DELETE FROM admins		WHERE room_id =	${room_id}`);
+			await this.pool.query(`DELETE FROM banned		WHERE room_id =	${room_id}`);
+			await this.pool.query(`DELETE FROM participants	WHERE room_id =	${room_id}`);
+			await this.pool.query(`DELETE FROM message		WHERE room_id =	${room_id}`);
+			await this.pool.query(`DELETE FROM room			WHERE id =		${room_id}`);
+			return;
+		}
+		if (await this.get_role(me.id, room_id) != OWNER)
+		{
+			await this.pool.query(`
+				DELETE FROM participants
+				WHERE user_id=${me.id}
+				AND room_id=${room_id}`);
+			return;		
+		}
+		for (let i = 0; i < participants.length; i++)	//first admin in the list becomes owner
+		{
+			if (await this.get_role(participants[i], room_id) == ADMIN)
+			{
+				await this.pool.query(`UPDATE room SET owner=${participants[i]} WHERE id=${room_id}`);
+				await this.pool.query(`DELETE FROM admins WHERE user_id=${participants[i]} AND room_id=${room_id}`);
+				await this.pool.query(`DELETE FROM participants WHERE user_id=${me.id} AND room_id=${room_id}`);
+				return;
+			}
+		}
+		//first guy in the list becomes owner
+		await this.pool.query(`UPDATE room SET owner=${participants[0]} WHERE id=${room_id}`);
+		await this.pool.query(`DELETE FROM participants WHERE user_id=${me.id} AND room_id=${room_id}`);
+	}
+	
 
 }

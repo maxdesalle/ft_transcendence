@@ -251,4 +251,13 @@ export class ChatController {
 		await this.chatService.rm_admin_group(me, room_id, user_id);
 		return this.chatService.roomUsersStatus(room_id);
 	}
+
+	@Post('leave_group')
+	async leave(
+		@Usr() me: Session,
+		@Body('room_id', ParseIntPipe, GroupValidationPipe) room_id: number,
+	) {
+		await this.chatService.leave_group(me, room_id);
+		return this.getConvs(me); 
+	}
 }
