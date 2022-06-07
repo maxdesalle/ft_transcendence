@@ -6,6 +6,7 @@ import { ChatService } from './chat.service';
 import { GroupConfig, Session, userJwtPayload } from './DTO/chat-user.dto';
 import { JwtChatGuard } from './guards/jwt.guard';
 import { IsParticipant } from './guards/participant.guard';
+import { GroupValidationPipe } from './pipes/group.pipe';
 
 @Controller('chat')
 @UseGuards(JwtChatGuard)
@@ -155,28 +156,42 @@ export class ChatController {
 	// }
 
 	@Post('create_group')
-	createGroup(
-		@Usr() user: Session,
+	async createGroup(
+		@Usr() me: Session,
 		@Body() group_config: GroupConfig 
 	) {
-		return this.chatService.create_group(user, group_config);
+		await this.chatService.create_group(me, group_config);
+		return this.chatService.get_convs(me);
+	}
+
+	@Post('rm_group')
+	async removeGroup(
+		@Usr() me: Session,
+		@Body('room_id', ParseIntPipe, GroupValidationPipe) room_id: number 
+	) {
+		await this.chatService.rm_group(me, room_id);
+		return this.chatService.get_convs(me);
 	}
 
 	@Post('add_group_user')
-	addGroupUser(
+	async addGroupUser(
 		@Usr() me: Session,
-		@Body('room_id') room_id: number,
+		@Body('room_id', ParseIntPipe, GroupValidationPipe) room_id: number,
 		@Body('user_id') user_id: number,
 	) {
-		return this.chatService.add_user_group(me, room_id, user_id);
+		await this.chatService.addGroupUser(me, room_id, user_id);
+		return this.chatService.get_convs(me);
 	}
 
 	@Post('group_message')
-	sendGroupMessage(
+	async sendGroupMessage(
 		@Usr() me: Session,
 		@Body('room_id') room_id: number,
 		@Body('message') message: string,
 	) {
-		return this.chatService.send_group_msg(me, room_id, message);
+		await this.chatService.send_group_msg(me, room_id, message);
+		return this.chatService.getMessagesByRoomId(me, room_id);
 	}
+
+
 }

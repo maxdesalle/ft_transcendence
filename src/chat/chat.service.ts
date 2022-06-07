@@ -1,4 +1,4 @@
-import { BadRequestException, HttpException, Injectable } from '@nestjs/common';
+import { BadRequestException, ForbiddenException, HttpException, Injectable } from '@nestjs/common';
 import { Connection, EntityManager } from 'typeorm';
 import { Conversation, GroupConfig, Session } from './DTO/chat-user.dto';
 
@@ -80,6 +80,8 @@ export class ChatService {
 			me.messages.push(my_query.rows[i]);
 	}
 
+	// TODO: review this: being blocked might not have anything to do with rooms? 
+	// or will be this used to fetch DM rooms too?
 	async getMessagesByRoomId(me: Session, room_id: number) {
 		const my_query = await this.pool.query(
 			`SELECT id, user_id, message, timestamp FROM message
@@ -184,7 +186,7 @@ export class ChatService {
 		return res;
 	}
 
-	// populates Session.conversations
+	// returns array of conversations
 	async  get_convs(me: Session) {
 		const blocked = await this.get_blocked(me);
 		let room_query = await this.pool.query(
@@ -311,16 +313,14 @@ export class ChatService {
 			);
 		}
 		catch {
-			return 'group name already exists';
+			throw new BadRequestException('group name already exists');
 		}
 		let tmp = await this.pool.query(`SELECT id FROM room WHERE name='${group.name}'`);
 		let room_id = tmp.rows[0].id;
 		// for (i = 0; i < group.participants.length; i++)
 		await this.pool.query(`INSERT INTO participants(user_id, room_id) VALUES(${me.id}, ${room_id})`);
-
-		await this.get_convs(me);
-		return(me);
 	}
+
 	async get_role(id: number, room_id: number) {
 		let tmp = await this.pool.query(`SELECT owner FROM room WHERE id=${room_id}`);
 		if (tmp.rows[0].owner == id)
@@ -340,27 +340,27 @@ export class ChatService {
 		return -1;
 	}
 
-	async add_user_group(me: Session, room_id: number, user_id: number) {
+	// todo: review this function
+	async addGroupUser(me: Session, room_id: number, user_id: number) {
+		const participants = await this.getRoomParcipants(room_id);
+		if (participants.includes(user_id))
+			throw new BadRequestException("user is already in the room");
+
 		let tmp = await this.pool.query(`
 			SELECT role, banned_id FROM banned
 			WHERE room_id=${room_id} AND banned_id=${user_id}`
 		);
-		if (tmp.rowCount === 0) // changed == to ===
+		if (tmp.rowCount) // changed == to ===
 		{
+			let role1 = await this.get_role(me.id, room_id);
+			let role2 = tmp.rows[0].role;
+			// wtf is going on here?
+			if (role1 < role2 /* && role1 >= ADMIN */)  //option for who can invite into group
+				throw new ForbiddenException("not enough rights");
+		}
 			await this.pool.query(`
 				INSERT INTO participants(user_id, room_id)
-				VALUES(${user_id}, ${room_id})`
-			);
-			await this.get_convs(me);
-			return me;
-		}
-		let role1 = await this.get_role(me.id, room_id);
-		let role2 = tmp.rows[0].role;
-		if (role1 >= role2 /* && role1 >= ADMIN */)  //option for who can invite into group
-			await this.pool.query(`INSERT INTO participants(user_id, room_id) VALUES(${user_id}, ${room_id})`);
-
-		await this.get_convs(me);
-		return me;
+				VALUES(${user_id}, ${room_id})`);
 	}
 
 	async send_group_msg(me: Session, room_id: number, message: string) {
@@ -377,7 +377,8 @@ export class ChatService {
 					AND mute=true AND room_id=${room_id}`
 				);
 			else
-				return ("you are still muted");
+				throw new ForbiddenException("you are muted");
+				// return ("you are still muted");
 		}
 		await this.pool.query(`
 			INSERT INTO message(user_id, timestamp, message, room_id)
@@ -385,7 +386,28 @@ export class ChatService {
 		);
 		await this.pool.query(`
 			UPDATE room SET activity=NOW() WHERE id=${room_id}`);
-
-		return (`message sent to room ${room_id}: ${message}`);
 	}
+
+	async getRoomsList() {
+		const query = await this.pool.query(`
+			SELECT id FROM room
+			WHERE owner IS NOT NULL;
+		`);
+		const rooms = [];
+		for (let i = 0; i < query.rowCount; ++i)
+			rooms.push(query.rows[i].id);
+		return rooms;
+	}
+
+	async rm_group(me: Session, room_id: number) {
+		if (await this.get_role(me.id, room_id) != OWNER)
+			throw new ForbiddenException("you must be the group owner to remove it");
+			
+		await this.pool.query(`DELETE FROM message WHERE room_id=${room_id}`);
+		await this.pool.query(`DELETE FROM participants WHERE room_id=${room_id}`);
+		await this.pool.query(`DELETE FROM admins WHERE room_id=${room_id}`);
+		await this.pool.query(`DELETE FROM banned WHERE room_id=${room_id}`);
+		await this.pool.query(`DELETE FROM room WHERE id=${room_id}`);
+	}
+
 }
