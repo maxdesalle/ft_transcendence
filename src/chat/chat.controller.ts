@@ -1,9 +1,11 @@
 import { Body, Controller, Get, Param, ParseIntPipe, Post, Res, UseGuards} from '@nestjs/common';
+import { ApiTags } from '@nestjs/swagger';
 import { JwtGuard } from 'src/auth/guards/jwt.guard';
 import { Usr } from 'src/users/decorators/user.decorator';
 import { User } from 'src/users/entities/user.entity';
 import { ChatService } from './chat.service';
 import { GroupConfig, Session } from './DTO/chat-user.dto';
+import { PostDM, Message, RoomInfo, RoomInfoShort } from './DTO/chat.dto';
 import { GroupOwnerGuard } from './guards/owner.guard';
 import { IsParticipant } from './guards/participant.guard';
 import { ValidateRoomPipe } from './pipes/validate_room.pipe';
@@ -19,20 +21,23 @@ export class ChatController {
 	// ============ DM ===========
 
 	@Post('dm')
-	postDM(
+	@ApiTags('chat')
+	async postDM(
 		@Usr() me: User,
 		@Body('user_id', ParseIntPipe, ValidateUserPipe) destUserId: number,
-		@Body('message') message: string
-	) {
-		return this.chatService.sendDMtoUser(me, destUserId, message);
+		// @Body('message') message: string,
+		@Body() body: PostDM
+	): Promise<Message[]> {
+		return await this.chatService.sendDMtoUser(me, destUserId, body.message);
 	}
 
-	@Get('dm/:friend_id')
+	@Get('dm/:user_id')
+	@ApiTags('chat')
 	getDMs(
-		@Usr() me: Session,
-		@Param('friend_id', ParseIntPipe) friend_id: number
-	) {
-		return this.chatService.getDMbyUser(me, friend_id);
+		@Usr() me: User,
+		@Param('user_id', ParseIntPipe, ValidateUserPipe) user_id: number
+	): Promise<Message[]> {
+		return this.chatService.getDMbyUser(me, user_id);
 	}
 
 	@Post('block')
@@ -72,19 +77,30 @@ export class ChatController {
 	// ============ Channels ===========
 
 	@Get('room_messages/:room_id')
+	@ApiTags('chat')
 	@UseGuards(IsParticipant)
 	getMessagesByRoomId(
-		@Usr() user: Session,
-		@Param('room_id', ParseIntPipe) room_id: number
-	) {
+		@Usr() user: User,
+		@Param('room_id', ParseIntPipe, ValidateRoomPipe) room_id: number
+	): Promise<Message[]> {
 		return this.chatService.getMessagesByRoomId(user, room_id);
 	}
 
-	@Get('conversations')
-	getConvs(
-		@Usr() user: Session,
-	) {
-		return this.chatService.get_convs(user);
+	@Get('room_info/:room_id')
+	@ApiTags('chat')
+	async groupInfo(
+		@Param('room_id', ParseIntPipe, ValidateRoomPipe) room_id: number,
+	): Promise<RoomInfo> {
+		// return this.chatService.roomInfo(room_id);
+		return await this.chatService.roomInfo(room_id);
+	}
+
+	@Get('rooms')
+	@ApiTags('chat')
+	async getConvs(
+		@Usr() user: User,
+	): Promise<RoomInfoShort[]> {
+		return await this.chatService.get_convs(user);
 	}
 
 	// @Post('add_friend')
@@ -129,7 +145,7 @@ export class ChatController {
 
 	@Post('create_group')
 	async createGroup(
-		@Usr() me: Session,
+		@Usr() me: User,
 		@Body() group_config: GroupConfig 
 	) {
 		await this.chatService.create_group(me, group_config);
@@ -139,7 +155,7 @@ export class ChatController {
 	@Post('rm_group')
 	@UseGuards(GroupOwnerGuard)
 	async removeGroup(
-		@Usr() me: Session,
+		@Usr() me: User,
 		@Body('room_id', ParseIntPipe, ValidateRoomPipe) room_id: number 
 	) {
 		await this.chatService.rm_group(me, room_id);
@@ -169,7 +185,7 @@ export class ChatController {
 
 	@Post('group_message')
 	async sendGroupMessage(
-		@Usr() me: Session,
+		@Usr() me: User,
 		@Body('room_id', ParseIntPipe, ValidateRoomPipe) room_id: number,
 		@Body('message') message: string,
 	) {
@@ -198,12 +214,7 @@ export class ChatController {
 		return this.chatService.roomInfo(room_id);
 	}
 
-	@Get('group_info/:room_id')
-	groupInfo(
-		@Param('room_id', ParseIntPipe, ValidateRoomPipe) room_id: number,
-	) {
-		return this.chatService.roomInfo(room_id);
-	}
+
 
 	@Post('promote_group_user')
 	async promote(
@@ -227,7 +238,7 @@ export class ChatController {
 
 	@Post('leave_group')
 	async leave(
-		@Usr() me: Session,
+		@Usr() me: User,
 		@Body('room_id', ParseIntPipe, ValidateRoomPipe) room_id: number,
 	) {
 		await this.chatService.leave_group(me, room_id);

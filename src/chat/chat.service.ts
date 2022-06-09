@@ -44,46 +44,95 @@ export class ChatService {
 	constructor(private connection: Connection) {
 		this.pool = new queryAdaptor(connection.manager);
 	}
-
-	// // sets Session.selected_room to id
-	// // if msg == true, populates Session.messages with new messages
-	// async on_select(me: Session, id: number, msg: boolean) {
-	// 	me.selected_room = id;
-	// 	// me.messages = [];
-	// 	if (msg)
-	// 		await this.get_message(me);
-	// }
-
-	// populates Session.messages with new messages
-	// room must be previously selected
-	async get_message(me: Session) {
-		// let last_time;
-		let my_query: { rowCount: any; rows: any; };
-		// if (me.messages.length > 0) {
-		// 	last_time = new Date(me.messages[0].timestamp).getTime() / 1000;
-		// 	my_query = await this.pool.query(
-		// 		`SELECT id, user_id, message, timestamp FROM message
-		// 		WHERE room_id = ${me.selected_room}
-		// 		AND timestamp > to_timestamp(${last_time})
-		// 		AND user_id NOT IN (SELECT blocked_id FROM blocked WHERE user_id= ${me.id})
-		// 		ORDER BY timestamp DESC`
-		// 	);
-		// }
-		// else
-			my_query = await this.pool.query(
-				`SELECT id, user_id, message, timestamp FROM message
-				WHERE room_id = ${me.selected_room}
-				AND user_id NOT IN (SELECT blocked_id FROM blocked WHERE user_id= ${me.id})
-				ORDER BY timestamp DESC`
-			);
-		me.messages = []; // Rodolpho moved this from on_select to here
-		for (let i = 0; i < my_query.rowCount; i++)
-			me.messages.push(my_query.rows[i]);
+	
+	async sendDMtoUser(me: User, toId: number, msg: string) {
+		if (me.id === toId)
+			throw new BadRequestException("You shall not talk to yourself");
+		// check if room exists
+		let room_id = await this.get_dm_room(me, toId);
+		// create room if necessary
+		// console.log(room_id);
+		if (!room_id) 
+			room_id = await this.create_dm_room(me, toId);
+		// insert message into table	
+		await this.pool.query(`
+			INSERT INTO message(user_id, timestamp, message, room_id)
+			VALUES(${me.id}, NOW(), '${msg}', ${room_id})`
+		);
+		return await this.getMessagesByRoomId(me, room_id);
 	}
+
+	// returns room_id of dm room between user, null if non-existant
+	async get_dm_room(me: Session, friend_id: number): Promise<null|number> {
+		const dm_room = await this.pool.query(`
+			SELECT id FROM room
+			JOIN participants ON id=room_id
+			WHERE id IN
+				(SELECT id from room
+				JOIN participants ON id=room_id
+				WHERE owner IS NULL
+				AND user_id=${me.id})
+			AND user_id=${friend_id};`
+		);
+		if (!dm_room.rowCount)
+			return null;
+		return dm_room.rows[0].id;
+	}
+
+	// returns id of created room 
+	async create_dm_room(me: Session, friend_id: number) {
+		// this has apparently something to do with unblocking someone if
+		// you decide to send him a DM
+		// let tmp = await this.pool.query(
+		// 	`SELECT blocked_id FROM blocked WHERE user_id = ${me.id}`
+		// );
+		// for (let i = 0; i < tmp.rowCount; i++)
+		// 	if (tmp.rows[i].blocked_id === friend_id) // changed == to ===
+		// 		return await this.unblock(me, friend_id);
+
+		// get username
+		const tmp = await this.pool.query(
+			`SELECT name FROM public.user WHERE id= ${friend_id}`
+		);
+		if (!tmp.rowCount) {
+			throw new BadRequestException("user does not exist");
+		}
+		const username: string = tmp.rows[0].name;
+
+		// create room
+		const query = await this.pool.query(
+			`INSERT INTO room(name) VALUES('${me.username}-${username}')
+			RETURNING id;`
+		);
+		// let new_room = await this.pool.query(
+		// 	`SELECT id from room WHERE name = '${me.username}-${username}'`
+		// );
+		// let new_room_id	= new_room.rows[0].id;
+		let new_room_id	= query.rows[0].id;
+		await this.pool.query(
+			`INSERT INTO participants (user_id, room_id)
+			VALUES(${me.id}, ${new_room_id})`
+		);
+		await this.pool.query(
+			`INSERT INTO participants (user_id, room_id)
+			VALUES(${friend_id}, ${new_room_id})`
+		);
+		return (new_room_id);
+	}
+
+	async getDMbyUser(me: User, friend_id: number) {
+		if (me.id === friend_id)
+			throw new BadRequestException("No talking to yourself, plz...")
+		const room_id = await this.get_dm_room(me, friend_id);
+		if (!room_id)
+			return [];
+		return this.getMessagesByRoomId(me, room_id);
+	}
+
 
 	// TODO: review this: being blocked might not have anything to do with rooms? 
 	// or will be this used to fetch DM rooms too?
-	async getMessagesByRoomId(me: Session, room_id: number) {
+	async getMessagesByRoomId(me: User, room_id: number) {
 		const my_query = await this.pool.query(
 			`SELECT id, user_id, message, timestamp FROM message
 			WHERE room_id = ${room_id}
@@ -100,42 +149,9 @@ export class ChatService {
 	}
 
 
-	async get_room_msgs(me: Session, room_id: number) {
-		const query = await this.pool.query(
-			`SELECT id, user_id, message, timestamp FROM message
-			WHERE room_id = ${room_id}
-			AND user_id NOT IN (SELECT blocked_id FROM blocked WHERE user_id= ${me.id})
-			ORDER BY timestamp DESC`
-		);
-		return query.rows;
-	}
-
-	async getDMbyUser(me: Session, friend_id: number) {
-		if (me.id === friend_id)
-			throw new BadRequestException("No talking to yourself, plz...")
-		const room_id = await this.get_dm_room(me, friend_id);
-		if (!room_id)
-			return [];
-		return this.get_room_msgs(me, room_id);
-	}
 
 
-	async sendDMtoUser(me: User, toId: number, msg: string) {
-		if (me.id === toId)
-			throw new BadRequestException("You shall not talk to yourself");
-		// check if room exists
-		let room_id = await this.get_dm_room(me, toId);
-		// create room if necessary
-		// console.log(room_id);
-		if (!room_id) 
-			room_id = await this.create_dm_room(me, toId);
-		// insert message into table	
-		await this.pool.query(`
-			INSERT INTO message(user_id, timestamp, message, room_id)
-			VALUES(${me.id}, NOW(), '${msg}', ${room_id})`
-		);
-		return await this.get_room_msgs(me, room_id);
-	}
+
 
 	// returns list of blocked users ID
 	async get_blocked(me: Session) {
@@ -188,7 +204,7 @@ export class ChatService {
 	}
 
 	// returns array of conversations
-	async  get_convs(me: Session) {
+	async  get_convs(me: User) {
 		const blocked = await this.get_blocked(me);
 		let room_query = await this.pool.query(
 			`SELECT id, name, owner FROM room
@@ -206,10 +222,12 @@ export class ChatService {
 			);
 			if (!room_row.owner && (blocked.includes(part_q.rows[0].user_id) || blocked.includes(part_q.rows[1].user_id)))
 				continue;
-			let my_status = await this.pool.query(`
-				SELECT status FROM public.user WHERE id= ${part_q.rows[0].user_id}`
-			);
-			let tmp = new Conversation(room_id, room_row.name, my_status.rows[0].status);
+			// let my_status = await this.pool.query(`
+				// SELECT status FROM public.user WHERE id= ${part_q.rows[0].user_id}`
+			// );
+			// let tmp = new Conversation(room_id, room_row.name, my_status.rows[0].status);
+			const type = room_row.owner ? 'group':'DM'
+			let tmp = new Conversation(room_id, room_row.name, type);
 			// tmp.id		= room_id;
 			// tmp.name	= room_row.name;
 			// tmp.status	= my_status.rows[0].status;
@@ -220,22 +238,6 @@ export class ChatService {
 		return conversations;
 	}
 
-	// returns room_id of dm room between user, null if non-existant
-	async get_dm_room(me: Session, friend_id: number): Promise<null|number> {
-		const dm_room = await this.pool.query(`
-			SELECT id FROM room
-			JOIN participants ON id=room_id
-			WHERE id IN
-				(SELECT id from room
-				JOIN participants ON id=room_id
-				WHERE owner IS NULL
-				AND user_id=${me.id})
-			AND user_id=${friend_id};`
-		);
-		if (!dm_room.rowCount)
-			return null;
-		return dm_room.rows[0].id;
-	}
 
 	async getDMusersID(me: Session) {
 		const friends = await this.pool.query(`
@@ -254,41 +256,6 @@ export class ChatService {
 	}
 
 
-	// TODO: throw exceptions if new room is not created
-	async create_dm_room(me: Session, friend_id: number) {
-		// this has apparently something to do with unblocking someone if
-		// you decide to send him a DM
-		// let tmp = await this.pool.query(
-		// 	`SELECT blocked_id FROM blocked WHERE user_id = ${me.id}`
-		// );
-		// for (let i = 0; i < tmp.rowCount; i++)
-		// 	if (tmp.rows[i].blocked_id === friend_id) // changed == to ===
-		// 		return await this.unblock(me, friend_id);
-
-		// added const here
-		const tmp = await this.pool.query(
-			`SELECT name FROM public.user WHERE id= ${friend_id}`
-		);
-		if (!tmp.rowCount) {
-			throw new BadRequestException("user does not exist");
-		}
-
-		const username: string = tmp.rows[0].name;
-		await this.pool.query(
-			`INSERT INTO room(name) VALUES('${me.username}-${username}');`
-		);
-		let new_room = await this.pool.query(
-			`SELECT id from room WHERE name = '${me.username}-${username}'`
-		);
-		let new_room_id	= new_room.rows[0].id;
-		await this.pool.query(
-			`INSERT INTO participants (user_id, room_id) VALUES(${me.id}, ${new_room_id})`
-		);
-		await this.pool.query(
-			`INSERT INTO participants (user_id, room_id) VALUES(${friend_id}, ${new_room_id})`
-		);
-		return (new_room_id);
-	}
 
 	async rm_dm_room(me: Session, friend_id: number) {
 		// let tmp = await this.pool.query(
@@ -333,8 +300,8 @@ export class ChatService {
 	}
 
 	async get_role(id: number, room_id: number) {
-		if (!(await this.roomExists(room_id)))
-			throw new BadRequestException("bad room_id");
+		// if (!(await this.groupExists(room_id)))
+			// throw new BadRequestException("bad room_id");
 		let tmp = await this.pool.query(`SELECT owner FROM room WHERE id=${room_id}`);
 		if (tmp.rows[0].owner == id)
 			return OWNER;
@@ -403,6 +370,17 @@ export class ChatService {
 
 	async getRoomsList() {
 		const query = await this.pool.query(`
+			SELECT id FROM room;
+		`);
+		const rooms = [];
+		for (let i = 0; i < query.rowCount; ++i)
+			rooms.push(query.rows[i].id);
+		return rooms;
+	}
+
+
+	async getGroupsList() {
+		const query = await this.pool.query(`
 			SELECT id FROM room
 			WHERE owner IS NOT NULL;
 		`);
@@ -412,8 +390,8 @@ export class ChatService {
 		return rooms;
 	}
 
-	async roomExists(room_id: number) {
-		const rooms = this.getRoomsList();
+	async groupExists(room_id: number) {
+		const rooms = this.getGroupsList();
 		return (await rooms).includes(room_id);
 	}
 
@@ -511,25 +489,6 @@ export class ChatService {
 		return false;
 	}
 
-	async roomInfo(room_id: number) {
-		const roles: string[] = ['participant', 'admin', 'owner'];
-		const userIDs = await this.getRoomParcipants(room_id);
-		const users = [];
-		for (let user_id of userIDs){
-			users.push({
-				user_id,
-				role: roles[await this.get_role(user_id, room_id)],
-				muted: await this.is_muted(user_id, room_id),
-			})
-		}
-		return {
-			room_id,
-			private: await this.is_group_private(room_id),
-			password_protected: await this.is_group_pswd_protected(room_id),
-			users,
-		};
-	}
-
 	async leave_group(me: Session, room_id: number) {
 		let participants = await this.getRoomParcipants(room_id);
 		// remove "me" from participants
@@ -609,6 +568,38 @@ export class ChatService {
 			SELECT private FROM room
 			WHERE id = ${room_id};`);
 		return query.rows[0].private;
+	}
+
+	async roomInfo(room_id: number) {
+		// get users
+		const userIDs = await this.getRoomParcipants(room_id);
+
+		// get their roles
+		const roles: string[] = ['participant', 'admin', 'owner'];
+		const users = [];
+		for (let user_id of userIDs){
+			users.push({
+				user_id,
+				role: roles[await this.get_role(user_id, room_id)],
+				// muted: await this.is_muted(user_id, room_id),
+			})
+		}
+
+		// get other room info
+		const query = await this.pool.query(`
+			SELECT name, private, owner, password
+			FROM room
+			WHERE id = ${room_id};`);
+		const info = query.rows[0];
+
+		return {
+			room_id: room_id,
+			room_name: info.name,
+			type: info.owner ? 'group':'DM',
+			private: info.private,
+			password_protected: !!info.password,
+			users
+		};
 	}
 
 	async is_group_pswd_protected(room_id: number) {

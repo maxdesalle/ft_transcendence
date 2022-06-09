@@ -5,7 +5,8 @@ export class Conversation {
 	constructor(
 		public room_id: number,
 		public room_name: string,
-		public status: boolean
+		// public status: boolean,
+		public type: string
 	) {
 		this.participants = [];
 	}
