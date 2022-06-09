@@ -10,6 +10,9 @@ export class User {
 	@Column()
 	username: string;
 
+	@Column()
+	name: string; // name chosen by the user
+
 	@JoinColumn({ name: 'avatarId' })
 	@OneToOne(() => DatabaseFile, {nullable: true})
 	avatar?: DatabaseFile;
@@ -23,4 +26,8 @@ export class User {
 	@Column({ nullable: true })
 	@Exclude()
 	twoFactorAuthenticationSecret?: string;
+
+	// for compability with Dszklarz's code
+	@Column({ nullable: true })
+	status: boolean
 }
