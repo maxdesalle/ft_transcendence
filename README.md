@@ -47,12 +47,12 @@ Useful commands:
 
 ----------------------
 ### Mock-authentication
-You can log in as mock user bypassing the OAuth-intra-42 drill via 
+You can log in as a mock user bypassing the OAuth-intra-42 drill via 
 ```
 POST localhost:3000/mock-auth/login
 request body:
 {
-    username: filip_the_king
+    "username": "filip_the_king"
 }
 ```
 This will create a new user if necessary.
@@ -64,31 +64,5 @@ GET localhost:3000/mock-auth/logout
 
 (Why? So you can make tests with different users without having to ask your buddy's 42 intra password, and use Postman for your tests)  
 
-### Chat
-
-a room must be selected via /chat/select before you do anything. This will be stored in the
-user Session (JWT)
-Obs: a direct conversation also has a room id
-
-for every POST request, the body must be a JSON containing a "value" attribute.
-
-POST /select : select a room
-value: number : room_id
-
-POST /message : sends a direct message (to the selected room stored in the session)
-value: string: message
-
-GET /message : gets all messages for the selected room
-
-GET /blocked: checks all blocks ( = users you blocked + users that blocked you)
-
-POST /block: blocks a user
-value: number : user_id to be blocked
-
-POST /unblock: unblocks a user
-value: number : user_id to be unblocked
-
-GET /conversations: checks conversations in which I am a participant
-
-POST add_friend: creates a "<your-username>-<friend_username>" room
-value: number: friend_id
+## API documentation (by Swagger)  
+    localhost:3000/api
