@@ -2,7 +2,7 @@ import { ArgumentMetadata, BadRequestException, Injectable, PipeTransform } from
 import { ChatService } from "../chat.service";
 
 @Injectable()
-export class GroupValidationPipe implements PipeTransform {
+export class ValidateRoomPipe implements PipeTransform {
 	constructor(private chatService: ChatService) {}
 
 	async transform(value: any, metadata: ArgumentMetadata) {

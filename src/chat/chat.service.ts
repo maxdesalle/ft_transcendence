@@ -1,4 +1,5 @@
 import { BadRequestException, ForbiddenException, HttpException, Injectable } from '@nestjs/common';
+import { User } from 'src/users/entities/user.entity';
 import { Connection, EntityManager } from 'typeorm';
 import { Conversation, GroupConfig, Session } from './DTO/chat-user.dto';
 
@@ -44,14 +45,14 @@ export class ChatService {
 		this.pool = new queryAdaptor(connection.manager);
 	}
 
-	// sets Session.selected_room to id
-	// if msg == true, populates Session.messages with new messages
-	async on_select(me: Session, id: number, msg: boolean) {
-		me.selected_room = id;
-		// me.messages = [];
-		if (msg)
-			await this.get_message(me);
-	}
+	// // sets Session.selected_room to id
+	// // if msg == true, populates Session.messages with new messages
+	// async on_select(me: Session, id: number, msg: boolean) {
+	// 	me.selected_room = id;
+	// 	// me.messages = [];
+	// 	if (msg)
+	// 		await this.get_message(me);
+	// }
 
 	// populates Session.messages with new messages
 	// room must be previously selected
@@ -119,7 +120,7 @@ export class ChatService {
 	}
 
 
-	async sendDMtoUser(me: Session, toId: number, msg: string) {
+	async sendDMtoUser(me: User, toId: number, msg: string) {
 		if (me.id === toId)
 			throw new BadRequestException("You shall not talk to yourself");
 		// check if room exists
@@ -206,7 +207,7 @@ export class ChatService {
 			if (!room_row.owner && (blocked.includes(part_q.rows[0].user_id) || blocked.includes(part_q.rows[1].user_id)))
 				continue;
 			let my_status = await this.pool.query(`
-				SELECT status FROM chat_user WHERE id= ${part_q.rows[0].user_id}`
+				SELECT status FROM public.user WHERE id= ${part_q.rows[0].user_id}`
 			);
 			let tmp = new Conversation(room_id, room_row.name, my_status.rows[0].status);
 			// tmp.id		= room_id;
@@ -266,7 +267,7 @@ export class ChatService {
 
 		// added const here
 		const tmp = await this.pool.query(
-			`SELECT name FROM chat_user WHERE id= ${friend_id}`
+			`SELECT name FROM public.user WHERE id= ${friend_id}`
 		);
 		if (!tmp.rowCount) {
 			throw new BadRequestException("user does not exist");

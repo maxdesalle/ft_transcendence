@@ -2,6 +2,7 @@ import { Body, ClassSerializerInterceptor, Controller, Get, Post, Res, UseGuards
 import { JwtService } from '@nestjs/jwt';
 import { Response } from 'express';
 import { JwtGuard } from 'src/auth/guards/jwt.guard';
+import { Usr } from 'src/users/decorators/user.decorator';
 import { User } from 'src/users/entities/user.entity';
 import { UsersService } from 'src/users/users.service';
 
@@ -38,5 +39,13 @@ export class MockAuthController {
 	) {
 		res.clearCookie('jwt_token');
 		return `Logged out`
+	}
+
+	@Get('jwt_info')
+	@UseGuards(JwtGuard)
+	jwt_info(
+		@Usr() user: User
+	) {
+		return user;
 	}
 }

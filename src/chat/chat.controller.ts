@@ -1,57 +1,28 @@
 import { Body, Controller, Get, Param, ParseIntPipe, Post, Res, UseGuards} from '@nestjs/common';
-import { JwtService } from '@nestjs/jwt';
-import { Response } from 'express';
+import { JwtGuard } from 'src/auth/guards/jwt.guard';
 import { Usr } from 'src/users/decorators/user.decorator';
+import { User } from 'src/users/entities/user.entity';
 import { ChatService } from './chat.service';
-import { GroupConfig, Session, userJwtPayload } from './DTO/chat-user.dto';
-import { JwtChatGuard } from './guards/jwt.guard';
+import { GroupConfig, Session } from './DTO/chat-user.dto';
 import { GroupOwnerGuard } from './guards/owner.guard';
 import { IsParticipant } from './guards/participant.guard';
-import { GroupValidationPipe } from './pipes/group.pipe';
+import { ValidateRoomPipe } from './pipes/validate_room.pipe';
+import { ValidateUserPipe } from './pipes/validate_user.pipe';
 
 @Controller('chat')
-@UseGuards(JwtChatGuard)
+@UseGuards(JwtGuard)
 export class ChatController {
 	constructor(
 		private chatService: ChatService,
-		// private jwtService: JwtService,
 	) {}
-
-	// @Post('select')
-	// async select_room(
-	// 	@Usr() user: Session,
-	// 	@Body('value') room_id: number,
-	// 	@Res({ passthrough: true }) res: Response
-	// ) {
-
-	// 	await this.chatService.on_select(user, room_id, true);
-	// 	// update JWT with select room
-	// 	const payload: userJwtPayload = {
-	// 		id: user.id,
-	// 		username: user.username,
-	// 		selected_room: user.selected_room
-	// 	}
-	// 	const jwtToken = this.jwtService.sign(payload);
-	// 	res.cookie('jwt_token', jwtToken);
-	// 	return user; // instead of loggin to the terminal, I'm returning it for debugging purposes
-	// }
-
-	// @Post('message')
-	// async sendDirectMsg(
-	// 	@Usr() user: Session,
-	// 	@Body('value') msg: string,
-	// ) {
-	// 	await this.chatService.send_dm(user, msg);
-	// 	return `new message= ${msg}`;
-	// }
 
 	// ============ DM ===========
 
 	@Post('dm')
 	postDM(
-		@Usr() me: Session,
-		@Body('to') destUserId,
-		@Body('message') message
+		@Usr() me: User,
+		@Body('user_id', ParseIntPipe, ValidateUserPipe) destUserId: number,
+		@Body('message') message: string
 	) {
 		return this.chatService.sendDMtoUser(me, destUserId, message);
 	}
@@ -169,7 +140,7 @@ export class ChatController {
 	@UseGuards(GroupOwnerGuard)
 	async removeGroup(
 		@Usr() me: Session,
-		@Body('room_id', ParseIntPipe, GroupValidationPipe) room_id: number 
+		@Body('room_id', ParseIntPipe, ValidateRoomPipe) room_id: number 
 	) {
 		await this.chatService.rm_group(me, room_id);
 		return this.chatService.get_convs(me);
@@ -178,8 +149,8 @@ export class ChatController {
 	@Post('add_group_user')
 	async addGroupUser(
 		@Usr() me: Session,
-		@Body('room_id', ParseIntPipe, GroupValidationPipe) room_id: number,
-		@Body('user_id') user_id: number,
+		@Body('room_id', ParseIntPipe, ValidateRoomPipe) room_id: number,
+		@Body('user_id', ParseIntPipe, ValidateUserPipe) user_id: number,
 	) {
 		await this.chatService.addGroupUser(me, room_id, user_id);
 		return this.chatService.roomInfo(room_id);
@@ -188,7 +159,7 @@ export class ChatController {
 	@Post('rm_group_user')
 	async rmGroupUser(
 		@Usr() me: Session,
-		@Body('room_id', ParseIntPipe, GroupValidationPipe) room_id: number,
+		@Body('room_id', ParseIntPipe, ValidateRoomPipe) room_id: number,
 		@Body('user_id') user_id: number,
 		@Body('unban_hours') unban_hours: number
 	) {
@@ -199,7 +170,7 @@ export class ChatController {
 	@Post('group_message')
 	async sendGroupMessage(
 		@Usr() me: Session,
-		@Body('room_id', ParseIntPipe, GroupValidationPipe) room_id: number,
+		@Body('room_id', ParseIntPipe, ValidateRoomPipe) room_id: number,
 		@Body('message') message: string,
 	) {
 		await this.chatService.send_group_msg(me, room_id, message);
@@ -209,7 +180,7 @@ export class ChatController {
 	@Post('mute_group_user')
 	async mute(
 		@Usr() me: Session,
-		@Body('room_id', ParseIntPipe, GroupValidationPipe) room_id: number,
+		@Body('room_id', ParseIntPipe, ValidateRoomPipe) room_id: number,
 		@Body('user_id') user_id: number,
 		@Body('unban_hours') unban_hours: number
 	) {
@@ -220,7 +191,7 @@ export class ChatController {
 	@Post('unmute_group_user')
 	async unmute(
 		@Usr() me: Session,
-		@Body('room_id', ParseIntPipe, GroupValidationPipe) room_id: number,
+		@Body('room_id', ParseIntPipe, ValidateRoomPipe) room_id: number,
 		@Body('user_id') user_id: number,
 	) {
 		this.chatService.unmute_user(me, room_id, user_id);
@@ -229,7 +200,7 @@ export class ChatController {
 
 	@Get('group_info/:room_id')
 	groupInfo(
-		@Param('room_id', ParseIntPipe, GroupValidationPipe) room_id: number,
+		@Param('room_id', ParseIntPipe, ValidateRoomPipe) room_id: number,
 	) {
 		return this.chatService.roomInfo(room_id);
 	}
@@ -237,7 +208,7 @@ export class ChatController {
 	@Post('promote_group_user')
 	async promote(
 		@Usr() me: Session,
-		@Body('room_id', ParseIntPipe, GroupValidationPipe) room_id: number,
+		@Body('room_id', ParseIntPipe, ValidateRoomPipe) room_id: number,
 		@Body('user_id') user_id: number,
 	) {
 		await this.chatService.add_admin_group(me, room_id, user_id);
@@ -247,7 +218,7 @@ export class ChatController {
 	@Post('demote_group_user')
 	async demote(
 		@Usr() me: Session,
-		@Body('room_id', ParseIntPipe, GroupValidationPipe) room_id: number,
+		@Body('room_id', ParseIntPipe, ValidateRoomPipe) room_id: number,
 		@Body('user_id') user_id: number,
 	) {
 		await this.chatService.rm_admin_group(me, room_id, user_id);
@@ -257,7 +228,7 @@ export class ChatController {
 	@Post('leave_group')
 	async leave(
 		@Usr() me: Session,
-		@Body('room_id', ParseIntPipe, GroupValidationPipe) room_id: number,
+		@Body('room_id', ParseIntPipe, ValidateRoomPipe) room_id: number,
 	) {
 		await this.chatService.leave_group(me, room_id);
 		return this.getConvs(me); 
@@ -266,7 +237,7 @@ export class ChatController {
 	@Post('set_password')
 	@UseGuards(GroupOwnerGuard)
 	async set_pswd(
-		@Body('room_id', ParseIntPipe, GroupValidationPipe) room_id: number,
+		@Body('room_id', ParseIntPipe, ValidateRoomPipe) room_id: number,
 		@Body('password') password: string
 	) {
 		await this.chatService.set_password(room_id, password);
@@ -276,7 +247,7 @@ export class ChatController {
 	@Post('set_private')
 	@UseGuards(GroupOwnerGuard)
 	async set_private(
-		@Body('room_id', ParseIntPipe, GroupValidationPipe) room_id: number,
+		@Body('room_id', ParseIntPipe, ValidateRoomPipe) room_id: number,
 		@Body('private') is_private: boolean
 	) {
 		await this.chatService.set_private(room_id, is_private);
@@ -287,7 +258,7 @@ export class ChatController {
 	@UseGuards(GroupOwnerGuard)
 	async set_owner(
 		@Usr() me: Session,
-		@Body('room_id', ParseIntPipe, GroupValidationPipe) room_id: number,
+		@Body('room_id', ParseIntPipe, ValidateRoomPipe) room_id: number,
 		@Body('user_id') user_id: number,
 	) {
 		await this.chatService.set_owner(me, room_id, user_id);
@@ -297,7 +268,7 @@ export class ChatController {
 	@Post('join_group')
 	async join_group(
 		@Usr() me: Session,
-		@Body('room_id', ParseIntPipe, GroupValidationPipe) room_id: number,
+		@Body('room_id', ParseIntPipe, ValidateRoomPipe) room_id: number,
 		@Body('password') password: string,
 	) {
 		await this.chatService.join_public_group(me, room_id, password);
