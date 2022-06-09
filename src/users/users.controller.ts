@@ -46,7 +46,7 @@ export class UsersController {
 			const file = await this.usersService.getAvatar(user.avatarId)
 			stream = Readable.from(file.data);
 		}
-		response.set({ 'Content-Type': 'image' });
+		response.set({ 'Content-Type': 'image/png' });
 		return new StreamableFile(stream);
 	}
 
