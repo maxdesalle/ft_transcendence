@@ -1,12 +1,15 @@
 import { Body, ClassSerializerInterceptor, Controller, Get, Post, Res, UseGuards, UseInterceptors } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
+import { ApiTags } from '@nestjs/swagger';
 import { Response } from 'express';
 import { JwtGuard } from 'src/auth/guards/jwt.guard';
 import { Usr } from 'src/users/decorators/user.decorator';
 import { User } from 'src/users/entities/user.entity';
 import { UsersService } from 'src/users/users.service';
+import { LoginDTO } from './DTO/login.dto';
 
 @Controller('mock-auth')
+@ApiTags('mock-auth')
 @UseInterceptors(ClassSerializerInterceptor)
 export class MockAuthController {
 	constructor(
@@ -14,15 +17,16 @@ export class MockAuthController {
 		private jwtService: JwtService
 	) {}
 
-	@Post('register')
-	addUser(@Body('username') username: string) {
-		return this.usersService.createNewUser(username);
-	}
+	// @Post('register')
+	// addUser(@Body('username') username: string) {
+	// 	return this.usersService.createNewUser(username);
+	// }
 
 	@Post('login')
 	async getUserLoggedIn(
 		@Res( { passthrough: true}) res: Response,
-		@Body('username') username: string
+		@Body('username') username: string,
+		@Body() _body: LoginDTO
 	) {
 		const user: User = await this.usersService.createNewUser(username);
 		const jwtToken = this.jwtService.sign({
@@ -41,11 +45,11 @@ export class MockAuthController {
 		return `Logged out`
 	}
 
-	@Get('jwt_info')
-	@UseGuards(JwtGuard)
-	jwt_info(
-		@Usr() user: User
-	) {
-		return user;
-	}
+	// @Get('jwt_info')
+	// @UseGuards(JwtGuard)
+	// jwt_info(
+	// 	@Usr() user: User
+	// ) {
+	// 	return user;
+	// }
 }

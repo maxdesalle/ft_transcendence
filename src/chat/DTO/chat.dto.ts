@@ -10,6 +10,11 @@ export class Message {
 	timestamp: Date;
 }
 
+export class Message2Room {
+	room_id: number;
+	message: string;
+}
+
 class UserRole {
 	user_id: number;
 	role: string;
@@ -29,4 +34,15 @@ export class RoomInfoShort {
 	room_name: string;
 	type: string;
 	participants: number[];
+}
+
+export class GroupConfig {
+	name: string;
+	private?: boolean;
+	password?: string;
+}
+
+export class addGroupUserDTO {
+	room_id: number;
+	user_id: number;
 }

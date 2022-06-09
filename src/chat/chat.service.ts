@@ -1,7 +1,8 @@
 import { BadRequestException, ForbiddenException, HttpException, Injectable } from '@nestjs/common';
 import { User } from 'src/users/entities/user.entity';
 import { Connection, EntityManager } from 'typeorm';
-import { Conversation, GroupConfig, Session } from './DTO/chat-user.dto';
+import { Conversation, Session } from './DTO/chat-user.dto';
+import { GroupConfig } from './DTO/chat.dto';
 
 const PARTICIPANT = 0;
 const ADMIN = 1;
@@ -343,7 +344,7 @@ export class ChatService {
 			VALUES(${user_id}, ${room_id})`);
 	}
 
-	async send_group_msg(me: Session, room_id: number, message: string) {
+	async send_msg_to_room(me: Session, room_id: number, message: string) {
 		let tmp = await this.pool.query(
 			`SELECT banned_id, unban FROM banned WHERE room_id= ${room_id}
 			AND mute=true AND banned_id=${me.id}`
@@ -531,6 +532,8 @@ export class ChatService {
 				UPDATE room
 				SET password=NULL
 				WHERE id=${room_id}`);
+		await this.pool.query(`
+			CREATE EXTENSION IF NOT EXISTS pgcrypto WITH SCHEMA public;`);
 
 		return this.pool.query(`
 			UPDATE room
@@ -555,6 +558,9 @@ export class ChatService {
 	}
 
 	async check_password_match(room_id: number, password: string) {
+		await this.pool.query(`
+			CREATE EXTENSION IF NOT EXISTS pgcrypto WITH SCHEMA public;`);
+
 		const query = await this.pool.query(`
 			SELECT (password = crypt('${password}', password))
 			AS pswmatch
