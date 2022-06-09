@@ -7,8 +7,6 @@ services:
       - 5432:5432
     environment:
       POSTGRES_PASSWORD: ${DB_PASSWORD}
-    volumes:
-      - ./db_scripts:/docker-entrypoint-initdb.d
 
   adminer:
     image: adminer

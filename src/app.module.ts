@@ -7,6 +7,7 @@ import { HtmlModule } from './html/html.module';
 import { ConfigModule } from '@nestjs/config';
 import { typeormConfig } from 'src/config/typeorm.config';
 import { ChatModule } from './chat/chat.module';
+import { MockAuthModule } from './mock_auth/mock_auth.module';
 
 @Module({
 	imports: [
@@ -16,7 +17,8 @@ import { ChatModule } from './chat/chat.module';
 		HtmlModule,
 		ConfigModule.forRoot({isGlobal: true}),
 		TypeOrmModule.forRootAsync(typeormConfig),
-		ChatModule, 
+		ChatModule,
+		MockAuthModule, 
 	],
 	controllers: [],
 	providers: [],

@@ -70,9 +70,9 @@ export class UsersController {
 	}
 
 	// route for testing purposes
-	@Post('add')
-	addUser(@Body('username') username: string) {
-		return this.usersService.createNewUser(username);
-	}
+	// @Post('add')
+	// addUser(@Body('username') username: string) {
+	// 	return this.usersService.createNewUser(username);
+	// }
 
 }

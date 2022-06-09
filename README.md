@@ -46,6 +46,24 @@ Useful commands:
 
 
 ----------------------
+### Mock-authentication
+You can log in as mock user bypassing the OAuth-intra-42 drill via 
+```
+POST localhost:3000/mock-auth/login
+request body:
+{
+    username: filip_the_king
+}
+```
+This will create a new user if necessary.
+
+To log out:
+```
+GET localhost:3000/mock-auth/logout
+```
+
+(Why? So you can make tests with different users without having to ask your buddy's 42 intra password, and use Postman for your tests)  
+
 ### Chat
 
 a room must be selected via /chat/select before you do anything. This will be stored in the
