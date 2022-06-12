@@ -7,10 +7,10 @@ import { WebSocket } from 'ws';
 @WebSocketGateway({ path: '/chat' })
 export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect{
 
-	connected_users:{id: number, socket: WebSocket}[];
+	connected_users: Map<number, WebSocket>;
 
     constructor (private jwtService: JwtService) {
-		this.connected_users = [];
+		this.connected_users = new Map<number, WebSocket>();
 	}
 
 	// throws exception if verify fails
@@ -21,10 +21,10 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect{
 	}
 
 	getUserFromSocket(socket: WebSocket) {
-		const res = this.connected_users.find(value => value.socket === socket);
-		if (!res)
-			return null;
-		return res.id;
+		for (let [key, value] of this.connected_users.entries()) {
+			if (value === socket) 
+				return key;
+		}
 	}
 
     handleConnection(client: WebSocket, req: IncomingMessage) {
@@ -33,27 +33,27 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect{
 			user = this.getUserFromUpgradeRequest(req);
 			console.log(`user ${user.id} (${user.username}) is connected.`);
 			client.send("Welcome!");
-			this.connected_users.push({ // consider using a map
-				id: user.id,
-				socket: client
-			});
+			// add to map
+			this.connected_users.set(user.id, client);
+			// this.connected_users.push({ // consider using a map
+				// id: user.id,
+				// socket: client
+			// });
 		} catch (error) {
-			client.send('bad credentials');
-			client.terminate();
+			// client.send('bad credentials');
+			// client.terminate();
+			client.close(1008, 'bad credentials');
+
 			// console.log(error);
 		}
-		// console.log(this.connected_users);
+		// console.log(this.connected_users.keys());
 	}
 
 	handleDisconnect(client: WebSocket) {
-		// debug (inefficient!)
-		// console.log(`user ${this.getUserFromSocket(client)} disconnected`);
-
-		// remove entry from array
-		this.connected_users = this.connected_users
-									.filter(value => value.socket !== client);
-
-		// console.log(this.connected_users);
+		const id = this.getUserFromSocket(client);
+		// remove entry from map
+		this.connected_users.delete(id);
+		// console.log(this.connected_users.keys());
 	}
 
 	@SubscribeMessage('message')
@@ -65,16 +65,15 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect{
 		return 'Got your message!';
 	}
 
-	getSocketByUserId(user_id: number) {
-		for (const user of this.connected_users) {
-			if (user_id === user.id)
-				return user.socket;
-		}
-		return null;
+	getConnectedUsersIDs() {
+		const list: number[] = [];
+		for (const key of this.connected_users.keys())
+			list.push(key);
+		return list;
 	}
-	
+
 	sendMsgToConnectedUser(user_id: number, message: string) {
-		const socket = this.getSocketByUserId(user_id);
+		const socket = this.connected_users.get(user_id);
 		if (socket) 
 			socket.send(message);
 	}
