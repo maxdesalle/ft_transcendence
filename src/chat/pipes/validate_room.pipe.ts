@@ -15,6 +15,7 @@ export class ValidateRoomPipe implements PipeTransform {
 	}
 }
 
+// not in use!! exclude this if no longer needed!
 @Injectable()
 export class ValidateRoomPipeWS implements PipeTransform {
 	constructor(private chatService: ChatService) {}

@@ -1,5 +1,8 @@
-import { CanActivate, ExecutionContext, Inject } from "@nestjs/common";
+import { CanActivate, ExecutionContext, Inject, Injectable } from "@nestjs/common";
+import { WsException } from "@nestjs/websockets";
+import { ChatGateway } from "../chat.gateway";
 import { ChatService } from "../chat.service";
+import { WsAuthService } from "../ws-auth.service";
 
 // checks if user is a participant in request's parameter room_id
 export class IsParticipant implements CanActivate {
@@ -14,5 +17,32 @@ export class IsParticipant implements CanActivate {
 		const room_id = request.params.room_id;
 		const participants = await this.chatService.getRoomParcipants(room_id);
 		return participants.includes(user.id);	
+	}
+}
+
+@Injectable()
+export class RoomGuard implements CanActivate {
+	constructor (
+		private chatService: ChatService,
+		private wsAuthService: WsAuthService
+	) {}
+
+	async canActivate(context: ExecutionContext): Promise<boolean>{
+		const ctx = context.switchToWs();
+		const socket = ctx.getClient();
+		const user = this.wsAuthService.getUserFromSocket(socket);
+		const room_id = +ctx.getData()?.room_id;
+		// is room_id parameter present ?
+		if (!room_id)
+			throw new WsException('missing room_id');
+		const participants = await this.chatService.getRoomParcipants(room_id);
+		// is user a participant in room_id ?
+		if (!participants.includes(user))
+			throw new WsException('user is not a member of this room');
+
+		// TODO
+		// is user muted?
+		// banned?
+		return true;	
 	}
 }
