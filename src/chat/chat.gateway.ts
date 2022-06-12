@@ -40,34 +40,36 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect{
     	let user: {id: number, username: string};
 		try {
 			user = this.wsAuthService.getUserFromUpgradeRequest(req);
-			console.log(`user ${user.id} (${user.username}) is connected.`);
-			// client.send("Welcome!");
-			// add to map
-			this.wsAuthService.connected_users.set(user.id, client);
 		} catch (error) {
 			client.close(1008, 'bad credentials');
-
-			// console.log(error);
+			return;
 		}
-		// console.log(this.connected_users.keys());
+		if (this.wsAuthService.connected_users.has(user.id)) {
+			client.close(1008, 'user already connected via another socket');
+			return;
+		}
+
+		this.wsAuthService.connected_users.set(user.id, client);
+		console.log(`user ${user.id} (${user.username}) is connected.`);
+		// console.log(this.wsAuthService.getConnectedUsersIDs()); 
 	}
 
 	handleDisconnect(client: WebSocket) {
 		const id = this.wsAuthService.getUserFromSocket(client);
 		// remove entry from map
 		this.wsAuthService.connected_users.delete(id);
-		// console.log(this.connected_users.keys());
+		// console.log(this.wsAuthService.getConnectedUsersIDs()); 
 	}
 
-	@SubscribeMessage('message')
-	handleMessage(client: WebSocket, payload: string): string {
-		const user_id = this.wsAuthService.getUserFromSocket(client);
-		console.log(`Message received from ${user_id}:`);
-		console.log(payload);
-		console.log(typeof payload);
+	// @SubscribeMessage('message')
+	// handleMessage(client: WebSocket, payload: string): string {
+	// 	const user_id = this.wsAuthService.getUserFromSocket(client);
+	// 	console.log(`Message received from ${user_id}:`);
+	// 	console.log(payload);
+	// 	console.log(typeof payload);
 
-		return 'Got your message!';
-	}
+	// 	return 'Got your message!';
+	// }
 
 	broadcast_to_list(users: number[], event: string, data: any) {
 		const payload = {event, data};

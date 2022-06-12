@@ -43,6 +43,7 @@ export class RoomGuard implements CanActivate {
 		// TODO
 		// is user muted?
 		// banned?
+		// blocked?
 		return true;	
 	}
 }
