@@ -344,6 +344,16 @@ export class ChatService {
 			VALUES(${user_id}, ${room_id})`);
 	}
 
+	async send_msg_to_room_ws(user_id: number, room_id: number, message: string) {
+		// todo: verify is user is banned or muted
+		await this.pool.query(`
+			INSERT INTO message(user_id, timestamp, message, room_id)
+			VALUES(${user_id}, NOW(), '${message}', ${room_id})`
+		);
+		await this.pool.query(`
+			UPDATE room SET activity=NOW() WHERE id=${room_id}`);
+	}
+
 	async send_msg_to_room(me: Session, room_id: number, message: string) {
 		let tmp = await this.pool.query(
 			`SELECT banned_id, unban FROM banned WHERE room_id= ${room_id}

@@ -1,15 +1,22 @@
 import { JwtService } from '@nestjs/jwt';
-import { OnGatewayConnection, OnGatewayDisconnect, OnGatewayInit, SubscribeMessage, WebSocketGateway, WsException } from '@nestjs/websockets';
+import { BaseWsExceptionFilter, ConnectedSocket, MessageBody, OnGatewayConnection, OnGatewayDisconnect, OnGatewayInit, SubscribeMessage, WebSocketGateway, WsException } from '@nestjs/websockets';
 import { IncomingMessage } from 'http';
 import { parse } from 'cookie';
 import { WebSocket } from 'ws';
+import { ValidateRoomPipe, ValidateRoomPipeWS } from './pipes/validate_room.pipe';
+import { UseFilters } from '@nestjs/common';
+import { WsExceptionFilter } from './exception-filters/wsexception';
+import { ChatService } from './chat.service';
 
 @WebSocketGateway({ path: '/chat' })
 export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect{
 
 	connected_users: Map<number, WebSocket>;
 
-    constructor (private jwtService: JwtService) {
+    constructor (
+		private jwtService: JwtService,
+		private chatService: ChatService
+	) {
 		this.connected_users = new Map<number, WebSocket>();
 	}
 
@@ -57,12 +64,37 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect{
 	}
 
 	@SubscribeMessage('message')
-	handleMessage(client: WebSocket, payload: any): string {
+	handleMessage(client: WebSocket, payload: string): string {
 		const user_id = this.getUserFromSocket(client);
 		console.log(`Message received from ${user_id}:`);
 		console.log(payload);
+		console.log(typeof payload);
 
 		return 'Got your message!';
+	}
+
+
+	@UseFilters(WsExceptionFilter)
+	@SubscribeMessage('message_to_room')
+	async postMsgToRoom(
+		@ConnectedSocket() socket: WebSocket,
+		@MessageBody('room_id', ValidateRoomPipeWS) room_id: number,
+		@MessageBody('message') message: string
+	) {
+		const user_id = this.getUserFromSocket(socket);
+		this.chatService.send_msg_to_room_ws(user_id, room_id, message);
+
+		// broadcast to room participants that are online
+		for (const user of await this.chatService.getRoomParcipants(room_id)) {
+			if (this.connected_users.has(user))
+				this.connected_users.get(user).send(JSON.stringify({
+					event: 'new_message',
+					room_id,
+					user_id,
+					message,
+				}));
+		}
+		return 'OK';
 	}
 
 	getConnectedUsersIDs() {
