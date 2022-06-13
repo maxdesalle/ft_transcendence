@@ -27,7 +27,7 @@ export class UsersController {
 
 	@Get('me')
 	@UseGuards(JwtGuard)
-	async getProfile(@Usr() user) {
+	async getProfile(@Usr() user: User) {
 		return await this.usersService.findById(user.id);
 	}
 
