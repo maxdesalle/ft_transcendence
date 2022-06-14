@@ -5,6 +5,7 @@ export class HtmlService {
 	getHomePage(username: string): string {
 		return `<p>Good to see you here ${username} 👋</p><p>You can check your settings <a href="/settings/">here</a> or log out <a href="/logout/">here</a>.</p>
 			<p>You can check your avatar <a href="/users/avatar">here</a> or change it <a href="/upload_avatar">here</a>.</p>
+			<img src='users/avatar' width='500'>
 			`;
 	}
 

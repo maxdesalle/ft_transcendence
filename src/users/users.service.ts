@@ -79,8 +79,8 @@ export class UsersService {
 
 			await queryRunner.commitTransaction();
 
-			// return avatar
-			return `Avatar was succesfully updated. New avatar: ${avatar.filename}`;
+			// return url for new database file
+			return `/database-files/${avatar.id}`;
 		} catch {
 			await queryRunner.rollbackTransaction();
 			throw new InternalServerErrorException();

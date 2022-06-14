@@ -20,7 +20,7 @@ export class DatabaseFilesController {
 		const file = await this.databaseFilesService.getFileById(id);
 		const stream = Readable.from(file.data);
 
-		response.set({ 'Content-Type': 'image' });
+		response.set({ 'Content-Type': 'image/png' });
 
 		return new StreamableFile(stream);
 	}

@@ -9,7 +9,8 @@ import { createReadStream, ReadStream } from 'fs';
 import { join } from 'path';
 import { ConfigService } from '@nestjs/config';
 import { User } from './entities/user.entity';
-import { ApiTags } from '@nestjs/swagger';
+import { ApiBody, ApiConsumes, ApiTags } from '@nestjs/swagger';
+import { fileUploadDto } from './dto/fileUpload.dto';
 
 @Controller('users')
 @ApiTags('users')
@@ -58,6 +59,11 @@ export class UsersController {
 
 	@Post('avatar') 
 	@UseGuards(JwtGuard)
+	@ApiConsumes('multipart/form-data')
+	@ApiBody({
+		description: 'avatar image file',
+		type: fileUploadDto
+	})
 	@UseInterceptors(FileInterceptor('file'))
 	async addAvatar(
 		@Usr() user,

@@ -21,7 +21,6 @@ export class User {
 	avatarId?: number;
 
 	@Column({ default: false })
-	@Exclude()
 	isTwoFactorAuthenticationEnabled: boolean;
 
 	@Column({ nullable: true })

@@ -25,7 +25,8 @@ import { AuthService } from './auth.service';
 import { toFileStream } from 'qrcode';
 import { UsersService } from '../users/users.service';
 import { Usr } from '../users/decorators/user.decorator';
-import { ApiTags } from '@nestjs/swagger';
+import { ApiHeader, ApiOperation, ApiTags } from '@nestjs/swagger';
+import { Login2faDTO } from './dto/login2FA.dto';
 
 async function pipeQrCodeStream(stream: Response, otpauthUrl: string) {
 	return toFileStream(stream, otpauthUrl);
@@ -76,9 +77,13 @@ export class AuthController {
 	@Post('/login/two-factor-authentication/')
 	@HttpCode(200)
 	@UseGuards(JwtTwoFactorAuthenticationGuard)
+	@ApiHeader({
+		name: 'Cookie',
+		description: 'a cookie with a valid jwt-token must be included'
+	})
 	twoFactorAuthentication(
 		@Usr() user,
-		@Body() { twoFactorAuthenticationCode },
+		@Body() { twoFactorAuthenticationCode }: Login2faDTO,
 		@Res({ passthrough: true }) res: Response,
 	) {
 		const isTwoFactorAuthenticationCodeValid =
