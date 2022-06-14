@@ -7,11 +7,11 @@ export class User {
 	@PrimaryGeneratedColumn()
 	id: number;
 
-	@Column()
-	username: string;
+	@Column({ unique: true })
+	username: string; // 42 login
 
-	@Column()
-	name: string; // name chosen by the user
+	@Column({ unique: true })
+	chosen_name: string; // name chosen by the user
 
 	@JoinColumn({ name: 'avatarId' })
 	@OneToOne(() => DatabaseFile, {nullable: true})

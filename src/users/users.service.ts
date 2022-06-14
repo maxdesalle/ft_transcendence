@@ -1,4 +1,4 @@
-import { Injectable, InternalServerErrorException } from '@nestjs/common';
+import { ConflictException, Injectable, InternalServerErrorException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { DatabaseFilesService } from 'src/database-files/database-files.service';
 import { Connection, Repository } from 'typeorm';
@@ -18,7 +18,7 @@ export class UsersService {
 		if (user == undefined) {
 			user = new User();
 			user.username = username;
-			user.name = username; // TODO change this to chosen_name
+			user.chosen_name = username; // TODO change this to chosen_name
 			await this.usersRepository.save(user);
 		}
 		return user;
@@ -53,6 +53,17 @@ export class UsersService {
 
 	findAll() {
 		return this.usersRepository.find();
+	}
+
+	async changeChosenName(user_id: number, new_name: string) {
+		const user_exists = await 
+			this.usersRepository.findOne({chosen_name: new_name});
+		if (user_exists)
+			throw new ConflictException("name already taken");
+		const user = await this.usersRepository.findOne(user_id);
+		user.chosen_name = new_name;
+		this.usersRepository.save(user);
+		return user;
 	}
 
 	// changes file in database as transaction.

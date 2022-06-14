@@ -11,6 +11,7 @@ import { ConfigService } from '@nestjs/config';
 import { User } from './entities/user.entity';
 import { ApiBody, ApiConsumes, ApiTags } from '@nestjs/swagger';
 import { fileUploadDto } from './dto/fileUpload.dto';
+import { changeNameDto } from './dto/changeName.dto';
 
 @Controller('users')
 @ApiTags('users')
@@ -73,6 +74,15 @@ export class UsersController {
 			throw new BadRequestException();
 		return this.usersService.changeAvatar(
 			user.id, file.buffer, file.originalname);
+	}
+
+	@Post('change_name')
+	@UseGuards(JwtGuard)
+	changeName(
+		@Usr() user,
+		@Body() {new_name}: changeNameDto
+	) {
+		return this.usersService.changeChosenName(user.id, new_name);
 	}
 
 	// route for testing purposes
