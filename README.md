@@ -82,7 +82,7 @@ What you can do now:
 * you can send your buddy a direct message via POST /chat/dm
 * you can check DMs via  
     * GET /chat/dm/{your buddy's id} or
-    * /chat/room_messages/{room_id} (see below)
+    * GET /chat/room_messages/{room_id} (see below under "Rooms")
 
 ### Group
 * create a group: POST /chat/create_group
