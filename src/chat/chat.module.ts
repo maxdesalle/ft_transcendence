@@ -6,11 +6,12 @@ import { ChatService } from './chat.service';
 import { UsersModule } from 'src/users/users.module';
 import { WsGateway } from '../websockets/ws.gateway';
 import { WsService } from '../websockets/ws.service';
+import { WebsocketsModule } from 'src/websockets/websockets.module';
 
 @Module({
   controllers: [ChatController],
   providers: [ChatService, WsGateway, WsService],
-  imports: [JwtModule.registerAsync(jwtConfig), UsersModule],
+  imports: [JwtModule.registerAsync(jwtConfig), UsersModule, WebsocketsModule],
   exports:[WsService]
 })
 export class ChatModule {}

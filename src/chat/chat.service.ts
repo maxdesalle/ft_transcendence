@@ -60,7 +60,8 @@ export class ChatService {
 			INSERT INTO message(user_id, timestamp, message, room_id)
 			VALUES(${me.id}, NOW(), '${msg}', ${room_id})`
 		);
-		return await this.getMessagesByRoomId(me, room_id);
+		return room_id;
+		// return await this.getMessagesByRoomId(me, room_id);
 	}
 
 	// returns room_id of dm room between user, null if non-existant
@@ -93,7 +94,7 @@ export class ChatService {
 
 		// get username
 		const tmp = await this.pool.query(
-			`SELECT name FROM public.user WHERE id= ${friend_id}`
+			`SELECT username FROM public.user WHERE id= ${friend_id}`
 		);
 		if (!tmp.rowCount) {
 			throw new BadRequestException("user does not exist");
@@ -298,6 +299,7 @@ export class ChatService {
 			await this.set_password(room_id, group.password);
 		if (group.private)
 			await this.set_private(room_id, group.private);
+		return room_id;
 	}
 
 	async get_role(id: number, room_id: number) {

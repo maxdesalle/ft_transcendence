@@ -3,6 +3,7 @@ import { ApiTags } from '@nestjs/swagger';
 import { JwtGuard } from 'src/auth/guards/jwt.guard';
 import { Usr } from 'src/users/decorators/user.decorator';
 import { User } from 'src/users/entities/user.entity';
+import { WsService } from 'src/websockets/ws.service';
 import { ChatService } from './chat.service';
 import { Session } from './DTO/chat-user.dto';
 import { PostDM, Message, RoomInfo, RoomInfoShort, GroupConfig, addGroupUserDTO, Message2Room } from './DTO/chat.dto';
@@ -16,6 +17,7 @@ import { ValidateUserPipe } from './pipes/validate_user.pipe';
 export class ChatController {
 	constructor(
 		private chatService: ChatService,
+		private wsService: WsService
 	) {}
 
 	// ============ DM ===========
@@ -27,8 +29,13 @@ export class ChatController {
 		@Body('user_id', ParseIntPipe, ValidateUserPipe) destUserId: number,
 		// @Body('message') message: string,
 		@Body() body: PostDM
-	): Promise<Message[]> {
-		return await this.chatService.sendDMtoUser(me, destUserId, body.message);
+	) {
+		const room_id = await this.chatService.sendDMtoUser(me, destUserId, body.message);
+		this.wsService.sendMsgToUsersList([me.id, destUserId], {
+			event: 'chat_dm',
+			room_id,
+			message: body.message
+		})
 	}
 
 	@Get('dm/:user_id')
@@ -149,7 +156,12 @@ export class ChatController {
 		@Usr() me: User,
 		@Body() group_config: GroupConfig 
 	): Promise<RoomInfoShort[]> {
-		await this.chatService.create_group(me, group_config);
+		const room_id = await this.chatService.create_group(me, group_config);
+		this.wsService.sendMsgToUser(me.id, {
+			event: 'chat_new_group',
+			room_id
+		});
+
 		return this.chatService.get_convs(me);
 	}
 
@@ -162,6 +174,20 @@ export class ChatController {
 		@Body() _body: addGroupUserDTO
 	): Promise<RoomInfo> {
 		await this.chatService.addGroupUser(me, room_id, user_id);
+		// notify added user
+		this.wsService.sendMsgToUser(user_id, {
+			event: 'chat_new_group',
+			room_id
+		});
+		// notify all users in group
+		this.wsService.sendMsgToUsersList(
+			await this.chatService.getRoomParcipants(room_id),
+			{
+				event: 'chat_new_user_in_group',
+				room_id,
+				user_id
+			}
+		)
 		return this.chatService.roomInfo(room_id);
 	}
 
@@ -193,9 +219,17 @@ export class ChatController {
 		@Body('room_id', ParseIntPipe, ValidateRoomPipe) room_id: number,
 		@Body('message') message: string,
 		@Body() _body: Message2Room
-	): Promise<Message[]> {
+	) {
 		await this.chatService.send_msg_to_room(me, room_id, message);
-		return this.chatService.getMessagesByRoomId(me, room_id);
+		// return this.chatService.getMessagesByRoomId(me, room_id);
+		this.wsService.sendMsgToUsersList(
+			await this.chatService.getRoomParcipants(room_id),
+			{
+				event: 'chat_room_msg',
+				room_id,
+				message
+			}
+		)
 	}
 
 	@Post('mute_group_user')

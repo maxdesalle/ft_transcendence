@@ -26,7 +26,7 @@
 			</ul>
 		</div>
 
-		<button onclick="sendMsg()"> Send msg </button>
+		<!-- <button onclick="sendMsg()"> Send msg </button> -->
 	</body>
 	<script>
 		function post_request(url, data) {
@@ -83,6 +83,7 @@
 				document.getElementById('ws_connection').innerHTML = 'Status: disconnected (are you logged in?)';
 			});
 
+			// event listener for received messages
 			socket.addEventListener('message', function(event) {
 				console.log('message from ws server: ', event.data);
 				const li = document.createElement('li');
@@ -104,14 +105,14 @@
 		// function sendMsg() {
 			// socket.send("hello there, this is a message from client");
 		// }
-		function sendMsg() {
-			socket.send(
-				JSON.stringify({
-					event: 'message',
-					data: 'hello from client',
-				})
-			);
-		}
+		// function sendMsg() {
+		// 	socket.send(
+		// 		JSON.stringify({
+		// 			event: 'message',
+		// 			data: 'hello from client',
+		// 		})
+		// 	);
+		// }
 
 	</script>
 </html>
