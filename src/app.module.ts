@@ -11,6 +11,7 @@ import { MockAuthModule } from './mock_auth/mock_auth.module';
 import { FriendsModule } from './friends/friends.module';
 import { ServeStaticModule } from '@nestjs/serve-static'
 import { join } from 'path';
+import { WebsocketsModule } from './websockets/websockets.module';
 
 @Module({
 	imports: [
@@ -25,9 +26,9 @@ import { join } from 'path';
 		FriendsModule,
 		ServeStaticModule.forRoot({
 			rootPath: join(__dirname, '..', 'client'),
-		})
+		}),
+		WebsocketsModule
 	],
 	controllers: [],
-	providers: [],
 })
 export class AppModule {}

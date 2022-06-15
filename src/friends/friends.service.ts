@@ -1,6 +1,6 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { WsAuthService } from 'src/chat/ws-auth.service';
+import { WsService } from 'src/websockets/ws.service';
 import { User } from 'src/users/entities/user.entity';
 import { UsersService } from 'src/users/users.service';
 import { Repository } from 'typeorm';
@@ -14,7 +14,7 @@ export class FriendsService {
 		@InjectRepository(Friendship)
 		private friendsRepository: Repository<Friendship>,
 		private usersService: UsersService,
-		private wsService: WsAuthService
+		private wsService: WsService
 	) {}
 
 	// duplicate request is no problem

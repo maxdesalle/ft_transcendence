@@ -70,7 +70,7 @@
 		let socket;
 		function ws_connect() {
 			// Create WebSocket connection.
-			socket = new WebSocket('ws://localhost:3000/chat');
+			socket = new WebSocket('ws://localhost:3000/');
 
 			// Connection opened
 			socket.addEventListener('open', function (event) {
