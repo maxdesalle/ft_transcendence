@@ -79,23 +79,15 @@ export class FriendsService {
 			throw new BadRequestException("friendship request does not exist");
 		request.status = status;
 		await this.friendsRepository.save(request);
-		return this.listFriends(my_id);
+		return this.listFriendsIDs(my_id);
 	}
 
-	async listFriends(my_id: number) {
+	async listFriendsIDs(my_id: number): Promise<number[]> {
 		const me = await this.usersRepository.findOne(my_id, {
 			relations: ['received_friendships', 'requested_friendships']
 		});
-		// const requested = me.requested_friendships.filter(
-		// 	f => f.status === FrienshipStatus.accepted);
-		// const friends_req = requested.map(obj => obj.recv_user_id);
 
-		// const received = me.received_friendships.filter(
-		// 	f => f.status = FrienshipStatus.accepted);
-		// const friends_recv = received.map(obj => obj.req_user_id)
-
-		// return [...friends_req, ...friends_recv];
-		const friends_ids = [].concat(
+		return [].concat(
 			me.received_friendships
 				.filter(f => f.status === FrienshipStatus.accepted)
 				.map(obj => obj.req_user_id),
@@ -103,6 +95,10 @@ export class FriendsService {
 				.filter(f => f.status === FrienshipStatus.accepted)
 				.map(obj => obj.recv_user_id),
 		)
+	}
+
+	async listFriendsUsers(my_id: number) {
+		const friends_ids = await this.listFriendsIDs(my_id);
 		return this.usersRepository.findByIds(friends_ids);
 	}
 
