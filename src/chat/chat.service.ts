@@ -1,8 +1,9 @@
 import { BadRequestException, ForbiddenException, HttpException, Injectable } from '@nestjs/common';
 import { User } from 'src/users/entities/user.entity';
+import { UsersService } from 'src/users/users.service';
 import { Connection, EntityManager } from 'typeorm';
 import { Conversation, Session } from './DTO/chat-user.dto';
-import { GroupConfig } from './DTO/chat.dto';
+import { GroupConfig, Message } from './DTO/chat.dto';
 
 const PARTICIPANT = 0;
 const ADMIN = 1;
@@ -42,7 +43,10 @@ class queryAdaptor {
 export class ChatService {
 	pool: queryAdaptor;
 
-	constructor(private connection: Connection) {
+	constructor(
+		private connection: Connection,
+		private usersService: UsersService
+		) {
 		this.pool = new queryAdaptor(connection.manager);
 	}
 	
@@ -56,12 +60,12 @@ export class ChatService {
 		if (!room_id) 
 			room_id = await this.create_dm_room(me, toId);
 		// insert message into table	
-		await this.pool.query(`
-			INSERT INTO message(user_id, timestamp, message, room_id)
-			VALUES(${me.id}, NOW(), '${msg}', ${room_id})`
-		);
-		return room_id;
-		// return await this.getMessagesByRoomId(me, room_id);
+		// await this.pool.query(`
+		// 	INSERT INTO message(user_id, timestamp, message, room_id)
+		// 	VALUES(${me.id}, NOW(), '${msg}', ${room_id})`
+		// );
+		// return room_id;
+		return this.send_msg_to_room(me, room_id, msg);
 	}
 
 	// returns room_id of dm room between user, null if non-existant
@@ -99,7 +103,7 @@ export class ChatService {
 		if (!tmp.rowCount) {
 			throw new BadRequestException("user does not exist");
 		}
-		const username: string = tmp.rows[0].name;
+		const username: string = tmp.rows[0].username;
 
 		// create room
 		const query = await this.pool.query(
@@ -362,7 +366,7 @@ export class ChatService {
 			UPDATE room SET activity=NOW() WHERE id=${room_id}`);
 	}
 
-	async send_msg_to_room(me: Session, room_id: number, message: string) {
+	async send_msg_to_room(me: User, room_id: number, message: string) {
 		let tmp = await this.pool.query(
 			`SELECT banned_id, unban FROM banned WHERE room_id= ${room_id}
 			AND mute=true AND banned_id=${me.id}`
@@ -379,12 +383,21 @@ export class ChatService {
 				throw new ForbiddenException("you are muted");
 				// return ("you are still muted");
 		}
-		await this.pool.query(`
+		const query = await this.pool.query(`
 			INSERT INTO message(user_id, timestamp, message, room_id)
-			VALUES(${me.id}, NOW(), '${message}', ${room_id})`
+			VALUES(${me.id}, NOW(), '${message}', ${room_id})
+			RETURNING *`
 		);
 		await this.pool.query(`
 			UPDATE room SET activity=NOW() WHERE id=${room_id}`);
+
+		const user = await this.usersService.findById(me.id);
+		const msg: Message = {
+			...query.rows[0],
+			username: user.username,
+			chosen_name: user.chosen_name
+		}
+		return msg;
 	}
 
 	async getRoomsList() {

@@ -30,13 +30,35 @@ export class ChatController {
 		// @Body('message') message: string,
 		@Body() body: PostDM
 	) {
-		const room_id = await this.chatService.sendDMtoUser(me, destUserId, body.message);
+		const message: Message = 
+			await this.chatService.sendDMtoUser(me, destUserId, body.message);
 		this.wsService.sendMsgToUsersList([me.id, destUserId], {
 			event: 'chat_dm',
-			room_id,
-			message: body.message
+			message
 		})
+		return message;
 	}
+	
+	@Post('message_to_room')
+	@ApiTags('chat')
+	async postMsgToRoom(
+		@Usr() me: User,
+		@Body('room_id', ParseIntPipe, ValidateRoomPipe) room_id: number,
+		@Body('message') msg: string,
+		@Body() _body: Message2Room
+	) {
+		const message: Message =
+			await this.chatService.send_msg_to_room(me, room_id, msg);
+		this.wsService.sendMsgToUsersList(
+			await this.chatService.getRoomParcipants(room_id),
+			{
+				event: 'chat_room_msg',
+				message
+			}
+		)
+		return message;
+	}
+
 
 	@Get('dm/:user_id')
 	@ApiTags('chat')
@@ -210,26 +232,6 @@ export class ChatController {
 	) {
 		await this.chatService.rm_user_group(me, room_id, user_id, unban_hours);
 		return this.chatService.roomInfo(room_id);
-	}
-
-	@Post('message_to_room')
-	@ApiTags('chat')
-	async postMsgToRoom(
-		@Usr() me: User,
-		@Body('room_id', ParseIntPipe, ValidateRoomPipe) room_id: number,
-		@Body('message') message: string,
-		@Body() _body: Message2Room
-	) {
-		await this.chatService.send_msg_to_room(me, room_id, message);
-		// return this.chatService.getMessagesByRoomId(me, room_id);
-		this.wsService.sendMsgToUsersList(
-			await this.chatService.getRoomParcipants(room_id),
-			{
-				event: 'chat_room_msg',
-				room_id,
-				message
-			}
-		)
 	}
 
 	@Post('mute_group_user')

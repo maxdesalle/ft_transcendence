@@ -94,3 +94,47 @@ What you can do now:
 * see the messages in a room: /chat/room_messages/{room_id}
 * get more info about a room: /chat/room_info/{room_id}
 
+
+## Get real-time notifications via Websocket
+Client-side:
+```
+// Create WebSocket connection (login first, so the JWT is included as cookie)
+const socket = new WebSocket('ws://localhost:3000/');
+
+// in case you wanna do something when connection is established
+socket.addEventListener('open', function (event) {
+    console.log('connected to WS server');
+});
+
+// in case you wanna do something when connection is closed
+socket.addEventListener('close', function (event) {
+    console.log('disconneted from WS server');
+});
+
+// now the real deal: event listener for received messages
+socket.addEventListener('message', function(event) {
+    const payload = event.data;
+    console.log('message from ws server: ', payload);
+
+    if (payload.event === 'chat_dm') {
+        const new_msg = payload.message;
+        // Do something
+    }
+    
+    if (payload.event === 'chat_room_msg') {
+        const new_msg = payload.message;
+        // Do something
+    }
+
+    if (payload.event === 'chat_new_group') {
+        const room_id = payload.room_id;
+        // You were added to this room (group), do something
+    }
+
+    if (payload.event === 'chat_new_user_in_group') {
+        const room_id = payload.room_id;
+        const new_user = payload.user_id;
+        // a new user was added to this room
+    }
+});
+```
