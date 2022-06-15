@@ -135,12 +135,18 @@ export class ChatService {
 	// TODO: review this: being blocked might not have anything to do with rooms? 
 	// or will be this used to fetch DM rooms too?
 	async getMessagesByRoomId(me: User, room_id: number) {
-		const my_query = await this.pool.query(
-			`SELECT id, user_id, message, timestamp FROM message
-			WHERE room_id = ${room_id}
-			AND user_id NOT IN (SELECT blocked_id FROM blocked WHERE user_id= ${me.id})
-			ORDER BY timestamp DESC`
-		);
+		// const my_query = await this.pool.query(
+		// 	`SELECT id, user_id, message, timestamp FROM message
+		// 	WHERE room_id = ${room_id}
+		// 	AND user_id NOT IN (SELECT blocked_id FROM blocked WHERE user_id= ${me.id})
+		// 	ORDER BY timestamp DESC`
+		// );
+		const my_query = await this.pool.query(`
+			SELECT message.id, user_id, username, chosen_name, message, timestamp
+			FROM message
+			JOIN public.user ON message.user_id=public.user.id
+			WHERE room_id=${room_id};`
+		)
 		return my_query.rows;
 	}
 
