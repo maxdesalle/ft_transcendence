@@ -18,7 +18,7 @@ export class UsersService {
 		if (user == undefined) {
 			user = new User();
 			user.username = username;
-			user.chosen_name = username; // TODO change this to chosen_name
+			user.chosen_name = username; 
 			await this.usersRepository.save(user);
 		}
 		return user;

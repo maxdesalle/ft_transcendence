@@ -9,6 +9,8 @@ import { typeormConfig } from 'src/config/typeorm.config';
 import { ChatModule } from './chat/chat.module';
 import { MockAuthModule } from './mock_auth/mock_auth.module';
 import { FriendsModule } from './friends/friends.module';
+import { ServeStaticModule } from '@nestjs/serve-static'
+import { join } from 'path';
 
 @Module({
 	imports: [
@@ -20,7 +22,10 @@ import { FriendsModule } from './friends/friends.module';
 		TypeOrmModule.forRootAsync(typeormConfig),
 		ChatModule,
 		MockAuthModule,
-		FriendsModule, 
+		FriendsModule,
+		ServeStaticModule.forRoot({
+			rootPath: join(__dirname, '..', 'client'),
+		})
 	],
 	controllers: [],
 	providers: [],

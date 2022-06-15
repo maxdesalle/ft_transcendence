@@ -54,28 +54,23 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect{
 	handleDisconnect(client: WebSocket) {
 		const id = this.wsAuthService.getUserFromSocket(client);
 		// remove entry from map
-		this.wsAuthService.connected_users.delete(id);
-		console.log(`user ${id} disconnected.`);
+		if (this.wsAuthService.connected_users.delete(id))
+			console.log(`user ${id} disconnected.`);
 		// console.log(this.wsAuthService.getConnectedUsersIDs()); 
 	}
 
-	// @SubscribeMessage('message')
-	// handleMessage(client: WebSocket, payload: string): string {
-	// 	const user_id = this.wsAuthService.getUserFromSocket(client);
-	// 	console.log(`Message received from ${user_id}:`);
-	// 	console.log(payload);
-	// 	console.log(typeof payload);
-
-	// 	return 'Got your message!';
-	// }
-
-	broadcast_to_list(users: number[], event: string, data: any) {
-		const payload = {event, data};
-		for (const user of users) {
-			if (this.wsAuthService.connected_users.has(user)) {
-				this.wsAuthService.connected_users.get(user).send(JSON.stringify(payload));
-			}
+	@SubscribeMessage('message')
+	handleMessage(client: WebSocket, payload: string){
+		console.log(`Message received`);
+		console.log(payload);
+		const pl = {
+			event: 'party',
+			what: 'pool party',
+			where: 'pool'
 		}
+		client.send(JSON.stringify(pl));
+
+		// return 'Got your message!';
 	}
 
 	@UseGuards(RoomGuard)
@@ -89,9 +84,8 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect{
 		this.chatService.send_msg_to_room_ws(user_id, room_id, message);
 
 		// broadcast to room participants that are online
-		this.broadcast_to_list(
+		this.sendMsgToUsersList(
 			await this.chatService.getRoomParcipants(room_id),
-			'new message',
 			{room_id, user_id, message}
 		)
 		return 'OK';
@@ -99,9 +93,17 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect{
 
 
 
-	// sendMsgToConnectedUser(user_id: number, message: string) {
-	// 	const socket = this.wsAuthService.connected_users.get(user_id);
-	// 	if (socket) 
-	// 		socket.send(message);
-	// }
+	sendMsgToUser(user_id: number, data: any) {
+		if (this.wsAuthService.connected_users.has(user_id))
+			this.wsAuthService.connected_users.get(user_id)
+			.send(JSON.stringify(data));
+	}
+	
+	sendMsgToUsersList(users: number[], data: any) {
+		for (const user_id of users) {
+			this.sendMsgToUser(user_id, data);
+		}
+	}
+
+
 }
