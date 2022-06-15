@@ -1,6 +1,7 @@
 import { Exclude } from "class-transformer";
 import { DatabaseFile } from "src/database-files/entities/databaseFile.entity";
-import { Column, Entity, JoinColumn, OneToOne, PrimaryGeneratedColumn } from "typeorm";
+import { Friendship } from "src/friends/entities/friendship.entity";
+import { Column, Entity, JoinColumn, OneToMany, OneToOne, PrimaryGeneratedColumn } from "typeorm";
 
 @Entity()
 export class User {
@@ -30,4 +31,10 @@ export class User {
 	// for compability with Dszklarz's code
 	@Column({ nullable: true })
 	status: boolean
+
+	@OneToMany(() => Friendship, (friendship) => friendship.requesting_user)
+	requested_friendships: Friendship[]
+
+	@OneToMany(() => Friendship, (friendship) => friendship.receiving_user)
+	received_friendships: Friendship[]
 }
