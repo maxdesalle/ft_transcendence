@@ -11,5 +11,6 @@ import { WsAuthService } from './ws-auth.service';
   controllers: [ChatController],
   providers: [ChatService, ChatGateway, WsAuthService],
   imports: [JwtModule.registerAsync(jwtConfig), UsersModule],
+  exports:[WsAuthService]
 })
 export class ChatModule {}

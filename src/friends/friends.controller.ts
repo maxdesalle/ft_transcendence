@@ -25,6 +25,7 @@ export class FriendsController {
 	}
 
 	@Post('accept_friend_request')
+	@ApiResponse({ description: 'list of friends user_ids'})
 	acceptFriend(
 		@Usr() me,
 		@Body('user_id', ParseIntPipe) user_id: number,
@@ -35,6 +36,7 @@ export class FriendsController {
 	}
 
 	@Post('reject_friend_request')
+	@ApiResponse({ description: 'list of friends user_ids'})
 	rejectFriend(
 		@Usr() me,
 		@Body('user_id', ParseIntPipe) user_id: number,
@@ -71,7 +73,8 @@ export class FriendsController {
 		return this.friendsService.rejectedReceivedRequests(me.id);
 	}
 
-	@Get()
+	@Get('id')
+	@ApiOperation({ summary: "your friends' user_id" })
 	@ApiResponse({ description: 'list of user_ids'})
 	listFriendsIds(
 		@Usr() me
@@ -79,13 +82,13 @@ export class FriendsController {
 		return this.friendsService.listFriendsIDs(me.id);
 	}
 
-	@Get('users')
-	@ApiResponse({ description: 'list of Users (more info than just ID)'})
+	@Get()
+	@ApiOperation({ summary: "your friends' User object (more info than just ID" })
+	@ApiResponse({ description: 'list of Users'})
 	listFriendsUsers(
 		@Usr() me
 	) {
 		return this.friendsService.listFriendsUsers(me.id);
 	}
 	
-
 }

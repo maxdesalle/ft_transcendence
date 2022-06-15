@@ -13,13 +13,10 @@ import { WsAuthService } from './ws-auth.service';
 @UseFilters(WsExceptionFilter)
 export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect{
 
-	// connected_users: Map<number, WebSocket>;
-
     constructor (
 		private chatService: ChatService,
 		private wsAuthService: WsAuthService
 	) {
-		// this.connected_users = new Map<number, WebSocket>();
 	}
 
 	// // throws exception if verify fails
@@ -58,6 +55,7 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect{
 		const id = this.wsAuthService.getUserFromSocket(client);
 		// remove entry from map
 		this.wsAuthService.connected_users.delete(id);
+		console.log(`user ${id} disconnected.`);
 		// console.log(this.wsAuthService.getConnectedUsersIDs()); 
 	}
 

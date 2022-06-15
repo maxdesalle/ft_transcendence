@@ -32,6 +32,8 @@ export class User {
 	@Column({ nullable: true })
 	status: boolean
 
+	statuss?: string
+
 	@OneToMany(() => Friendship, (friendship) => friendship.requesting_user)
 	requested_friendships: Friendship[]
 

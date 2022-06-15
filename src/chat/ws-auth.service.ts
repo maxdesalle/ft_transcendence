@@ -39,5 +39,9 @@ import { WebSocket } from "ws";
 		return list;
 	}
 
+	isUserConnected(user_id: number): boolean {
+		return this.connected_users.has(user_id);
+	}
+
 
  }

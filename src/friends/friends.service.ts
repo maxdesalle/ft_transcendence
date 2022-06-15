@@ -1,5 +1,6 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
+import { WsAuthService } from 'src/chat/ws-auth.service';
 import { User } from 'src/users/entities/user.entity';
 import { UsersService } from 'src/users/users.service';
 import { Repository } from 'typeorm';
@@ -12,7 +13,8 @@ export class FriendsService {
 		private usersRepository: Repository<User>,
 		@InjectRepository(Friendship)
 		private friendsRepository: Repository<Friendship>,
-		private usersService: UsersService
+		private usersService: UsersService,
+		private wsService: WsAuthService
 	) {}
 
 	// duplicate request is no problem
@@ -99,7 +101,16 @@ export class FriendsService {
 
 	async listFriendsUsers(my_id: number) {
 		const friends_ids = await this.listFriendsIDs(my_id);
-		return this.usersRepository.findByIds(friends_ids);
+		const users = await this.usersRepository.findByIds(friends_ids);
+		users.forEach(user => user.statuss = this.getFriendStatus(user.id));
+		return users;
+	}
+
+	// todo: add a FRIEND guard 
+	getFriendStatus(friend_id: number): string {
+		if (this.wsService.isUserConnected(friend_id))
+			return 'online';
+		return 'offline';
 	}
 
 }
