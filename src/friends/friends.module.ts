@@ -6,6 +6,7 @@ import { Friendship } from './entities/friendship.entity';
 import { FriendsService } from './friends.service';
 import { FriendsController } from './friends.controller';
 import { ChatModule } from 'src/chat/chat.module';
+import { WebsocketsModule } from 'src/websockets/websockets.module';
 
 @Module({
   providers: [FriendsService],
@@ -13,7 +14,7 @@ import { ChatModule } from 'src/chat/chat.module';
 		TypeOrmModule.forFeature([User]),
 		TypeOrmModule.forFeature([Friendship]),
 		UsersModule,
-		ChatModule
+		WebsocketsModule
 	],
 	controllers: [FriendsController],
 

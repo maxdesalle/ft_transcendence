@@ -10,8 +10,7 @@ import { WebsocketsModule } from 'src/websockets/websockets.module';
 
 @Module({
   controllers: [ChatController],
-  providers: [ChatService, WsGateway, WsService],
+  providers: [ChatService],
   imports: [JwtModule.registerAsync(jwtConfig), UsersModule, WebsocketsModule],
-  exports:[WsService]
 })
 export class ChatModule {}
