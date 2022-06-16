@@ -18,7 +18,7 @@ export class UsersService {
 		if (user == undefined) {
 			user = new User();
 			user.username = username;
-			user.chosen_name = username; 
+			user.display_name = username; 
 			await this.usersRepository.save(user);
 		}
 		return user;
@@ -51,22 +51,22 @@ export class UsersService {
 		return this.usersRepository.findOne({ username });
 	}
 
-	findByChosenName(chosen_name: string): Promise<User | undefined> {
+	findByDisplayName(display_name: string): Promise<User | undefined> {
 
-		return this.usersRepository.findOne({ chosen_name });
+		return this.usersRepository.findOne({ display_name });
 	}
 
 	findAll() {
 		return this.usersRepository.find();
 	}
 
-	async changeChosenName(user_id: number, new_name: string) {
+	async changeDisplayName(user_id: number, new_name: string) {
 		const user_exists = await 
-			this.usersRepository.findOne({chosen_name: new_name});
+			this.usersRepository.findOne({display_name: new_name});
 		if (user_exists)
 			throw new ConflictException("name already taken");
 		const user = await this.usersRepository.findOne(user_id);
-		user.chosen_name = new_name;
+		user.display_name = new_name;
 		this.usersRepository.save(user);
 		return user;
 	}

@@ -7,7 +7,7 @@ export class Message {
 	id: number;
 	user_id: number;
 	username: string;
-	chosen_name: string;
+	display_name: string;
 	message: string;
 	timestamp: Date;
 }
@@ -51,6 +51,6 @@ export class addGroupUserDTO {
 
 export class addGroupUserByNameDTO {
 	room_id: number;
-	user_chosen_name: string;
+	user_display_name: string;
 }
 

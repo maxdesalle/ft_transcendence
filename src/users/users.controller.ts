@@ -82,7 +82,7 @@ export class UsersController {
 		@Usr() user,
 		@Body() {new_name}: changeNameDto
 	) {
-		return this.usersService.changeChosenName(user.id, new_name);
+		return this.usersService.changeDisplayName(user.id, new_name);
 	}
 
 	// route for testing purposes

@@ -146,7 +146,7 @@ export class ChatService {
 		// 	ORDER BY timestamp DESC`
 		// );
 		const my_query = await this.pool.query(`
-			SELECT message.id, user_id, username, chosen_name, message, timestamp
+			SELECT message.id, user_id, username, display_name, message, timestamp
 			FROM message
 			JOIN public.user ON message.user_id=public.user.id
 			WHERE room_id=${room_id};`
@@ -395,7 +395,7 @@ export class ChatService {
 		const msg: Message = {
 			...query.rows[0],
 			username: user.username,
-			chosen_name: user.chosen_name
+			display_name: user.display_name
 		}
 		return msg;
 	}

@@ -218,7 +218,7 @@ export class ChatController {
 	async addGroupUserbyName(
 		@Usr() me: Session,
 		@Body('room_id', ParseIntPipe, ValidateRoomPipe) room_id: number,
-		@Body('user_chosen_name', UserNameToIdPipe) user_id: number,
+		@Body('user_display_name', UserNameToIdPipe) user_id: number,
 		@Body() _body: addGroupUserByNameDTO
 	): Promise<RoomInfo> {
 		return this.addGroupUser(me, room_id, user_id);

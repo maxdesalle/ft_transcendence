@@ -12,7 +12,7 @@ export class User {
 	username: string; // 42 login
 
 	@Column({ unique: true })
-	chosen_name: string; // name chosen by the user
+	display_name: string; // name chosen by the user
 
 	@JoinColumn({ name: 'avatarId' })
 	@OneToOne(() => DatabaseFile, {nullable: true})

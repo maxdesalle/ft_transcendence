@@ -19,9 +19,9 @@ export class UserNameToIdPipe implements PipeTransform {
 
 	async transform(value: any, metadata: ArgumentMetadata) {
 
-		const user = await this.usersService.findByChosenName(value);
+		const user = await this.usersService.findByDisplayName(value);
 		if (!user)
-			throw new BadRequestException("invalid user chosen_name")
+			throw new BadRequestException("invalid user display_name")
 		return user.id;
 	}
 }
