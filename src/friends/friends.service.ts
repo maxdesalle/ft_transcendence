@@ -34,8 +34,8 @@ export class FriendsService {
 		friendship.req_user_id = my_id;
 		friendship.receiving_user = friend;
 		friendship.recv_user_id = user_id;
-		await this.friendsRepository.save(friendship);
-		return this.pendingSentRequests(my_id); 
+		return this.friendsRepository.save(friendship);
+		// return this.pendingSentRequests(my_id); 
 	}
 
 	async sentRequests(my_id: number) {
@@ -80,8 +80,8 @@ export class FriendsService {
 		if (!request)
 			throw new BadRequestException("friendship request does not exist");
 		request.status = status;
-		await this.friendsRepository.save(request);
-		return this.listFriendsIDs(my_id);
+		return this.friendsRepository.save(request);
+		// return this.listFriendsIDs(my_id);
 	}
 
 	async listFriendsIDs(my_id: number): Promise<number[]> {

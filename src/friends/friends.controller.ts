@@ -2,7 +2,8 @@ import { Body, ClassSerializerInterceptor, Controller, Get, ParseIntPipe, Post, 
 import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { JwtGuard } from 'src/auth/guards/jwt.guard';
 import { Usr } from 'src/users/decorators/user.decorator';
-import { friendRequestDto } from './dto/friendReq.dto';
+import { WsService } from 'src/websockets/ws.service';
+import { friendReqEventDto, friendRequestDto } from './dto/friendReq.dto';
 import { FrienshipStatus } from './entities/friendship.entity';
 import { FriendsService } from './friends.service';
 
@@ -12,38 +13,56 @@ import { FriendsService } from './friends.service';
 @UseInterceptors(ClassSerializerInterceptor)
 export class FriendsController {
 	constructor(
-		private friendsService: FriendsService
+		private friendsService: FriendsService,
+		private wsService: WsService
 	) {}
 
 	@Post('send_friend_request')
-	addFriend(
+	async addFriend(
 		@Usr() me,
 		@Body('user_id', ParseIntPipe) user_id: number,
 		@Body() _body: friendRequestDto
 	) {
-		return this.friendsService.requestFriendship(me.id, user_id);
+		const friend_request = await this.friendsService.requestFriendship(me.id, user_id);
+		const response: friendReqEventDto = {
+			event: 'friends: new_request',
+			friend_request
+		}
+		this.wsService.sendMsgToUser(user_id, response);
+		return response;
 	}
 
 	@Post('accept_friend_request')
-	@ApiResponse({ description: 'list of friends user_ids'})
-	acceptFriend(
+	async acceptFriend(
 		@Usr() me,
 		@Body('user_id', ParseIntPipe) user_id: number,
 		@Body() _body: friendRequestDto
 	) {
-		return this.friendsService
+		const friend_request = await this.friendsService
 			.setFriendshipStatus(me.id, user_id, FrienshipStatus.accepted);
+		const response: friendReqEventDto = {
+			event: 'friends: request_accepted',
+			friend_request
+		}
+		this.wsService.sendMsgToUser(user_id, response);
+		return response;
 	}
 
 	@Post('reject_friend_request')
 	@ApiResponse({ description: 'list of friends user_ids'})
-	rejectFriend(
+	async rejectFriend(
 		@Usr() me,
 		@Body('user_id', ParseIntPipe) user_id: number,
 		@Body() _body: friendRequestDto
 	) {
-		return this.friendsService
+		const friend_request = await this.friendsService
 			.setFriendshipStatus(me.id, user_id, FrienshipStatus.rejected);
+		const response: friendReqEventDto = {
+			event: 'friends: request_rejected',
+			friend_request
+		}
+		this.wsService.sendMsgToUser(user_id, response);
+		return response;
 	}
 
 	@Get('pending_sent')
