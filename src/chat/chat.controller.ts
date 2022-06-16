@@ -6,11 +6,11 @@ import { User } from 'src/users/entities/user.entity';
 import { WsService } from 'src/ws/ws.service';
 import { ChatService } from './chat.service';
 import { Session } from './DTO/chat-user.dto';
-import { PostDM, Message, RoomInfo, RoomInfoShort, GroupConfig, addGroupUserDTO, Message2Room } from './DTO/chat.dto';
+import { PostDM, Message, RoomInfo, RoomInfoShort, GroupConfig, addGroupUserDTO, Message2Room, addGroupUserByNameDTO } from './DTO/chat.dto';
 import { GroupOwnerGuard } from './guards/owner.guard';
 import { IsParticipant } from './guards/participant.guard';
 import { ValidateRoomPipe } from './pipes/validate_room.pipe';
-import { ValidateUserPipe } from './pipes/validate_user.pipe';
+import { UserNameToIdPipe, ValidateUserPipe } from './pipes/validate_user.pipe';
 
 @Controller('chat')
 @UseGuards(JwtGuard)
@@ -193,7 +193,7 @@ export class ChatController {
 		@Usr() me: Session,
 		@Body('room_id', ParseIntPipe, ValidateRoomPipe) room_id: number,
 		@Body('user_id', ParseIntPipe, ValidateUserPipe) user_id: number,
-		@Body() _body: addGroupUserDTO
+		@Body() _body?: addGroupUserDTO
 	): Promise<RoomInfo> {
 		await this.chatService.addGroupUser(me, room_id, user_id);
 		// notify added user
@@ -211,6 +211,17 @@ export class ChatController {
 			}
 		)
 		return this.chatService.roomInfo(room_id);
+	}
+	
+	@Post('add_group_user_by_name')
+	@ApiTags('chat')
+	async addGroupUserbyName(
+		@Usr() me: Session,
+		@Body('room_id', ParseIntPipe, ValidateRoomPipe) room_id: number,
+		@Body('user_chosen_name', UserNameToIdPipe) user_id: number,
+		@Body() _body: addGroupUserByNameDTO
+	): Promise<RoomInfo> {
+		return this.addGroupUser(me, room_id, user_id);
 	}
 
 	@Post('rm_group')

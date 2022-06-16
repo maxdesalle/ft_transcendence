@@ -51,6 +51,11 @@ export class UsersService {
 		return this.usersRepository.findOne({ username });
 	}
 
+	findByChosenName(chosen_name: string): Promise<User | undefined> {
+
+		return this.usersRepository.findOne({ chosen_name });
+	}
+
 	findAll() {
 		return this.usersRepository.find();
 	}

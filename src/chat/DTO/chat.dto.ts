@@ -48,3 +48,9 @@ export class addGroupUserDTO {
 	room_id: number;
 	user_id: number;
 }
+
+export class addGroupUserByNameDTO {
+	room_id: number;
+	user_chosen_name: string;
+}
+
