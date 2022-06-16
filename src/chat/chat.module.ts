@@ -4,13 +4,11 @@ import { jwtConfig } from 'src/config/jwt.config';
 import { ChatController } from './chat.controller';
 import { ChatService } from './chat.service';
 import { UsersModule } from 'src/users/users.module';
-import { WsGateway } from '../websockets/ws.gateway';
-import { WsService } from '../websockets/ws.service';
-import { WebsocketsModule } from 'src/websockets/websockets.module';
+import { WsModule } from 'src/ws/ws.module';
 
 @Module({
   controllers: [ChatController],
   providers: [ChatService],
-  imports: [JwtModule.registerAsync(jwtConfig), UsersModule, WebsocketsModule],
+  imports: [JwtModule.registerAsync(jwtConfig), UsersModule, WsModule],
 })
 export class ChatModule {}

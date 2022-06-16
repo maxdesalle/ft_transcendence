@@ -1,8 +1,8 @@
 import { CanActivate, ExecutionContext, Inject, Injectable } from "@nestjs/common";
 import { WsException } from "@nestjs/websockets";
-import { WsGateway } from "../../websockets/ws.gateway";
+import { WsGateway } from "../../ws/ws.gateway";
 import { ChatService } from "../chat.service";
-import { WsService } from "../../websockets/ws.service";
+import { WsService } from "../../ws/ws.service";
 
 // checks if user is a participant in request's parameter room_id
 export class IsParticipant implements CanActivate {

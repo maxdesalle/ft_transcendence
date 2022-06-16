@@ -2,7 +2,7 @@ import { Body, ClassSerializerInterceptor, Controller, Get, ParseIntPipe, Post, 
 import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { JwtGuard } from 'src/auth/guards/jwt.guard';
 import { Usr } from 'src/users/decorators/user.decorator';
-import { WsService } from 'src/websockets/ws.service';
+import { WsService } from 'src/ws/ws.service';
 import { friendReqEventDto, friendRequestDto } from './dto/friendReq.dto';
 import { FrienshipStatus } from './entities/friendship.entity';
 import { FriendsService } from './friends.service';

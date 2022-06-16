@@ -1,9 +1,6 @@
-import { BaseWsExceptionFilter, ConnectedSocket, MessageBody, OnGatewayConnection, OnGatewayDisconnect, OnGatewayInit, SubscribeMessage, WebSocketGateway, WsException } from '@nestjs/websockets';
+import {  OnGatewayConnection, OnGatewayDisconnect, SubscribeMessage, WebSocketGateway} from '@nestjs/websockets';
 import { IncomingMessage } from 'http';
 import { WebSocket } from 'ws';
-import { ValidateRoomPipe, ValidateRoomPipeWS } from '../chat/pipes/validate_room.pipe';
-import { ParseIntPipe, UseFilters, UseGuards } from '@nestjs/common';
-import { WsExceptionFilter } from '../chat/exception-filters/wsexception';
 import { WsService } from './ws.service';
 
 @WebSocketGateway()
@@ -14,30 +11,38 @@ export class WsGateway implements OnGatewayConnection, OnGatewayDisconnect{
 		private wsService: WsService
 	) {}
 
-	// authenticate user
     handleConnection(client: WebSocket, req: IncomingMessage) {
+		// authenticate user
     	let user: {id: number, username: string};
 		try {
 			user = this.wsService.getUserFromUpgradeRequest(req);
 		} catch (error) {
-			client.close(1008, 'bad credentials');
+			client.send('Authentication KO. Gimme a valid JWT!');
+			client.close(1008, 'Bad credentials');
 			return;
 		}
-		if (this.wsService.connected_users.has(user.id)) {
+		// avoid duplicate connection for same user
+		if (this.wsService.isUserConnected(user.id)) {
 			client.close(1008, 'user already connected via another socket');
 			return;
 		}
 
-		this.wsService.connected_users.set(user.id, client);
+		// add to map of connected users
+		this.wsService.setUserOnline(user.id, client);
+		// log client and server side
 		console.log(`user ${user.id} (${user.username}) is connected.`);
+		client.send(`Authentication OK. user_id: ${user.id}, username: ${user.username}`);
+		// notify state change to friends
+		this.wsService.notifyStatusChangeToFriends(user.id, 'online');
 	}
 
 	handleDisconnect(client: WebSocket) {
-		const id = this.wsService.getUserFromSocket(client);
+		const user_id = this.wsService.getUserFromSocket(client);
 		// remove entry from map
-		if (this.wsService.connected_users.delete(id))
-			console.log(`user ${id} disconnected.`);
-		// console.log(this.wsAuthService.getConnectedUsersIDs()); 
+		if (this.wsService.setUserOffline(user_id)) {
+			console.log(`user ${user_id} disconnected.`);
+			this.wsService.notifyStatusChangeToFriends(user_id, 'offline');
+		}
 	}
 
 	// @SubscribeMessage('message')

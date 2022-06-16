@@ -3,7 +3,7 @@ import { ApiTags } from '@nestjs/swagger';
 import { JwtGuard } from 'src/auth/guards/jwt.guard';
 import { Usr } from 'src/users/decorators/user.decorator';
 import { User } from 'src/users/entities/user.entity';
-import { WsService } from 'src/websockets/ws.service';
+import { WsService } from 'src/ws/ws.service';
 import { ChatService } from './chat.service';
 import { Session } from './DTO/chat-user.dto';
 import { PostDM, Message, RoomInfo, RoomInfoShort, GroupConfig, addGroupUserDTO, Message2Room } from './DTO/chat.dto';

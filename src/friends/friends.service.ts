@@ -1,6 +1,6 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
+import { BadRequestException, forwardRef, Inject, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { WsService } from 'src/websockets/ws.service';
+import { WsService } from 'src/ws/ws.service';
 import { User } from 'src/users/entities/user.entity';
 import { UsersService } from 'src/users/users.service';
 import { Repository } from 'typeorm';
@@ -14,10 +14,11 @@ export class FriendsService {
 		@InjectRepository(Friendship)
 		private friendsRepository: Repository<Friendship>,
 		private usersService: UsersService,
+		@Inject(forwardRef(() => WsService))
 		private wsService: WsService
 	) {}
 
-	// duplicate request is no problem
+	// duplicate request is no problem, as it does not create a new entry
 	async requestFriendship(my_id: number, user_id: number) {
 		const me = await this.usersService.findById(my_id); 
 		const friend = await this.usersService.findById(user_id); 
