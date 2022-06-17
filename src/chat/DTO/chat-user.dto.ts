@@ -14,22 +14,22 @@ export class Conversation {
 
 export class Session {
 	id: number;
-	username: string;
+	login42: string;
 	selected_room?: number;
 	blocked?: number[];
 	messages?: any[]; // change this later to correct datatype
 	conversations?: Conversation[]
 }
 
-export interface userJwtPayload {
-	id: number;
-	username: string;
-	selected_room: number;
-}
+// export interface userJwtPayload {
+// 	id: number;
+// 	login42: string;
+// 	selected_room: number;
+// }
 
-export class chatUserDB {
-	id: number;
-	name: string;
-	status: boolean;
-}
+// export class chatUserDB {
+// 	id: number;
+// 	name: string;
+// 	status: boolean;
+// }
 

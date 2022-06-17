@@ -6,6 +6,8 @@ export class PostDM {
 export class Message {
 	id: number;
 	user_id: number;
+	login42: string;
+	display_name: string;
 	message: string;
 	timestamp: Date;
 }
@@ -46,3 +48,9 @@ export class addGroupUserDTO {
 	room_id: number;
 	user_id: number;
 }
+
+export class addGroupUserByNameDTO {
+	room_id: number;
+	user_display_name: string;
+}
+

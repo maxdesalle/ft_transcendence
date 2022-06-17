@@ -76,19 +76,13 @@ export class UsersController {
 			user.id, file.buffer, file.originalname);
 	}
 
-	@Post('change_name')
+	@Post('set_display_name')
 	@UseGuards(JwtGuard)
 	changeName(
 		@Usr() user,
-		@Body() {new_name}: changeNameDto
+		@Body() {display_name}: changeNameDto
 	) {
-		return this.usersService.changeChosenName(user.id, new_name);
+		return this.usersService.setDisplayName(user.id, display_name);
 	}
-
-	// route for testing purposes
-	// @Post('add')
-	// addUser(@Body('username') username: string) {
-	// 	return this.usersService.createNewUser(username);
-	// }
 
 }

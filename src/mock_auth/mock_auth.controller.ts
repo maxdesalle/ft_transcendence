@@ -25,16 +25,16 @@ export class MockAuthController {
 	@Post('login')
 	async getUserLoggedIn(
 		@Res( { passthrough: true}) res: Response,
-		@Body('username') username: string,
+		@Body('login42') login42: string,
 		@Body() _body: LoginDTO
 	) {
-		const user: User = await this.usersService.createNewUser(username);
+		const user: User = await this.usersService.createNewUser(login42);
 		const jwtToken = this.jwtService.sign({
 			id: user.id,
-			username: user.username
+			login42: user.login42
 		});
 		res.cookie('jwt_token', jwtToken);
-		return `Logged in as ${user.username}`;
+		return `Logged in as ${user.login42}`;
 	}
 
 	@Get('logout')

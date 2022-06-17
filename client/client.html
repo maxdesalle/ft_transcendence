@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="UTF-8">
+		<title>Client</title>
+	</head>
+	<body>
+		<div>
+			<h1> Login </h1>
+			<p id="loggedin"></p>
+			<input type='text' id='login' />
+			<button type='button' onclick='login()'>Login</button>
+			<br> <br>
+			<button type='button' onclick='logout()'>Logout</button>
+		</div>
+		
+		<div>
+			<h1> Connect with Websocket </h1>
+			<p id="ws_connection"></p>
+			<button type='button' onclick='ws_connect()'>Connect</button>
+		</div>
+
+		<div>
+			<h1> Received Messages from WebSocket Server </h1>
+			<ul id="list">
+			</ul>
+		</div>
+
+		<!-- <button onclick="sendMsg()"> Send msg </button> -->
+	</body>
+	<script>
+		function post_request(url, data) {
+			return fetch(url, {
+				method: 'POST',
+				body: JSON.stringify(data),
+				headers: {
+					'Content-Type': 'application/json'
+				}
+			});
+		}
+
+		function login() {
+			const url = '/mock-auth/login';
+			const login42 = document.getElementById('login').value
+			const data = { login42 };
+			post_request(url, data).then(res => res.text())
+			.then(response => {
+				console.log(response);
+				document.getElementById('loggedin').innerHTML = response;
+			})
+			.catch(error => {
+				console.log('Error:', error);
+				document.getElementById('loggedin').innerHTML = 'Error: ' + error;
+			})
+		}
+
+		function logout() {
+			const url = '/mock-auth/login';
+			fetch('/mock-auth/logout', {method: 'GET'}).then(res => res.text())
+			.then(response => {
+				console.log(response);
+				document.getElementById('loggedin').innerHTML = response;
+			})
+			.catch(error => {
+				console.log('Error:', error);
+				document.getElementById('loggedin').innerHTML = 'Error: ' + error;
+			})
+		}
+
+		let socket;
+		function ws_connect() {
+			// Create WebSocket connection.
+			socket = new WebSocket('ws://localhost:3000/');
+
+			// Connection opened
+			socket.addEventListener('open', function (event) {
+				console.log('connected to WS server');
+				document.getElementById('ws_connection').innerHTML = 'Status: connected';
+			});
+
+			socket.addEventListener('close', function (event) {
+				console.log('disconneted from WS serv');
+				document.getElementById('ws_connection').innerHTML = 'Status: disconnected (are you logged in?)';
+			});
+
+			// event listener for received messages
+			socket.addEventListener('message', function(event) {
+				console.log('message from ws server: ', event.data);
+				const li = document.createElement('li');
+				li.appendChild(document.createTextNode(event.data));
+				document.getElementById('list').appendChild(li);
+			})
+
+
+		}
+
+
+
+				// // Listen for messages
+		// socket.addEventListener('message', function (event) {
+		// 	console.log('Message from server ', event.data);
+		// });
+
+	
+		// function sendMsg() {
+			// socket.send("hello there, this is a message from client");
+		// }
+		// function sendMsg() {
+		// 	socket.send(
+		// 		JSON.stringify({
+		// 			event: 'message',
+		// 			data: 'hello from client',
+		// 		})
+		// 	);
+		// }
+
+	</script>
+</html>

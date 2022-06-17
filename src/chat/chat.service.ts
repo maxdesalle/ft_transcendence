@@ -1,8 +1,9 @@
 import { BadRequestException, ForbiddenException, HttpException, Injectable } from '@nestjs/common';
 import { User } from 'src/users/entities/user.entity';
+import { UsersService } from 'src/users/users.service';
 import { Connection, EntityManager } from 'typeorm';
 import { Conversation, Session } from './DTO/chat-user.dto';
-import { GroupConfig } from './DTO/chat.dto';
+import { GroupConfig, Message } from './DTO/chat.dto';
 
 const PARTICIPANT = 0;
 const ADMIN = 1;
@@ -42,7 +43,10 @@ class queryAdaptor {
 export class ChatService {
 	pool: queryAdaptor;
 
-	constructor(private connection: Connection) {
+	constructor(
+		private connection: Connection,
+		private usersService: UsersService
+		) {
 		this.pool = new queryAdaptor(connection.manager);
 	}
 	
@@ -56,11 +60,12 @@ export class ChatService {
 		if (!room_id) 
 			room_id = await this.create_dm_room(me, toId);
 		// insert message into table	
-		await this.pool.query(`
-			INSERT INTO message(user_id, timestamp, message, room_id)
-			VALUES(${me.id}, NOW(), '${msg}', ${room_id})`
-		);
-		return await this.getMessagesByRoomId(me, room_id);
+		// await this.pool.query(`
+		// 	INSERT INTO message(user_id, timestamp, message, room_id)
+		// 	VALUES(${me.id}, NOW(), '${msg}', ${room_id})`
+		// );
+		// return room_id;
+		return this.send_msg_to_room(me, room_id, msg);
 	}
 
 	// returns room_id of dm room between user, null if non-existant
@@ -93,16 +98,16 @@ export class ChatService {
 
 		// get username
 		const tmp = await this.pool.query(
-			`SELECT name FROM public.user WHERE id= ${friend_id}`
+			`SELECT login42 FROM public.user WHERE id= ${friend_id}`
 		);
 		if (!tmp.rowCount) {
 			throw new BadRequestException("user does not exist");
 		}
-		const username: string = tmp.rows[0].name;
+		const login42: string = tmp.rows[0].login42;
 
 		// create room
 		const query = await this.pool.query(
-			`INSERT INTO room(name) VALUES('${me.username}-${username}')
+			`INSERT INTO room(name) VALUES('${me.login42}-${login42}')
 			RETURNING id;`
 		);
 		// let new_room = await this.pool.query(
@@ -134,12 +139,18 @@ export class ChatService {
 	// TODO: review this: being blocked might not have anything to do with rooms? 
 	// or will be this used to fetch DM rooms too?
 	async getMessagesByRoomId(me: User, room_id: number) {
-		const my_query = await this.pool.query(
-			`SELECT id, user_id, message, timestamp FROM message
-			WHERE room_id = ${room_id}
-			AND user_id NOT IN (SELECT blocked_id FROM blocked WHERE user_id= ${me.id})
-			ORDER BY timestamp DESC`
-		);
+		// const my_query = await this.pool.query(
+		// 	`SELECT id, user_id, message, timestamp FROM message
+		// 	WHERE room_id = ${room_id}
+		// 	AND user_id NOT IN (SELECT blocked_id FROM blocked WHERE user_id= ${me.id})
+		// 	ORDER BY timestamp DESC`
+		// );
+		const my_query = await this.pool.query(`
+			SELECT message.id, user_id, login42, display_name, message, timestamp
+			FROM message
+			JOIN public.user ON message.user_id=public.user.id
+			WHERE room_id=${room_id};`
+		)
 		return my_query.rows;
 	}
 
@@ -298,6 +309,7 @@ export class ChatService {
 			await this.set_password(room_id, group.password);
 		if (group.private)
 			await this.set_private(room_id, group.private);
+		return room_id;
 	}
 
 	async get_role(id: number, room_id: number) {
@@ -354,7 +366,7 @@ export class ChatService {
 			UPDATE room SET activity=NOW() WHERE id=${room_id}`);
 	}
 
-	async send_msg_to_room(me: Session, room_id: number, message: string) {
+	async send_msg_to_room(me: User, room_id: number, message: string) {
 		let tmp = await this.pool.query(
 			`SELECT banned_id, unban FROM banned WHERE room_id= ${room_id}
 			AND mute=true AND banned_id=${me.id}`
@@ -371,12 +383,21 @@ export class ChatService {
 				throw new ForbiddenException("you are muted");
 				// return ("you are still muted");
 		}
-		await this.pool.query(`
+		const query = await this.pool.query(`
 			INSERT INTO message(user_id, timestamp, message, room_id)
-			VALUES(${me.id}, NOW(), '${message}', ${room_id})`
+			VALUES(${me.id}, NOW(), '${message}', ${room_id})
+			RETURNING *`
 		);
 		await this.pool.query(`
 			UPDATE room SET activity=NOW() WHERE id=${room_id}`);
+
+		const user = await this.usersService.findById(me.id);
+		const msg: Message = {
+			...query.rows[0],
+			login42: user.login42,
+			display_name: user.display_name
+		}
+		return msg;
 	}
 
 	async getRoomsList() {
