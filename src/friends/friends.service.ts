@@ -18,25 +18,28 @@ export class FriendsService {
 		private wsService: WsService
 	) {}
 
-	// duplicate request is no problem, as it does not create a new entry
 	async requestFriendship(my_id: number, user_id: number) {
 		const me = await this.usersService.findById(my_id); 
 		const friend = await this.usersService.findById(user_id); 
 		if (!friend || my_id === user_id)
 			throw new BadRequestException("bad user id");
-		// check for the reverse request
+		// check if request or the reverse one already exists
 		if (await this.friendsRepository.findOne({
 			req_user_id: user_id,
-			recv_user_id: my_id
-		}))
+			recv_user_id: my_id})
+			|| await this.friendsRepository.findOne({
+			req_user_id: my_id,
+			recv_user_id: user_id}))
 			throw new BadRequestException('friendship request already exists');
 		const friendship = new Friendship();
 		friendship.requesting_user = me;
 		friendship.req_user_id = my_id;
 		friendship.receiving_user = friend;
 		friendship.recv_user_id = user_id;
-		return this.friendsRepository.save(friendship);
-		// return this.pendingSentRequests(my_id); 
+		await this.friendsRepository.save(friendship);
+		friendship.receiving_user.twoFactorAuthenticationSecret = undefined;
+		friendship.requesting_user.twoFactorAuthenticationSecret = undefined;
+		return friendship;
 	}
 
 	async sentRequests(my_id: number) {

@@ -138,3 +138,120 @@ socket.addEventListener('message', function(event) {
     }
 });
 ```
+
+## Notifications via Websocket schemas/examples
+
+### Chat
+Direct Message
+```
+{
+    "event": "chat_dm",
+    "message": {
+        "id": 2,
+        "message": "yo",
+        "timestamp": "2022-06-17T00:21:37.402Z",
+        "room_id": 2,
+        "user_id": 5,
+        "login42": "user_7",
+        "display_name": "user_7"
+    }
+}
+```
+new group for you (you are now part of this room = you were added, or you created it...)
+```
+{
+    "event": "chat_new_group",
+    "room_id": 3
+}
+```
+a user was added to a group that you're part of
+```
+{
+    "event": "chat_new_user_in_group",
+    "room_id": 3,
+    "user_id": 3
+}
+```
+new group message
+```
+{
+    "event": "chat_room_msg",
+    "message": {
+        "id": 3,
+        "message": "whatup people in tha group??",
+        "timestamp": "2022-06-17T00:29:31.649Z",
+        "room_id": 3,
+        "user_id": 5,
+        "login42": "user_7",
+        "display_name": "user_7"
+    }
+}
+```
+
+### Friends
+Incoming Friendship request
+```
+ "event": "friends: new_request",
+    "friend_request": {
+        "requesting_user": {
+            "id": 5,
+            "login42": "user_7",
+            "display_name": "user_7",
+            "avatarId": null,
+            "isTwoFactorAuthenticationEnabled": false,
+            "status": null
+        },
+        "req_user_id": 5,
+        "receiving_user": {
+            "id": 3,
+            "login42": "user_1",
+            "display_name": "user_1",
+            "avatarId": null,
+            "isTwoFactorAuthenticationEnabled": false,
+            "status": null
+        },
+        "recv_user_id": 3
+    }
+}
+```
+
+Friendship request was accepted
+```
+{
+    "event": "friends: request_accepted",
+    "friend_request": {
+        "req_user_id": 5,
+        "recv_user_id": 3,
+        "status": 1
+    }
+}
+```
+
+Friendship request was rejected
+```
+{
+    "event": "friends: request_rejected",
+    "friend_request": {
+        "req_user_id": 5,
+        "recv_user_id": 3,
+        "status": 2
+    }
+}
+```
+
+### Status (online/offline)
+one of your friends became online
+```
+{
+    "event": "status: friend_online",
+    "user_id": 3
+}
+```
+one of your friends became offline
+
+```
+{
+    "event": "status: friend_offline",
+    "user_id": 3
+}
+```
