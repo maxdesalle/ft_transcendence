@@ -1,7 +1,7 @@
 const socketServerIP = 'localhost';
-const socketServerPort = 4242;
+const socketServerPort = 3000;
 const httpServerIP = 'localhost';
-const httpServerPort = 4269;
+const httpServerPort = 3000;
 let isDisconnected = false;
 let socketErrObject = undefined; // if not undefined, socket returned an error
 let ws; // webSocket
@@ -118,7 +118,7 @@ let isOtherPlayerReady = false; //other player is done with settings
 
 // connects to server
 function initSocket() {
-	const serverAddress = `ws://${socketServerIP}:${socketServerPort}`;
+	const serverAddress = `ws://${socketServerIP}:${socketServerPort}/pong`;
 	ws = new WebSocket(serverAddress);
 
 	ws.addEventListener('open', () => {

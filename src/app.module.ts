@@ -12,6 +12,7 @@ import { FriendsModule } from './friends/friends.module';
 import { ServeStaticModule } from '@nestjs/serve-static'
 import { join } from 'path';
 import { WsModule } from './ws/ws.module';
+import { PongModule } from './pong/pong.module';
 
 @Module({
 	imports: [
@@ -27,7 +28,8 @@ import { WsModule } from './ws/ws.module';
 		ServeStaticModule.forRoot({
 			rootPath: join(__dirname, '..', 'client'),
 		}),
-		WsModule
+		WsModule,
+		PongModule
 	],
 	controllers: [],
 })
