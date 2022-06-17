@@ -3,7 +3,6 @@ import { WebSocket, WebSocketServer as WSS } from 'ws';
 import { computeValues, deleteGameSession } from "./computeValues";
 import { default_values } from "./defaultVals";
 
-
 const defaultVals = default_values.df;
 
 // type of object that represents a game session
@@ -23,55 +22,55 @@ interface playerScoresInterface {
 };
 const sockets: gameSocketsInterface[] = []; // array that will contain session objects
 
-@WebSocketGateway( { path: '/pong'})
+@WebSocketGateway({ path: '/pong' })
 export class PongGateway implements OnGatewayInit {
 
-afterInit(wss: WSS) {
-wss.on('connection', (ws: WebSocket) => {
-  console.log('connection received');
-  if (sockets.length === 0 || sockets[sockets.length - 1].p2Socket !== undefined) {
-      // create new session
-      const id: number = (sockets.reduce(
-          (prev, cur) => prev.id < cur.id ? cur : prev, {id: 0}
-      )).id + 1;
-      sockets.push({id: id, p1Socket: ws, p2Socket: undefined, p1Ob: {}, p2Ob: {}});
-      console.log(`p1Socket set to id ${id}`);
-  }
-  else {
-      // join waiting session
-      sockets[sockets.length - 1].p2Socket = ws;
-      console.log(`p2Socket set to id ${sockets[sockets.length - 1].id}`);
-      const id = sockets[sockets.length - 1].id;
-      // starting game
-      linkPlayers(id).then((playerScores: playerScoresInterface) =>
-          console.log(`Session ${id} ended with scores: p1 ${playerScores.p1Score}, p2 ${playerScores.p2Score}`));
-  }
-  ws.on('error', (e) => console.error(`socket error: ${e.message}`));
-  ws.on('close', () => {
-      const i = sockets.findIndex((s) => (s.p1Socket === ws || s.p2Socket === ws));
-      if (sockets[i].p1Socket === ws) {
-          sockets[i].p1Socket = undefined;
-          console.log(`p1 of session ${sockets[i].id} left`);
-          if (sockets[i].p2Socket) {
-              console.log(`closing connection with p2 of session ${sockets[i].id}...`);
-              sockets[i].p2Socket.close();
-          }
-          else
-              sockets.splice(i, 1); // deleting game session from array
+  afterInit(wss: WSS) {
+    wss.on('connection', (ws: WebSocket) => {
+      console.log('connection received');
+      if (sockets.length === 0 || sockets[sockets.length - 1].p2Socket !== undefined) {
+          // create new session
+          const id: number = (sockets.reduce(
+              (prev, cur) => prev.id < cur.id ? cur : prev, {id: 0}
+          )).id + 1;
+          sockets.push({id: id, p1Socket: ws, p2Socket: undefined, p1Ob: {}, p2Ob: {}});
+          console.log(`p1Socket set to id ${id}`);
       }
       else {
-          sockets[i].p2Socket = undefined;
-          console.log(`p2 of session ${sockets[i].id} left`);
-          if (sockets[i].p1Socket) {
-              console.log(`closing connection with p1 of session ${sockets[i].id}...`);
-              sockets[i].p1Socket.close();
-          }
-          else
-              sockets.splice(i, 1); // deleting game session from array
+          // join waiting session
+          sockets[sockets.length - 1].p2Socket = ws;
+          console.log(`p2Socket set to id ${sockets[sockets.length - 1].id}`);
+          const id = sockets[sockets.length - 1].id;
+          // starting game
+          linkPlayers(id).then((playerScores: playerScoresInterface) =>
+              console.log(`Session ${id} ended with scores: p1 ${playerScores.p1Score}, p2 ${playerScores.p2Score}`));
       }
-  });
-}); // wss.on
-}
+      ws.on('error', (e) => console.error(`socket error: ${e.message}`));
+      ws.on('close', () => {
+          const i = sockets.findIndex((s) => (s.p1Socket === ws || s.p2Socket === ws));
+          if (sockets[i].p1Socket === ws) {
+              sockets[i].p1Socket = undefined;
+              console.log(`p1 of session ${sockets[i].id} left`);
+              if (sockets[i].p2Socket) {
+                  console.log(`closing connection with p2 of session ${sockets[i].id}...`);
+                  sockets[i].p2Socket.close();
+              }
+              else
+                  sockets.splice(i, 1); // deleting game session from array
+          }
+          else {
+              sockets[i].p2Socket = undefined;
+              console.log(`p2 of session ${sockets[i].id} left`);
+              if (sockets[i].p1Socket) {
+                  console.log(`closing connection with p1 of session ${sockets[i].id}...`);
+                  sockets[i].p1Socket.close();
+              }
+              else
+                  sockets.splice(i, 1); // deleting game session from array
+          }
+      });
+    }); 
+  }
 
 }
 
@@ -79,7 +78,37 @@ wss.on('connection', (ws: WebSocket) => {
 export class PongViewerGateway implements OnGatewayInit {
 
   afterInit(wss: WSS) {
-    wss.on('connection', (ws: WebSocket) => {})
+    wss.on('connection', (ws: WebSocket) => {
+      console.log('new viewer connected to server')
+      viewerSockets.push({id: -1, ws: ws});
+      ws.send(JSON.stringify(defaultVals)); //sending viewer the default values
+      ws.on('error', (e) => console.error(`viewer socket error: ${e.message}`));
+      ws.on('close', () => {
+          const i: number = viewerSockets.findIndex((s: {id: number, ws: any}) => s.ws === ws);
+          console.log(`viewer socket leaving game session ${viewerSockets[i].id}`);
+          viewerSockets.splice(i, 1);
+      });
+      ws.on('message', (data: any) => {
+          const ob: any = JSON.parse(String(data));
+          const i: number = viewerSockets.findIndex((s: {id: number, ws: any}) => s.ws === ws);
+          // if viewer wants to get the ongoing sessions
+          if (ob.requestSessions === true)
+          {
+              const sessionIdsArray: number[] = [];
+              sockets.forEach((s: gameSocketsInterface) => {
+                  if (!sessionIdsArray.includes(s.id))
+                      sessionIdsArray.push(s.id);
+              });
+              ws.send(JSON.stringify({sessionIdsArray: sessionIdsArray}));
+          }
+          // if the viewer wants to change session (id is guaranteed to be valid)
+          if (ob.id !== undefined)
+          {
+              console.log(`setting id ${ob.id} to viewer socket`);
+              viewerSockets[i].id = ob.id;
+          }
+      });
+    });
   }
 }
 
