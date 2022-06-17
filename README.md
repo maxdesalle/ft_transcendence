@@ -70,6 +70,13 @@ GET localhost:3000/mock-auth/logout
     localhost:3000/api  
 You should ignore the routes under the "default" section, as they probably don't work well.
 
+## Play Pong!
+For now, no system is in place to invite a specific player to play against. And no auth yet for the pong websocket.
+
+What can be done: `localhost:3000/player.html` will get you a player. Do the same in another tab so you can play... against yourself.
+
+Wanna watch you VS you ? `localhost:3000/viewer.html`
+
 ## Chat
 What you can do now:
 ### Users
