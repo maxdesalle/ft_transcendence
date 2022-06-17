@@ -102,7 +102,7 @@ export class FriendsController {
 	}
 
 	@Get()
-	@ApiOperation({ summary: "your friends' User object (more info than just ID" })
+	@ApiOperation({ summary: "your friends' User object (more info than just ID)" })
 	@ApiResponse({ description: 'list of Users'})
 	listFriendsUsers(
 		@Usr() me
