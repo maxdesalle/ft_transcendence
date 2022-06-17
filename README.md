@@ -75,7 +75,7 @@ For now, no system is in place to invite a specific player to play against. And 
 
 What can be done: `localhost:3000/player.html` will get you a player. Do the same in another tab so you can play... against yourself.
 
-Wanna watch you VS you ? `localhost:3000/viewer.html`
+Wanna watch you VS you ? `localhost:3000/viewer.html`. Check the terminal for the game session id. (or try 1)
 
 ## Chat
 What you can do now:
