@@ -54,7 +54,7 @@ You can log in as a mock user bypassing the OAuth-intra-42 drill via
 POST localhost:3000/mock-auth/login
 request body:
 {
-    "username": "filip_the_king"
+    "login42": "filip_the_king"
 }
 ```
 This will create a new user if necessary.

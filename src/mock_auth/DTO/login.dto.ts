@@ -1,3 +1,3 @@
 export class LoginDTO {
-	username: string;
+	login42: string;
 }

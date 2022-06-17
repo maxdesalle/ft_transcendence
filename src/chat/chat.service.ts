@@ -98,16 +98,16 @@ export class ChatService {
 
 		// get username
 		const tmp = await this.pool.query(
-			`SELECT username FROM public.user WHERE id= ${friend_id}`
+			`SELECT login42 FROM public.user WHERE id= ${friend_id}`
 		);
 		if (!tmp.rowCount) {
 			throw new BadRequestException("user does not exist");
 		}
-		const username: string = tmp.rows[0].username;
+		const login42: string = tmp.rows[0].login42;
 
 		// create room
 		const query = await this.pool.query(
-			`INSERT INTO room(name) VALUES('${me.username}-${username}')
+			`INSERT INTO room(name) VALUES('${me.login42}-${login42}')
 			RETURNING id;`
 		);
 		// let new_room = await this.pool.query(
@@ -146,7 +146,7 @@ export class ChatService {
 		// 	ORDER BY timestamp DESC`
 		// );
 		const my_query = await this.pool.query(`
-			SELECT message.id, user_id, username, display_name, message, timestamp
+			SELECT message.id, user_id, login42, display_name, message, timestamp
 			FROM message
 			JOIN public.user ON message.user_id=public.user.id
 			WHERE room_id=${room_id};`
@@ -394,7 +394,7 @@ export class ChatService {
 		const user = await this.usersService.findById(me.id);
 		const msg: Message = {
 			...query.rows[0],
-			username: user.username,
+			login42: user.login42,
 			display_name: user.display_name
 		}
 		return msg;

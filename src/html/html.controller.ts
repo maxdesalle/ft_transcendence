@@ -30,7 +30,7 @@ export class HtmlController {
 	@UseGuards(JwtGuard)
 	async getHomePage(@Usr() user): Promise<string> {
 		const user_object = await this.usersService.findById(user.id);
-		return this.htmlService.getHomePage(user_object.username);
+		return this.htmlService.getHomePage(user_object.login42);
 	}
 
 	@Get('login')

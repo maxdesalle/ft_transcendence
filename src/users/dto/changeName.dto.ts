@@ -1,3 +1,3 @@
 export class changeNameDto {
-	new_name: string
+	display_name: string
 }

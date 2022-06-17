@@ -10,7 +10,7 @@ import { PostDM, Message, RoomInfo, RoomInfoShort, GroupConfig, addGroupUserDTO,
 import { GroupOwnerGuard } from './guards/owner.guard';
 import { IsParticipant } from './guards/participant.guard';
 import { ValidateRoomPipe } from './pipes/validate_room.pipe';
-import { UserNameToIdPipe, ValidateUserPipe } from './pipes/validate_user.pipe';
+import { UserDisplayNameToIdPipe, ValidateUserPipe } from './pipes/validate_user.pipe';
 
 @Controller('chat')
 @UseGuards(JwtGuard)
@@ -218,7 +218,7 @@ export class ChatController {
 	async addGroupUserbyName(
 		@Usr() me: Session,
 		@Body('room_id', ParseIntPipe, ValidateRoomPipe) room_id: number,
-		@Body('user_display_name', UserNameToIdPipe) user_id: number,
+		@Body('user_display_name', UserDisplayNameToIdPipe) user_id: number,
 		@Body() _body: addGroupUserByNameDTO
 	): Promise<RoomInfo> {
 		return this.addGroupUser(me, room_id, user_id);

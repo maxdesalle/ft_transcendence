@@ -6,7 +6,7 @@ export class PostDM {
 export class Message {
 	id: number;
 	user_id: number;
-	username: string;
+	login42: string;
 	display_name: string;
 	message: string;
 	timestamp: Date;

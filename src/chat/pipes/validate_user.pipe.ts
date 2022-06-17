@@ -14,7 +14,7 @@ export class ValidateUserPipe implements PipeTransform {
 	}
 }
 @Injectable()
-export class UserNameToIdPipe implements PipeTransform {
+export class UserDisplayNameToIdPipe implements PipeTransform {
 	constructor(private usersService: UsersService) {}
 
 	async transform(value: any, metadata: ArgumentMetadata) {

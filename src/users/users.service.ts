@@ -13,12 +13,13 @@ export class UsersService {
 		private connection: Connection
 	) {}
 
-	async createNewUser(username: string) {
-		let user = await this.findByUsername(username);
+	/** creates new user if non-existant, just returns the user otherwise */
+	async createNewUser(login42: string) {
+		let user = await this.findByLogin42(login42);
 		if (user == undefined) {
 			user = new User();
-			user.username = username;
-			user.display_name = username; 
+			user.login42 = login42;
+			user.display_name = login42; 
 			await this.usersRepository.save(user);
 		}
 		return user;
@@ -46,9 +47,9 @@ export class UsersService {
 		return this.usersRepository.findOne(id);
 	}
 
-	findByUsername(username: string): Promise<User | undefined> {
+	findByLogin42(login42: string): Promise<User | undefined> {
 
-		return this.usersRepository.findOne({ username });
+		return this.usersRepository.findOne({ login42 });
 	}
 
 	findByDisplayName(display_name: string): Promise<User | undefined> {
@@ -60,7 +61,7 @@ export class UsersService {
 		return this.usersRepository.find();
 	}
 
-	async changeDisplayName(user_id: number, new_name: string) {
+	async setDisplayName(user_id: number, new_name: string) {
 		const user_exists = await 
 			this.usersRepository.findOne({display_name: new_name});
 		if (user_exists)

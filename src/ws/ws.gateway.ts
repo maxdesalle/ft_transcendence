@@ -13,7 +13,7 @@ export class WsGateway implements OnGatewayConnection, OnGatewayDisconnect{
 
     handleConnection(client: WebSocket, req: IncomingMessage) {
 		// authenticate user
-    	let user: {id: number, username: string};
+    	let user: {id: number, login42: string};
 		try {
 			user = this.wsService.getUserFromUpgradeRequest(req);
 		} catch (error) {
@@ -30,8 +30,8 @@ export class WsGateway implements OnGatewayConnection, OnGatewayDisconnect{
 		// add to map of connected users
 		this.wsService.setUserOnline(user.id, client);
 		// log client and server side
-		console.log(`user ${user.id} (${user.username}) is connected.`);
-		client.send(`Authentication OK. user_id: ${user.id}, username: ${user.username}`);
+		console.log(`user ${user.id} (${user.login42}) is connected.`);
+		client.send(`Authentication OK. user_id: ${user.id}, login42: ${user.login42}`);
 		// notify state change to friends
 		this.wsService.notifyStatusChangeToFriends(user.id, 'online');
 	}

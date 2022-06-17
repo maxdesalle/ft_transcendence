@@ -21,7 +21,7 @@ export class AuthService {
 	async generateTwoFactorAuthenticationSecret(user: User) {
 		const secret = authenticator.generateSecret();
 		const otpauthUrl = authenticator.keyuri(
-			user.username,
+			user.login42,
 			// this.configService.get('Transcendence'),
 			this.configService.get<string>('TWOFA_ISSUER'),
 			secret,

@@ -41,8 +41,8 @@
 
 		function login() {
 			const url = '/mock-auth/login';
-			const username = document.getElementById('login').value
-			const data = { username };
+			const login42 = document.getElementById('login').value
+			const data = { login42 };
 			post_request(url, data).then(res => res.text())
 			.then(response => {
 				console.log(response);

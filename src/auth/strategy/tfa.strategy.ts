@@ -32,7 +32,7 @@ export class JwtTwoFactorStrategy extends PassportStrategy(
 	}
 
 	async validate(payload: any) {
-		const user = await this.usersService.findByUsername(payload.username);
+		const user = await this.usersService.findByLogin42(payload.login42);
 
 		if (user) {
 			return user;

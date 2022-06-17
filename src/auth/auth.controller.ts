@@ -51,7 +51,7 @@ export class AuthController {
 	getUserLoggedIn(@Usr() user, @Res({ passthrough: true }) res: Response) {
 		const jwtToken = this.jwtService.sign({
 			id: user.id,
-			username: user.username,
+			login42: user.login42,
 		});
 		res.cookie('jwt_token', jwtToken);
 		return res.redirect('/');
@@ -98,7 +98,7 @@ export class AuthController {
 
 		const jwtToken = this.jwtService.sign({
 			id: user.id,
-			username: user.username,
+			login42: user.login42,
 			validTwoFactorAuthentication: true,
 		});
 
