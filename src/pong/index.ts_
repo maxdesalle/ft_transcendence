@@ -1,22 +1,29 @@
+import { WebSocket } from "ws";
+import { computeValues, deleteGameSession } from "./computeValues";
+import { default_values } from "./defaultVals";
+
 // websocket library
-const Websocket = require('ws');
-const {
-    computeValues, // function that will do the game logic
-    deleteGameSession // to call when a game session is over (does hidden stuff for computeValues)
-} = require('./computeValues.js');
+// const Websocket = require('ws');
+// const {
+    // computeValues, // function that will do the game logic
+    // deleteGameSession // to call when a game session is over (does hidden stuff for computeValues)
+// } = require('./computeValues.js');
+
 // object that containes the default values to send to client
-const defaultVals = require('./defaultVals').df;
+// const defaultVals = require('./defaultVals').df;
+const defaultVals = default_values.df;
+
 
 // type of object that represents a game session
 interface gameSocketsInterface {
     id: number, // game session id
-    p1Socket: typeof Websocket | undefined,
-    p2Socket: typeof Websocket | undefined,
+    p1Socket: WebSocket,
+    p2Socket: WebSocket,
     p1Ob: object, // will contain info that p1 sent
     p2Ob: object, // will contain info that p2 sent
 };
 // array that conatins all viewers sockets (id is game session id that the viewer is watching)
-const viewerSockets: {id: number, ws: typeof Websocket}[] = [];
+const viewerSockets: {id: number, ws: WebSocket}[] = [];
 // object that will be returned by linkPlayers (contains final score)
 interface playerScoresInterface {
     p1Score: number,
@@ -29,13 +36,13 @@ const wss = new Websocket.Server({ port: socketServerPort });
 const wssViewer = new Websocket.Server({ port: viewerServerPort });
 
 //express server (so that players/ viewers can fetch the .html / .js files and the game sounds)
-const httpServerPort: number = 4269;
-const express = require('express')
-const app = express();
-const cors = require('cors');
-app.use(cors()); // to fix that annoying CORS error (it's an error displayed in the browser's console)
-app.use(express.static('../public')); // /ok will route to ../public/ok
-app.listen(httpServerPort, () => console.log(`Express http server listening on port ${httpServerPort}`));
+// const httpServerPort: number = 4269;
+// const express = require('express')
+// const app = express();
+// const cors = require('cors');
+// app.use(cors()); // to fix that annoying CORS error (it's an error displayed in the browser's console)
+// app.use(express.static('../public')); // /ok will route to ../public/ok
+// app.listen(httpServerPort, () => console.log(`Express http server listening on port ${httpServerPort}`));
 //end of express
 
 // viewer websocket server config ws is socket of viewer

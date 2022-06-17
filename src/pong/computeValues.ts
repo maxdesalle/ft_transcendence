@@ -1,3 +1,5 @@
+import { default_values } from './defaultVals'
+
 // type of objects that will be passed to computeValues
 interface playerObjectInterface {
 	readonly p1Y?: number,
@@ -20,7 +22,7 @@ const {
 	holdTime,
 	ballSpeedMagFast,
 	ballSpeedMagSlow
-} = require('./defaultVals.js');
+} = default_values;
 
 let holdTimeTmp: number = holdTime; // just for syntactic sugar when creating a new session
 
@@ -197,7 +199,7 @@ function handleColBPow() {
 // gets the two last objects sent by the players, the elapsed time between now and the last frame and the game id
 // returns the object to send to all players and watchers
 // automatically creates the session if it is a new one
-function computeValues(
+export function computeValues(
 	p1Ob: playerObjectInterface,
 	p2Ob: playerObjectInterface,
 	dt: number,
@@ -252,7 +254,7 @@ function computeValues(
 }
 
 // function to call when game has ended (to clean values for next game with same id)
-function deleteGameSession(id: number) {
+export function deleteGameSession(id: number) {
 
 	const sess: sessionInterface = sessions.find((s) => s.id === id);
 	if (sess)
@@ -261,4 +263,4 @@ function deleteGameSession(id: number) {
 		console.error(`could not delete session ${id}: session id not found in sessions array`);
 }
 
-module.exports = {computeValues, deleteGameSession};
+// module.exports = {computeValues, deleteGameSession};

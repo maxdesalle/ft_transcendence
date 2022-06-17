@@ -28,7 +28,7 @@ const defaultVals = {
     powerUpsSize: 0.03,
 };
 
-module.exports = {
+export const default_values = {
     df: defaultVals,
     pi: pi,
     holdTime: holdTime,
