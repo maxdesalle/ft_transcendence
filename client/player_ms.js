@@ -124,16 +124,6 @@ function initSocket() {
 
 	ws.addEventListener('open', () => {
 		console.log(`connected to ${serverAddress}`);
-
-		// ADDING CODE
-		ws.send(JSON.stringify({
-			// event: 'play'
-			// event: 'invite',
-			event: 'accept',
-			data: 1,
-			// data: 2
-
-		}));
 	});
 	ws.addEventListener('close', () => {
 		isDisconnected = true;

@@ -1,4 +1,4 @@
-import { OnGatewayConnection, OnGatewayInit, SubscribeMessage, WebSocketGateway, WebSocketServer } from '@nestjs/websockets';
+import { OnGatewayConnection, OnGatewayDisconnect, OnGatewayInit, SubscribeMessage, WebSocketGateway, WebSocketServer } from '@nestjs/websockets';
 import { IncomingMessage } from 'http';
 import { URLSearchParams } from 'url';
 import { WebSocket, WebSocketServer as WSS } from 'ws';
@@ -175,6 +175,7 @@ async function startGame(id: number) {
 const connected_users = new Map<WebSocket, number>();
 const invitations = new Map<number, number>();
 let waiting_player: {user_id: number, socket: WebSocket} = null;
+const playing = new Set<number>();
 
 function generateSessionId(): number {
     const id: number = (sockets.reduce(
@@ -190,8 +191,51 @@ function getSocketFromUser(user_id: number) {
     }
 }
 
+
+function clearInviteWait(user_id: number) {
+    invitations.delete(user_id);
+    if (waiting_player?.user_id === user_id)
+        waiting_player = null;
+}
+
+function startSession(p1Socket: WebSocket, p2Socket: WebSocket) {
+    const id = generateSessionId();
+    sockets.push({
+        id,
+        p1Socket,
+        p2Socket,
+        p1Ob: {},
+        p2Ob: {}
+    });
+    return (id);
+}
+
+function matchPlayers(p1Socket: WebSocket, p2Socket: WebSocket) {
+    const p1 = connected_users.get(p1Socket);
+    const p2 = connected_users.get(p2Socket);
+
+    const id = startSession(p1Socket, p2Socket);
+
+    // no longer waiting for a peer
+    clearInviteWait(p1);
+    clearInviteWait(p2);
+
+    // update status
+    playing.add(p1);
+    playing.add(p2);
+    
+    linkPlayers(id).then((playerScores: playerScoresInterface) => {
+        console.log(`Session ${id} ended with scores: p1 ${playerScores.p1Score}, p2 ${playerScores.p2Score}`);
+
+        // update status
+        playing.delete(p1);
+        playing.delete(p2);
+    })
+    // TODO: save score somewhere (statsService?)
+}
+
 @WebSocketGateway({ path: '/test' })
-export class TestGateway implements OnGatewayConnection {
+export class TestGateway implements OnGatewayConnection, OnGatewayDisconnect {
     constructor(
         private jwtService: JwtService
     ) {}
@@ -213,7 +257,7 @@ export class TestGateway implements OnGatewayConnection {
 
         ws.on('close', () => {
             const i = sockets.findIndex((s) => (s.p1Socket === ws || s.p2Socket === ws));
-            if (!i) return; // Rodolpho added this
+            if (i === -1) return; // Rodolpho added this
             if (sockets[i].p1Socket === ws) {
                 sockets[i].p1Socket = undefined;
                 console.log(`p1 of session ${sockets[i].id} left`);
@@ -238,6 +282,12 @@ export class TestGateway implements OnGatewayConnection {
  
     }
 
+    handleDisconnect(client: WebSocket) {
+        const user_id = connected_users.get(client);
+        connected_users.delete(client);
+        clearInviteWait(user_id);
+    }
+
     @SubscribeMessage('play')
     playAgainstAnyone(client: WebSocket, data: string) {
         // get user_id from map
@@ -247,22 +297,7 @@ export class TestGateway implements OnGatewayConnection {
         // check if there's a waiting player
         if (waiting_player) {
             // match current player with waiting player
-            const id = generateSessionId();
-            sockets.push({
-                id, 
-                p1Socket: waiting_player.socket,
-                p2Socket: client,
-                p1Ob: {},
-                p2Ob: {}
-            });
-            // set waiting_player to null
-            waiting_player = null;
-
-            // starting game
-            linkPlayers(id).then((playerScores: playerScoresInterface) =>
-                console.log(`Session ${id} ended with scores: p1 ${playerScores.p1Score}, p2 ${playerScores.p2Score}`));
-
-            // TODO: save score somewhere (statsService?)
+            matchPlayers(waiting_player.socket, client);
         }
         else {
             waiting_player = {user_id, socket: client};
@@ -285,6 +320,8 @@ export class TestGateway implements OnGatewayConnection {
         // insert invitation in the map
         invitations.set(user_id, invited_user_id);
         console.log(`User ${user_id} is waiting for User ${invited_user_id}`);
+
+        // TODO: notify user via ws
     }
 
     @SubscribeMessage('accept')
@@ -298,7 +335,7 @@ export class TestGateway implements OnGatewayConnection {
             console.log('invalid inviting_user_id');
             return;
         }
-        // check if invitation checks
+        // check if invitation exists
         if (invitations.get(inviting_user_id) !== user_id) {
             console.log('Invitation does not exist');
             client.close(1000, 'Invitation does not exist');
@@ -311,31 +348,11 @@ export class TestGateway implements OnGatewayConnection {
             client.close(1000, 'inviting user is no longer available');
             return;
         }
-        // create Session
-        const id = generateSessionId();
-        sockets.push({
-            id,
-            p1Socket: inviting_user_socket,
-            p2Socket: client,
-            p1Ob: {},
-            p2Ob: {}
-        });
-        // remove invitation from map
-        invitations.delete(inviting_user_id);
+        // start game
+        matchPlayers(inviting_user_socket, client);
+   }
 
-        // starting game
-        linkPlayers(id).then((playerScores: playerScoresInterface) =>
-            console.log(`Session ${id} ended with scores: p1 ${playerScores.p1Score}, p2 ${playerScores.p2Score}`));
-
-        // TODO: save score somewhere (statsService?)
-    }
-
-        // TODO: handle disconnect: remove user from map and invitations
-
+   // TODO: refuse invitation ? withdraw invitation?
 
 }
 
-// handleConnection
-    // authenticate user
-    // check query string
-    // handle invitations map

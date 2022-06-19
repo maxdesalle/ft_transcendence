@@ -34,7 +34,7 @@ export class MockAuthController {
 			login42: user.login42
 		});
 		res.cookie('jwt_token', jwtToken);
-		return `Logged in as ${user.login42}`;
+		return `Logged in as ${user.login42} (user_id ${user.id})`;
 	}
 
 	@Get('logout')
