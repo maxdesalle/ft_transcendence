@@ -6,6 +6,8 @@ import { default_values } from "./defaultVals";
 import { parse } from 'cookie';
 import { JwtService } from '@nestjs/jwt';
 import { UsersService } from 'src/users/users.service';
+import { WsService } from 'src/ws/ws.service';
+import { forwardRef, Inject } from '@nestjs/common';
 
 const defaultVals = default_values.df;
 
@@ -33,13 +35,15 @@ const invitations = new Map<number, number>();
 // player waiting to be matched with the first to join
 let waiting_player: {user_id: number, socket: WebSocket} = null;
 // set of user_ids that are currently playing a match
-const playing = new Set<number>();
+export const playing = new Set<number>();
 
 @WebSocketGateway({ path: '/pong' })
 export class PongGateway implements OnGatewayConnection, OnGatewayDisconnect {
     constructor(
         private jwtService: JwtService,
         private usersService: UsersService,
+		@Inject(forwardRef(() => WsService))
+        private wsService: WsService
     ) {}
 
     // authenticates user
@@ -76,7 +80,7 @@ export class PongGateway implements OnGatewayConnection, OnGatewayDisconnect {
         // check if there's a waiting player
         if (waiting_player) {
             // match current player with waiting player
-            matchPlayers(waiting_player.socket, client);
+            this.matchPlayers(waiting_player.socket, client);
         }
         else {
             waiting_player = {user_id, socket: client};
@@ -101,7 +105,11 @@ export class PongGateway implements OnGatewayConnection, OnGatewayDisconnect {
         invitations.set(user_id, invited_user_id);
         console.log(`User ${user_id} is waiting for User ${invited_user_id}`);
 
-        // TODO: notify user via ws
+        // notify user via ws
+        this.wsService.sendMsgToUser(invited_user_id, {
+            event: 'pong: invitation',
+            user_id
+        });
     }
 
     @SubscribeMessage('accept')
@@ -129,11 +137,45 @@ export class PongGateway implements OnGatewayConnection, OnGatewayDisconnect {
             return;
         }
         // start game
-        matchPlayers(inviting_user_socket, client);
-   }
+        this.matchPlayers(inviting_user_socket, client);
+    }
 
    // TODO: refuse invitation ? withdraw invitation?
 
+    // starts session and calls linkPlayers
+    matchPlayers(p1Socket: WebSocket, p2Socket: WebSocket) {
+        const p1 = connected_users.get(p1Socket);
+        const p2 = connected_users.get(p2Socket);
+
+        const id = startSession(p1Socket, p2Socket);
+
+        // no longer waiting for a peer
+        clearInviteWait(p1);
+        clearInviteWait(p2);
+
+        // update status
+        playing.add(p1);
+        playing.add(p2);
+        
+        // notify friends
+        this.wsService.notifyStatusChangeToFriends(p1, 'playing');
+        this.wsService.notifyStatusChangeToFriends(p2, 'playing');
+
+        
+        linkPlayers(id).then((playerScores: playerScoresInterface) => {
+            console.log(`Session ${id} ended with scores: p1 ${playerScores.p1Score}, p2 ${playerScores.p2Score}`);
+
+            // update status
+            playing.delete(p1);
+            playing.delete(p2);
+
+            // notify friends
+            this.wsService.notifyStatusToFriendsAuto(p1);
+            this.wsService.notifyStatusToFriendsAuto(p2);
+
+        // TODO: save score somewhere (statsService?)
+        });
+    }
 }
 
 @WebSocketGateway({ path: '/pong_viewer' })
@@ -286,31 +328,7 @@ function startSession(p1Socket: WebSocket, p2Socket: WebSocket) {
     return (id);
 }
 
-// starts session and calls linkPlayers
-function matchPlayers(p1Socket: WebSocket, p2Socket: WebSocket) {
-    const p1 = connected_users.get(p1Socket);
-    const p2 = connected_users.get(p2Socket);
 
-    const id = startSession(p1Socket, p2Socket);
-
-    // no longer waiting for a peer
-    clearInviteWait(p1);
-    clearInviteWait(p2);
-
-    // update status
-    playing.add(p1);
-    playing.add(p2);
-    
-    linkPlayers(id).then((playerScores: playerScoresInterface) => {
-        console.log(`Session ${id} ended with scores: p1 ${playerScores.p1Score}, p2 ${playerScores.p2Score}`);
-
-        // update status
-        playing.delete(p1);
-        playing.delete(p2);
-
-    // TODO: save score somewhere (statsService?)
-    });
-}
 
 
 

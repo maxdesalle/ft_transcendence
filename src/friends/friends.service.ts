@@ -5,6 +5,7 @@ import { User } from 'src/users/entities/user.entity';
 import { UsersService } from 'src/users/users.service';
 import { Repository } from 'typeorm';
 import { Friendship, FrienshipStatus } from './entities/friendship.entity';
+import { playing } from 'src/pong/pong.gateway';
 
 @Injectable()
 export class FriendsService {
@@ -106,13 +107,14 @@ export class FriendsService {
 	async listFriendsUsers(my_id: number) {
 		const friends_ids = await this.listFriendsIDs(my_id);
 		const users = await this.usersRepository.findByIds(friends_ids);
-		users.forEach(user => user.statuss = this.getFriendStatus(user.id));
+		users.forEach(user => user.statuss = this.getUserStatus(user.id));
 		return users;
 	}
 
-	// todo: add a FRIEND guard 
-	getFriendStatus(friend_id: number): string {
-		if (this.wsService.isUserConnected(friend_id))
+	getUserStatus(user_id: number): string {
+		if (playing.has(user_id))
+			return 'playing'
+		if (this.wsService.isUserOnline(user_id))
 			return 'online';
 		return 'offline';
 	}

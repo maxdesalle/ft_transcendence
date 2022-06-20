@@ -247,8 +247,8 @@ Friendship request was rejected
 }
 ```
 
-### Status (online/offline)
-one of your friends became online
+### Status (online/offline/playing)
+one of your friends became online (or finished a match: playing -> online)
 ```
 {
     "event": "status: friend_online",
@@ -260,6 +260,23 @@ one of your friends became offline
 ```
 {
     "event": "status: friend_offline",
+    "user_id": 3
+}
+```
+one of your friends started a match
+```
+{
+    "event": "status: friend_playing",
+    "user_id": 3
+}
+```
+
+
+### Pong
+someone invited you to play pong
+```
+{
+    "event": "pong: invitation",
     "user_id": 3
 }
 ```

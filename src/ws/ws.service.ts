@@ -38,7 +38,7 @@ import { FriendsService } from "src/friends/friends.service";
 		return list;
 	}
 
-	isUserConnected(user_id: number): boolean {
+	isUserOnline(user_id: number): boolean {
 		return WsService.connected_users.has(user_id);
 	}
 
@@ -63,6 +63,15 @@ import { FriendsService } from "src/friends/friends.service";
 	}
 
 	async notifyStatusChangeToFriends(user_id: number, status: string) {
+		const friends = await this.friendsService.listFriendsIDs(user_id);
+		this.sendMsgToUsersList(friends, {
+			event: `status: friend_${status}`,
+			user_id
+		});
+	}
+
+	async notifyStatusToFriendsAuto(user_id: number) {
+		const status = this.friendsService.getUserStatus(user_id);
 		const friends = await this.friendsService.listFriendsIDs(user_id);
 		this.sendMsgToUsersList(friends, {
 			event: `status: friend_${status}`,

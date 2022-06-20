@@ -22,7 +22,7 @@ export class WsGateway implements OnGatewayConnection, OnGatewayDisconnect{
 			return;
 		}
 		// avoid duplicate connection for same user
-		if (this.wsService.isUserConnected(user.id)) {
+		if (this.wsService.isUserOnline(user.id)) {
 			client.close(1008, 'user already connected via another socket');
 			return;
 		}
