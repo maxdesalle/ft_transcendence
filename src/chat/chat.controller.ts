@@ -6,7 +6,7 @@ import { User } from 'src/users/entities/user.entity';
 import { WsService } from 'src/ws/ws.service';
 import { ChatService } from './chat.service';
 import { Session } from './DTO/chat-user.dto';
-import { PostDM, Message, RoomInfo, RoomInfoShort, GroupConfig, addGroupUserDTO, Message2Room, addGroupUserByNameDTO } from './DTO/chat.dto';
+import { PostDM, MessageDTO, RoomInfo, RoomInfoShort, GroupConfig, addGroupUserDTO, Message2Room, addGroupUserByNameDTO } from './DTO/chat.dto';
 import { GroupOwnerGuard } from './guards/owner.guard';
 import { IsParticipant } from './guards/participant.guard';
 import { ValidateRoomPipe } from './pipes/validate_room.pipe';
@@ -30,7 +30,7 @@ export class ChatController {
 		// @Body('message') message: string,
 		@Body() body: PostDM
 	) {
-		const message: Message = 
+		const message: MessageDTO = 
 			await this.chatService.sendDMtoUser(me, destUserId, body.message);
 		this.wsService.sendMsgToUsersList([me.id, destUserId], {
 			event: 'chat_dm',
@@ -47,7 +47,7 @@ export class ChatController {
 		@Body('message') msg: string,
 		@Body() _body: Message2Room
 	) {
-		const message: Message =
+		const message: MessageDTO =
 			await this.chatService.send_msg_to_room(me, room_id, msg);
 		this.wsService.sendMsgToUsersList(
 			await this.chatService.getRoomParcipants(room_id),
@@ -65,7 +65,7 @@ export class ChatController {
 	getDMs(
 		@Usr() me: User,
 		@Param('user_id', ParseIntPipe, ValidateUserPipe) user_id: number
-	): Promise<Message[]> {
+	): Promise<MessageDTO[]> {
 		return this.chatService.getDMbyUser(me, user_id);
 	}
 
@@ -111,7 +111,7 @@ export class ChatController {
 	getMessagesByRoomId(
 		@Usr() user: User,
 		@Param('room_id', ParseIntPipe, ValidateRoomPipe) room_id: number
-	): Promise<Message[]> {
+	): Promise<MessageDTO[]> {
 		return this.chatService.getMessagesByRoomId(user, room_id);
 	}
 
