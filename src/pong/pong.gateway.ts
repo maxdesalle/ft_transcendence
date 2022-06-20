@@ -5,6 +5,7 @@ import { computeValues, deleteGameSession } from "./computeValues";
 import { default_values } from "./defaultVals";
 import { parse } from 'cookie';
 import { JwtService } from '@nestjs/jwt';
+import { UsersService } from 'src/users/users.service';
 
 const defaultVals = default_values.df;
 
@@ -37,7 +38,8 @@ const playing = new Set<number>();
 @WebSocketGateway({ path: '/pong' })
 export class PongGateway implements OnGatewayConnection, OnGatewayDisconnect {
     constructor(
-        private jwtService: JwtService
+        private jwtService: JwtService,
+        private usersService: UsersService,
     ) {}
 
     // authenticates user
@@ -48,10 +50,12 @@ export class PongGateway implements OnGatewayConnection, OnGatewayDisconnect {
 		    user = this.jwtService.verify(token);
         } catch (error) {
 			ws.close(1008, 'Bad credentials');
+            console.log('Authentication failed');
 			return;
         }
         // add to connected_users map 
         connected_users.set(ws, user.id);
+        console.log(`User ${user.id} connected to pong WSS`);
 
         ws.on('error', (e) => console.error(`socket error: ${e.message}`));
     }
@@ -82,17 +86,18 @@ export class PongGateway implements OnGatewayConnection, OnGatewayDisconnect {
     }
 
     @SubscribeMessage('invite')
-    invitePlayer(client: WebSocket, data: string) {
+    async invitePlayer(client: WebSocket, data: string) {
         // get user_id from map
         const user_id = connected_users.get(client);
         if (!user_id)
             return;
         const invited_user_id = +data;
-        if (!invited_user_id) {
+        if (!invited_user_id || invited_user_id === user_id
+            || ! await this.usersService.findById(invited_user_id)) {
             console.log('invalid invited_user_id');
             return;
         }
-        // insert invitation in the map
+        // insert invitation in the map (new invitation overwrites an old one)
         invitations.set(user_id, invited_user_id);
         console.log(`User ${user_id} is waiting for User ${invited_user_id}`);
 
@@ -113,14 +118,14 @@ export class PongGateway implements OnGatewayConnection, OnGatewayDisconnect {
         // check if invitation exists
         if (invitations.get(inviting_user_id) !== user_id) {
             console.log('Invitation does not exist');
-            client.close(1000, 'Invitation does not exist');
+            // client.close(1000, 'Invitation does not exist');
             return;
         }
         // get inviting user socket
         const inviting_user_socket = getSocketFromUser(inviting_user_id);
         if (!inviting_user_socket) {
             console.log('inviting user is no longer available');
-            client.close(1000, 'inviting user is no longer available');
+            // client.close(1000, 'inviting user is no longer available');
             return;
         }
         // start game

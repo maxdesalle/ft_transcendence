@@ -5,8 +5,9 @@
 		<title>Client</title>
 	</head>
 	<body>
+		<h1> TESTS page </h1>
 		<div>
-			<h1> First of all: Login </h1>
+			<h2> Login </h2>
 			<p id="loggedin"></p>
 			<input type='text' id='login' />
 			<button type='button' onclick='login()'>Login</button>
@@ -15,18 +16,23 @@
 		</div>
 
 		<div>
-			<h1> Play Pong!</h1>
+			<h2> Play Pong!</h2>
 			<a href="/player.html">here</a>
 		</div>
 		
 		<div>
-			<h1> Connect to Notifications service (websocket) </h1>
+			<h2> Or just watch </h2>
+			<a href="/viewer.html">here</a>
+		</div>
+
+		<div>
+			<h2> Connect to Notifications service (websocket) </h2>
 			<p id="ws_connection"></p>
 			<button type='button' onclick='ws_connect()'>Connect</button>
 		</div>
 
 		<div>
-			<h1> Received Messages from Notifications service </h1>
+			<h2> Received Messages from Notifications service </h2>
 			<ul id="list">
 			</ul>
 		</div>
@@ -74,7 +80,7 @@
 		let socket;
 		function ws_connect() {
 			// Create WebSocket connection.
-			socket = new WebSocket('ws://localhost:3000/');
+			socket = new WebSocket('ws://127.0.0.1:3000/');
 
 			// Connection opened
 			socket.addEventListener('open', function (event) {

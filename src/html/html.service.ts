@@ -6,11 +6,13 @@ export class HtmlService {
 		return `<p>Good to see you here ${username} 👋</p><p>You can check your settings <a href="/settings/">here</a> or log out <a href="/logout/">here</a>.</p>
 			<p>You can check your avatar <a href="/users/avatar">here</a> or change it <a href="/upload_avatar">here</a>.</p>
 			<img src='users/avatar' width='500'>
+			<p>Mock-auth and other cool stuff <a href="/client.html">here</a>.</p>
 			`;
 	}
 
 	getLoginPage(): string {
-		return `<p>Click <a href="/login/42">here</a> to log in.</p><form action="/login/two-factor-authentication/" method="POST"><div><label for="say">What's your 2FA code?</label><input name="twoFactorAuthenticationCode" id="twoFactorAuthenticationCode" value="twoFactorAuthenticationCode"></div><div><button>Confirm</button></div></form>`;
+		return `<p>Click <a href="/login/42">here</a> to log in.</p><form action="/login/two-factor-authentication/" method="POST"><div><label for="say">What's your 2FA code?</label><input name="twoFactorAuthenticationCode" id="twoFactorAuthenticationCode" value="twoFactorAuthenticationCode"></div><div><button>Confirm</button></div></form>
+			Mock-auth and other cool stuff <a href="/client.html">here</a>.`;
 	}
 
 	getSettingsPage(): string {

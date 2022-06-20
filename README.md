@@ -25,12 +25,12 @@ OR: `./launch.sh` (have the **.env** file ready)
 
 Wanna restart with a fresh DB? `./restart.sh`
 
-The app should be available at localhost:3000
+The app should be available at 127.0.0.1:3000
 
 -----------------------
 
 ### How to access the database:
-**Adminer** is available at localhost:8080
+**Adminer** is available at 127.0.0.1:8080
 System: PostgreSQL  
 Server:db  
 Username: postgres	  
@@ -51,7 +51,7 @@ Useful commands:
 ### Mock-authentication
 You can log in as a mock user bypassing the OAuth-intra-42 drill via 
 ```
-POST localhost:3000/mock-auth/login
+POST 127.0.0.1:3000/mock-auth/login
 request body:
 {
     "login42": "filip_the_king"
@@ -61,21 +61,21 @@ This will create a new user if necessary.
 
 To log out:
 ```
-GET localhost:3000/mock-auth/logout
+GET 127.0.0.1:3000/mock-auth/logout
 ```
 
 (Why? So you can make tests with different users without having to ask your buddy's 42 intra password, and use Postman for your tests)  
 
 ## API documentation (by Swagger)  
-    localhost:3000/api  
+    127.0.0.1:3000/api  
 You should ignore the routes under the "default" section, as they probably don't work well.
 
 ## Play Pong!
 For now, no system is in place to invite a specific player to play against. And no auth yet for the pong websocket.
 
-What can be done: `localhost:3000/player.html` will get you a player. Do the same in another tab so you can play... against yourself.
+What can be done: `127.0.0.1:3000/player.html` will get you a player. Do the same in another tab so you can play... against yourself.
 
-Wanna watch you VS you ? `localhost:3000/viewer.html`. Check the terminal for the game session id. (or try 1)
+Wanna watch you VS you ? `127.0.0.1:3000/viewer.html`. Check the terminal for the game session id. (or try 1)
 
 ## Chat
 What you can do now:
@@ -106,7 +106,7 @@ What you can do now:
 Client-side:
 ```
 // Create WebSocket connection (login first, so the JWT is included as cookie)
-const socket = new WebSocket('ws://localhost:3000/');
+const socket = new WebSocket('ws://127.0.0.1:3000/');
 
 // in case you wanna do something when connection is established
 socket.addEventListener('open', function (event) {
