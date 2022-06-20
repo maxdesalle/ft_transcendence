@@ -74,7 +74,7 @@ You should ignore the routes under the "default" section, as they probably don't
 
 You have to be logged in first.  
 `127.0.0.1:3000/player.html` will get you a player.   
-Login as someone else and open the same page in ANOTHER BROWSER (or use a incognito tab x normal tab... just mind the cookies!) so you can play... against yourself. 
+Login as someone else in ANOTHER BROWSER (or use a incognito tab x normal tab... just mind the cookies!) and open the same page so you can play... against yourself. 
 
 Wanna watch you VS you ? `127.0.0.1:3000/viewer.html`. Check the terminal for the game session id. (or try 1)
 
