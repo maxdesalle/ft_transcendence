@@ -18,7 +18,40 @@
 
 <body>
   <main>
+    <div>
+      <p>
+        <button type='button' onclick='play_any()'>Play against anyone</button>
+      </p>
+      <p>
+        <input type='text' size='4' id='user_id'/>
+        <button type='button' onclick='invite()'>Invite user</button>
+        <button type='button' onclick='accept()'>Accept invitation from user</button>
+      </p>
+    </div>
   </main>
 </body>
+<script>
+  function play_any() {
+    ws.send(JSON.stringify({
+      event: 'play'
+    }));
+  }
+
+  function invite() {
+    ws.send(JSON.stringify({
+      event: 'invite',
+      data: document.getElementById('user_id').value
+    }));
+  }
+
+  function accept() {
+    ws.send(JSON.stringify({
+      event: 'accept',
+      data: document.getElementById('user_id').value
+    }));
+  }
+
+
+</script>
 
 </html>

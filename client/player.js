@@ -2,6 +2,7 @@ const socketServerIP = 'localhost';
 const socketServerPort = 3000;
 const httpServerIP = 'localhost';
 const httpServerPort = 3000;
+const socketServerPath = 'pong';
 let isDisconnected = false;
 let socketErrObject = undefined; // if not undefined, socket returned an error
 let ws; // webSocket
@@ -118,22 +119,11 @@ let isOtherPlayerReady = false; //other player is done with settings
 
 // connects to server
 function initSocket() {
-	// const serverAddress = `ws://${socketServerIP}:${socketServerPort}/pong`;
-	const serverAddress = `ws://${socketServerIP}:${socketServerPort}/test`;
+	const serverAddress = `ws://${socketServerIP}:${socketServerPort}/${socketServerPath}`;
 	ws = new WebSocket(serverAddress);
 
 	ws.addEventListener('open', () => {
 		console.log(`connected to ${serverAddress}`);
-
-		// ADDING CODE
-		ws.send(JSON.stringify({
-			// event: 'play'
-			// event: 'invite',
-			event: 'accept',
-			data: 1,
-			// data: 2
-
-		}));
 	});
 	ws.addEventListener('close', () => {
 		isDisconnected = true;

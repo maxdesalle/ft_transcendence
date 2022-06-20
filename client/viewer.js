@@ -2,6 +2,7 @@ const socketServerIP = 'localhost';
 const socketServerPort = 3000;
 const httpServerIP = 'localhost';
 const httpServerPort = 3000;
+const socketServerPath = 'pong_viewer';
 let socketErrObject = undefined;
 let ws; // webSocket
 const canvasWidth = (innerWidth > innerHeight ? innerHeight : innerWidth);
@@ -114,7 +115,7 @@ let sliders = [
 
 //connects to server
 function initSocket() {
-	const serverAddress = `ws://${socketServerIP}:${socketServerPort}/pong_viewer`;
+	const serverAddress = `ws://${socketServerIP}:${socketServerPort}/${socketServerPath}`;
 	ws = new WebSocket(serverAddress);
 
 	ws.addEventListener('open', () => {

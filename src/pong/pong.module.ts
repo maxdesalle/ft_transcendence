@@ -1,10 +1,10 @@
 import { Module } from '@nestjs/common';
 import { JwtModule } from '@nestjs/jwt';
 import { jwtConfig } from 'src/config/jwt.config';
-import { PongGateway, PongViewerGateway, TestGateway } from './pong.gateway';
+import { PongGateway, PongViewerGateway } from './pong.gateway';
 
 @Module({
-  providers: [PongGateway, PongViewerGateway, TestGateway],
+  providers: [PongGateway, PongViewerGateway],
   imports: [
     JwtModule.registerAsync(jwtConfig),
   ]

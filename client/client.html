@@ -6,7 +6,7 @@
 	</head>
 	<body>
 		<div>
-			<h1> Login </h1>
+			<h1> First of all: Login </h1>
 			<p id="loggedin"></p>
 			<input type='text' id='login' />
 			<button type='button' onclick='login()'>Login</button>
@@ -16,22 +16,21 @@
 
 		<div>
 			<h1> Play Pong!</h1>
-			<a href="/player_ms.html">here</a>
+			<a href="/player.html">here</a>
 		</div>
 		
 		<div>
-			<h1> Connect with Websocket </h1>
+			<h1> Connect to Notifications service (websocket) </h1>
 			<p id="ws_connection"></p>
 			<button type='button' onclick='ws_connect()'>Connect</button>
 		</div>
 
 		<div>
-			<h1> Received Messages from WebSocket Server </h1>
+			<h1> Received Messages from Notifications service </h1>
 			<ul id="list">
 			</ul>
 		</div>
 
-		<!-- <button onclick="sendMsg()"> Send msg </button> -->
 	</body>
 	<script>
 		function post_request(url, data) {
