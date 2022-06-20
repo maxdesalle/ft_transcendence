@@ -71,14 +71,15 @@ GET 127.0.0.1:3000/mock-auth/logout
 You should ignore the routes under the "default" section, as they probably don't work well.
 
 ## Play Pong!
-For now, no system is in place to invite a specific player to play against. And no auth yet for the pong websocket.
 
-What can be done: `127.0.0.1:3000/player.html` will get you a player. Do the same in another tab so you can play... against yourself.
+You have to be logged in first.  
+`127.0.0.1:3000/player.html` will get you a player.   
+Login as someone else and open the same page in ANOTHER BROWSER (or use a incognito tab x normal tab... just mind the cookies!) so you can play... against yourself. 
 
 Wanna watch you VS you ? `127.0.0.1:3000/viewer.html`. Check the terminal for the game session id. (or try 1)
 
 ## Chat
-What you can do now:
+What you can do for now:
 ### Users
 * You can login:  POST /mock-auth/**login**  
 * Then you can login again with a different user so you'll have a buddy to talk to
