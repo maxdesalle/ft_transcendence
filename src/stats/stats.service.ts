@@ -1,5 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
+import { match } from 'assert';
 import { Repository } from 'typeorm';
 import { Match } from './entities/match.entity';
 
@@ -21,8 +22,16 @@ export class StatsService {
 		this.matchRepository.save(match);
 	}
 
-	async getMatchHistory() {
-		return await this.matchRepository.find();
+	async getAllMatches() {
+		const matches = await this.matchRepository.find(
+			{ relations: ['player1', 'player2']}
+		);
+		matches.forEach((match: any) => {
+			delete match.player1.isTwoFactorAuthenticationEnabled;
+			delete match.player1.twoFactorAuthenticationSecret;
+			delete match.player2.isTwoFactorAuthenticationEnabled;
+			delete match.player2.twoFactorAuthenticationSecret;
+		});
+		return matches;
 	}
-
 }
