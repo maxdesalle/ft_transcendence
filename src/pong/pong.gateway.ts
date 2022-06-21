@@ -8,6 +8,7 @@ import { JwtService } from '@nestjs/jwt';
 import { UsersService } from 'src/users/users.service';
 import { WsService } from 'src/ws/ws.service';
 import { forwardRef, Inject } from '@nestjs/common';
+import { StatsService } from 'src/stats/stats.service';
 
 const defaultVals = default_values.df;
 
@@ -43,7 +44,8 @@ export class PongGateway implements OnGatewayConnection, OnGatewayDisconnect {
         private jwtService: JwtService,
         private usersService: UsersService,
 		@Inject(forwardRef(() => WsService))
-        private wsService: WsService
+        private wsService: WsService,
+        private statsService: StatsService
     ) {}
 
     // authenticates user
@@ -173,7 +175,10 @@ export class PongGateway implements OnGatewayConnection, OnGatewayDisconnect {
             this.wsService.notifyStatusToFriendsAuto(p1);
             this.wsService.notifyStatusToFriendsAuto(p2);
 
-        // TODO: save score somewhere (statsService?)
+            // save score in match history (if complete)
+            if (playerScores.p1Score === 10 || playerScores.p2Score === 10)
+                this.statsService.insertMatch(
+                    p1, p2, playerScores.p1Score, playerScores.p2Score);
         });
     }
 }
