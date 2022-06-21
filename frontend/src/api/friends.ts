@@ -1,0 +1,41 @@
+import { useFetch, usePost } from "../utils/reactQuery";
+import { routes } from "./utils";
+
+export const useAddFriendById = () => {
+  return usePost(`${routes.friends}/send_friend_request`, {
+    invalidQueries: [`${routes.friends}/pending_received`],
+  });
+};
+
+export const useGetPendingFriendRequest = () => {
+  const context = useFetch<number[]>(`${routes.friends}/pending_received`);
+
+  return {
+    ...context,
+    pendingRequests: context.data,
+  };
+};
+
+export const useAcceptFriendRequest = () => {
+  return usePost(`${routes.friends}/accept_friend_request`, {
+    invalidQueries: [
+      `${routes.friends}/pending_received`,
+      `${routes.friends}/id`,
+    ],
+  });
+};
+
+export const useGetAllFriends = () => {
+  const context = useFetch<number[]>(`${routes.friends}/id`);
+
+  return {
+    ...context,
+    friendsIds: context.data,
+  };
+};
+
+export const useRejectFriendRequest = () => {
+  return usePost(`${routes.friends}/reject_friend_request`, {
+    invalidQueries: [`${routes.friends}/pending_received`],
+  });
+};
