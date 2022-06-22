@@ -161,7 +161,7 @@ export class PongGateway implements OnGatewayConnection, OnGatewayDisconnect {
         this.wsService.notifyStatusChangeToFriends(p2, 'playing');
 
         
-        linkPlayers(id).then((playerScores: playerScoresInterface) => {
+        linkPlayers(id).then(async (playerScores: playerScoresInterface) => {
             console.log(`Session ${id} ended with scores: p1 ${playerScores.p1Score}, p2 ${playerScores.p2Score}`);
 
             // update status
@@ -173,9 +173,15 @@ export class PongGateway implements OnGatewayConnection, OnGatewayDisconnect {
             this.wsService.notifyStatusToFriendsAuto(p2);
 
             // save score in match history (if complete)
-            if (playerScores.p1Score === 10 || playerScores.p2Score === 10)
+            if (playerScores.p1Score === 10 || playerScores.p2Score === 10) {
                 this.statsService.insertMatch(
                     p1, p2, playerScores.p1Score, playerScores.p2Score);
+                // notify everyone about ladder change
+                this.wsService.sendMsgToAll({
+                    event: `ladder_change`,
+                    ladder: await this.statsService.ladder()
+                });
+            }
         });
     }
 }

@@ -62,6 +62,10 @@ import { FriendsService } from "src/friends/friends.service";
 		}
 	}
 
+	sendMsgToAll(data: any) {
+		this.sendMsgToUsersList(this.getConnectedUsersIDs(), data);
+	}
+
 	async notifyStatusChangeToFriends(user_id: number, status: string) {
 		const friends = await this.friendsService.listFriendsIDs(user_id);
 		this.sendMsgToUsersList(friends, {

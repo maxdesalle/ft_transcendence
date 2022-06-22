@@ -309,3 +309,21 @@ someone invited you to play pong
     "user_id": 3
 }
 ```
+
+### Ladder change
+When a Pong match is over, points in the general ladder are changed
+```
+{
+    "event":"ladder_change",
+    "ladder":[
+        {"rank":1,"user_id":5,"display_name":"user_5","points":400},
+        {"rank":2,"user_id":1,"display_name":"user_1","points":300},
+        {"rank":3,"user_id":6,"display_name":"user_6","points":100},
+        {"rank":4,"user_id":3,"display_name":"user_3","points":0},
+        {"rank":4,"user_id":4,"display_name":"user_4","points":0},
+        {"rank":4,"user_id":2,"display_name":"user_2","points":0},
+        {"rank":4,"user_id":7,"display_name":"hey","points":0},
+        {"rank":4,"user_id":8,"display_name":"ff","points":0}
+    ]
+}
+```
