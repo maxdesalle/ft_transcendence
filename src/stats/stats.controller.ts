@@ -1,9 +1,12 @@
 import { Body, Controller, Get, Param, ParseIntPipe, Post, UseGuards } from '@nestjs/common';
+import { ApiOperation, ApiTags } from '@nestjs/swagger';
 import { JwtGuard } from 'src/auth/guards/jwt.guard';
+import { PostMatchDto } from './dto/match.dto';
 import { StatsService } from './stats.service';
 
 @Controller('stats')
 @UseGuards(JwtGuard)
+@ApiTags('stats')
 export class StatsController {
 	constructor(
 		private statsService: StatsService,
@@ -40,17 +43,18 @@ export class StatsController {
 		return this.statsService.ladder();
 	}
 
-	@Get('ladder_level/:user_id')
+	@Get('ladder_rank/:user_id')
 	ladderRang(
 		@Param('user_id', ParseIntPipe) user_id: number
 	) {
-		return this.statsService.ladderLevel(user_id);
+		return this.statsService.ladderRank(user_id);
 	}
 
 	// for testing
 	@Post('match')
+	@ApiOperation({ summary: "For testing purposes. Simulates a match result."})
 	test(
-		@Body() body
+		@Body() body: PostMatchDto
 	) {
 		this.statsService.insertMatch(body.p1, body.p2, body.p1Score, body.p2Score);
 	}

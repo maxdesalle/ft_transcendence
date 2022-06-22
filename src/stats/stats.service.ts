@@ -6,8 +6,8 @@ import { Match } from './entities/match.entity';
 import { Points } from './entities/points.entity';
 
 const POINTS_LOSS = -100;
-const POINTS_WIN_LOWER_RUNG = 100;
-const POINTS_WIN_HIGHER_RUNG = 300;
+const POINTS_WIN_LOWER_RANK = 100;
+const POINTS_WIN_HIGHER_RANK = 300;
 
 @Injectable()
 export class StatsService {
@@ -33,7 +33,7 @@ export class StatsService {
 		});
 		return ladder.map((obj: any, index, array) => {
 			return {
-				rung: this.getRung(index, array),
+				rank: this.getRank(index, array),
 				user_id: obj.user_id.id,
 				display_name: obj.user_id.display_name,
 				points: obj.points
@@ -41,21 +41,24 @@ export class StatsService {
 		});
 	}
 
-	getRung(index: number, ladder: Points[]) {
-		let rung = index;
+	getRank(index: number, ladder: Points[]) {
+		let rank = index;
 		for (let i = index -1; i >=0; --i) {
-			if (ladder[i].points === ladder[rung].points)
-				--rung;
+			if (ladder[i].points === ladder[rank].points)
+				--rank;
 			else
-				return rung + 1;
+				return rank + 1;
 		}
-		return rung + 1;
+		return rank + 1;
 	}
 
-	async ladderLevel(user_id: number) {
+	async ladderRank(user_id: number) {
 		const ladder = await this.ladder();
 		const player = ladder.find((value) => value.user_id === user_id);
-		return player?.rung;
+		return {
+			ladder_rank: player?.rank,
+			points: player?.points
+		};
 	}
 
 	// user_id must be valid
@@ -67,23 +70,18 @@ export class StatsService {
 			})
 			.where({user_id})
 			.execute()
-		// const user_points = await this.pointsRepository.findOne({user_id});
-		// console.log(user_points);
-		// user_points.points += points;
-		// this.pointsRepository.save(user_points);
-
-		// this.pointsRepository.update(user_id, {points})
 	}
 
+	// user_ids must be valid
 	async addMatchPoints(p_win: number, p_loss: number) {
 		const ladder = await this.ladder();
 		const winner = ladder.find((value) => value.user_id === p_win);
 		const loser = ladder.find((value) => value.user_id === p_loss);
 		// points for  the winner
-		if (winner.rung > loser.rung) 
-			this.addPoints(p_win, POINTS_WIN_HIGHER_RUNG);
+		if (winner.rank > loser.rank) 
+			this.addPoints(p_win, POINTS_WIN_HIGHER_RANK);
 		else
-			this.addPoints(p_win, POINTS_WIN_LOWER_RUNG);
+			this.addPoints(p_win, POINTS_WIN_LOWER_RANK);
 		// points for the loser (avoid dropping below 0)
 		if (loser.points >= -POINTS_LOSS)
 			this.addPoints(p_loss, POINTS_LOSS);
@@ -143,6 +141,7 @@ export class StatsService {
 			const player_score = is_p1 ? match.p1Score : match.p2Score;
 			const opponent_score = is_p1 ? match.p2Score : match.p1Score;
 			return {
+				match_id: match.id,
 				result: (player_score > opponent_score) ? 'win' : 'loss',
 				opponent: is_p1? match.p2 : match.p1, 
 				score: `${player_score} - ${opponent_score}`,
@@ -157,12 +156,15 @@ export class StatsService {
 		const matches_played = results.length;
 		const wins = results.reduce((prev, curr) => 
 			prev + +(curr.result === 'win'), 0);
+		const ladder_info = await this.ladderRank(user_id);
 
 		return {
+			ladder_rank: ladder_info.ladder_rank,
+			points: ladder_info.points,
 			matches_played,
 			wins,
 			losses: matches_played - wins,
-			wins_percent: wins / matches_played,
+			wins_percent: Math.round(wins / matches_played * 100),
 		};
 	}
 
