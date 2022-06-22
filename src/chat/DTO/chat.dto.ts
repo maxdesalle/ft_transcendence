@@ -3,7 +3,7 @@ export class PostDM {
 	message: string;
 }
 
-export class Message {
+export class MessageDTO {
 	id: number;
 	user_id: number;
 	login42: string;

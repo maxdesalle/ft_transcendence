@@ -107,7 +107,7 @@ export class FriendsService {
 	async listFriendsUsers(my_id: number) {
 		const friends_ids = await this.listFriendsIDs(my_id);
 		const users = await this.usersRepository.findByIds(friends_ids);
-		users.forEach(user => user.statuss = this.getUserStatus(user.id));
+		users.forEach(user => user.status = this.getUserStatus(user.id));
 		return users;
 	}
 

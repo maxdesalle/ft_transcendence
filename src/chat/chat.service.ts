@@ -1,9 +1,10 @@
-import { BadRequestException, ForbiddenException, HttpException, Injectable } from '@nestjs/common';
+import { BadRequestException, ForbiddenException, Injectable } from '@nestjs/common';
 import { User } from 'src/users/entities/user.entity';
 import { UsersService } from 'src/users/users.service';
 import { Connection, EntityManager } from 'typeorm';
 import { Conversation, Session } from './DTO/chat-user.dto';
-import { GroupConfig, Message } from './DTO/chat.dto';
+import { GroupConfig, MessageDTO } from './DTO/chat.dto';
+import { Message } from './entities/message.entity';
 
 const PARTICIPANT = 0;
 const ADMIN = 1;
@@ -383,17 +384,27 @@ export class ChatService {
 				throw new ForbiddenException("you are muted");
 				// return ("you are still muted");
 		}
-		const query = await this.pool.query(`
-			INSERT INTO message(user_id, timestamp, message, room_id)
-			VALUES(${me.id}, NOW(), '${message}', ${room_id})
-			RETURNING *`
-		);
+		// in order to allow messages containing single quotes, I'm not using the
+		// raw query on this one.
+		const messageRepository = this.connection.getRepository(Message);
+		const new_message = new Message();
+		new_message.room_id = room_id;
+		new_message.user_id = me.id;
+		new_message.message = message;
+		new_message.timestamp = new Date();
+		messageRepository.save(new_message);
+
+		// const query = await this.pool.query(`
+		// 	INSERT INTO message(user_id, timestamp, message, room_id)
+		// 	VALUES(${me.id}, NOW(), '${message}', ${room_id})
+		// 	RETURNING *`
+		// );
 		await this.pool.query(`
 			UPDATE room SET activity=NOW() WHERE id=${room_id}`);
 
 		const user = await this.usersService.findById(me.id);
-		const msg: Message = {
-			...query.rows[0],
+		const msg: MessageDTO = {
+			...new_message,
 			login42: user.login42,
 			display_name: user.display_name
 		}
