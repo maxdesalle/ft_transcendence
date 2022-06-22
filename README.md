@@ -106,6 +106,7 @@ Wanna watch you VS you ? `127.0.0.1:3000/viewer.html`. Check the terminal for th
       data: <user_id> (from the user that invited you)
     }));
 ```
+Check out client/player.html <script> part at the bottom
 
 ## Chat
 What you can do for now:
