@@ -1,4 +1,4 @@
-import { ArgumentsHost, Catch, Controller, ExceptionFilter, Get, HttpException, UnauthorizedException, UseFilters, UseGuards } from '@nestjs/common';
+import { ArgumentsHost, Catch, Controller, ExceptionFilter, Get, HttpException, Redirect, UnauthorizedException, UseFilters, UseGuards } from '@nestjs/common';
 import { JwtGuard } from 'src/auth/guards/jwt.guard';
 import { Usr } from 'src/users/decorators/user.decorator';
 import { Response } from 'express';
@@ -49,4 +49,10 @@ export class HtmlController {
 	uploadAvatar() {
 		return this.htmlService.getAvatarUploadForm();
 	}
+
+	@Get('player')
+	@UseGuards(JwtGuard)
+	@UseFilters(ViewAuthFilter)
+	@Redirect('player.html')
+	pongPlayer() {}
 }

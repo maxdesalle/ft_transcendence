@@ -7,8 +7,9 @@ import { parse } from 'cookie';
 import { JwtService } from '@nestjs/jwt';
 import { UsersService } from 'src/users/users.service';
 import { WsService } from 'src/ws/ws.service';
-import { forwardRef, Inject } from '@nestjs/common';
+import { forwardRef, Inject, UseGuards } from '@nestjs/common';
 import { StatsService } from 'src/stats/stats.service';
+import { PongGuard } from './guards/pong.guard';
 
 const defaultVals = default_values.df;
 
@@ -30,7 +31,7 @@ interface playerScoresInterface {
 const sockets: gameSocketsInterface[] = []; // array that will contain session objects
 
 // keeps track of who is connected to '/pong/ gateway (socket - user_id pairs)
-const connected_users = new Map<WebSocket, number>();
+export const connected_users = new Map<WebSocket, number>();
 // pending invitations to play (inviting user_id - invited user_id pairs )
 const invitations = new Map<number, number>();
 // player waiting to be matched with the first to join
@@ -74,11 +75,10 @@ export class PongGateway implements OnGatewayConnection, OnGatewayDisconnect {
     }
 
     @SubscribeMessage('play')
+    @UseGuards(PongGuard)
     playAgainstAnyone(client: WebSocket, data: string) {
-        // get user_id from map
         const user_id = connected_users.get(client);
-        if (!user_id)
-            return;
+
         // check if there's a waiting player
         if (waiting_player) {
             // match current player with waiting player
@@ -92,11 +92,10 @@ export class PongGateway implements OnGatewayConnection, OnGatewayDisconnect {
     }
 
     @SubscribeMessage('invite')
+    @UseGuards(PongGuard)
     async invitePlayer(client: WebSocket, data: string) {
-        // get user_id from map
         const user_id = connected_users.get(client);
-        if (!user_id)
-            return;
+
         const invited_user_id = +data;
         if (!invited_user_id || invited_user_id === user_id
             || ! await this.usersService.findById(invited_user_id)) {
@@ -115,11 +114,9 @@ export class PongGateway implements OnGatewayConnection, OnGatewayDisconnect {
     }
 
     @SubscribeMessage('accept')
+    @UseGuards(PongGuard)
     acceptInvitation(client: WebSocket, data: string) {
-        // get user_id from map
         const user_id = connected_users.get(client);
-        if (!user_id)
-            return;
         const inviting_user_id = +data;
         if (!inviting_user_id) {
             console.log('invalid inviting_user_id');

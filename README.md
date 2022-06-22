@@ -73,15 +73,44 @@ You should ignore the routes under the "default" section, as they probably don't
 ## Play Pong!
 
 You have to be logged in first.  
-`127.0.0.1:3000/player.html` will get you a player.   
+`127.0.0.1:3000/player` will get you a player.   
 Login as someone else and open the same page in ANOTHER BROWSER (or use a incognito tab x normal tab... just mind the cookies!) so you can play... against yourself. 
 
-Wanna watch you VS you ? `127.0.0.1:3000/viewer.html`. Check the terminal for the game session id. (or try 1)
+Wanna watch you VS you ? `127.0.0.1:3000/viewer.html`. Check the terminal for the game session id. (or try 1). or the screen on the actual game.
+
+## Pong: for the front-end dev
+1. be logged in
+2. connect to the WebSocket server dedicated for pong:  
+` const ws = new WebSocket(ws://127.0.0.1:3000/pong);`
+3. send a message telling what you want to do
+
+* play against anyone
+```
+    ws.send(JSON.stringify({
+      event: 'play'
+    }));
+```
+
+* invite a specific user to play against you:
+
+```
+    ws.send(JSON.stringify({
+      event: 'invite',
+      data: <user_id> (from the invited person)
+    }));
+```
+* accept someone's invitation to play
+```
+    ws.send(JSON.stringify({
+      event: 'accept',
+      data: <user_id> (from the user that invited you)
+    }));
+```
 
 ## Chat
 What you can do for now:
 ### Users
-* You can login:  POST /mock-auth/**login**  
+* You can login: POST /mock-auth/**login**  
 * Then you can login again with a different user so you'll have a buddy to talk to
 * You can check the existent users in GET /users
 * Or see your own info at GET /users/me
