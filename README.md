@@ -106,7 +106,7 @@ Wanna watch you VS you ? `127.0.0.1:3000/viewer.html`. Check the terminal for th
       data: <user_id> (from the user that invited you)
     }));
 ```
-Check out client/player.html <script> part at the bottom
+Check out client/player.html "script" part at the bottom
 
 ## Chat
 What you can do for now:
@@ -132,9 +132,30 @@ What you can do for now:
 * see the messages in a room: /chat/room_messages/{room_id}
 * get more info about a room: /chat/room_info/{room_id}
 
+## Friends
+See the routes in 127.0.0.1:3000/api.  
+You can send a friendship request, accept or refuse one, check your friends status, etc.
+
+
+## Stats
+See the routes in 127.0.0.1:3000/api. 
+
+There's a points system and a ladder.
+
+Winning a Pong match gives you:  
+* 300 points if you won against someone better ranked than you
+* 100 points otherwise  
+
+Losing a match costs you 100 points (but you won't go below 0).
+
+You can check matches history in general or for an individual player, and other stats (wins, loss, ratio, etc)
+
+
+Fell free to implement a different ladder/points system.
 
 ## Get real-time notifications via Websocket
-Client-side:
+Client-side:   
+obs: this is a different websocket server than the one for pong
 ```
 // Create WebSocket connection (login first, so the JWT is included as cookie)
 const socket = new WebSocket('ws://127.0.0.1:3000/');
@@ -174,6 +195,8 @@ socket.addEventListener('message', function(event) {
         const new_user = payload.user_id;
         // a new user was added to this room
     }
+
+    // etc...
 });
 ```
 
