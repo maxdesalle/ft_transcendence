@@ -60,22 +60,33 @@ export class StatsService {
 
 	// user_id must be valid
 	async addPoints(user_id: number, points: number) {
-		const user_points = await this.pointsRepository.findOne({user_id});
-		user_points.points += points;
-		this.pointsRepository.save(user_points);
+		this.pointsRepository.createQueryBuilder()
+			.update()
+			.set({
+				points: () => `points + ${points}`
+			})
+			.where({user_id})
+			.execute()
+		// const user_points = await this.pointsRepository.findOne({user_id});
+		// console.log(user_points);
+		// user_points.points += points;
+		// this.pointsRepository.save(user_points);
+
+		// this.pointsRepository.update(user_id, {points})
 	}
 
 	async addMatchPoints(p_win: number, p_loss: number) {
 		const ladder = await this.ladder();
-		const winner_rung = ladder.find((value) => value.user_id === p_win).rung;
-		const loser_rung = ladder.find((value) => value.user_id === p_loss).rung;
+		const winner = ladder.find((value) => value.user_id === p_win);
+		const loser = ladder.find((value) => value.user_id === p_loss);
 		// points for  the winner
-		if (winner_rung > loser_rung) 
+		if (winner.rung > loser.rung) 
 			this.addPoints(p_win, POINTS_WIN_HIGHER_RUNG);
 		else
 			this.addPoints(p_win, POINTS_WIN_LOWER_RUNG);
-		// points for the loser
-		this.addPoints(p_loss, POINTS_LOSS);
+		// points for the loser (avoid dropping below 0)
+		if (loser.points >= -POINTS_LOSS)
+			this.addPoints(p_loss, POINTS_LOSS);
 	}
 
 	insertMatch(p1: number, p2: number, p1Score: number, p2Score: number) {
@@ -86,6 +97,10 @@ export class StatsService {
 		match.p2Score = p2Score;
 		match.timestamp = new Date();
 		this.matchRepository.save(match);
+		if (p1Score > p2Score) 
+			this.addMatchPoints(p1, p2);
+		else
+			this.addMatchPoints(p2, p1);
 	}
 
 	filterPlayerInfo(match: any): MatchDTO {

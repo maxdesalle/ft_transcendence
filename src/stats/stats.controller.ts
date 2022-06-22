@@ -1,4 +1,4 @@
-import { Controller, Get, Param, ParseIntPipe, UseGuards } from '@nestjs/common';
+import { Body, Controller, Get, Param, ParseIntPipe, Post, UseGuards } from '@nestjs/common';
 import { JwtGuard } from 'src/auth/guards/jwt.guard';
 import { StatsService } from './stats.service';
 
@@ -47,8 +47,11 @@ export class StatsController {
 		return this.statsService.ladderLevel(user_id);
 	}
 
-	@Get('test')
-	test() {
-		// this.statsService.addPoint(5, 100);
+	// for testing
+	@Post('match')
+	test(
+		@Body() body
+	) {
+		this.statsService.insertMatch(body.p1, body.p2, body.p1Score, body.p2Score);
 	}
 }
