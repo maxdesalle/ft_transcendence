@@ -1,6 +1,7 @@
 import { ConflictException, Injectable, InternalServerErrorException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { DatabaseFilesService } from 'src/database-files/database-files.service';
+import { StatsService } from 'src/stats/stats.service';
 import { Connection, Repository } from 'typeorm';
 import { User } from './entities/user.entity';
 
@@ -10,7 +11,8 @@ export class UsersService {
 		@InjectRepository(User)
 		private usersRepository: Repository<User>,
 		private readonly databaseFilesService: DatabaseFilesService,
-		private connection: Connection
+		private connection: Connection,
+		private statsService: StatsService
 	) {}
 
 	/** creates new user if non-existant, just returns the user otherwise */
@@ -20,7 +22,8 @@ export class UsersService {
 			user = new User();
 			user.login42 = login42;
 			user.display_name = login42; 
-			await this.usersRepository.save(user);
+			const new_user = await this.usersRepository.save(user);
+			await this.statsService.newPlayer(new_user.id);
 		}
 		return user;
 	}
