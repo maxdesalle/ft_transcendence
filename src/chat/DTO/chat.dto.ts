@@ -1,4 +1,4 @@
-import { IsNotEmpty } from "class-validator";
+import { IsNegative, IsNotEmpty, IsNumber, IsPositive, Min } from "class-validator";
 
 export class PostDmDto {
 	user_id: number;
@@ -25,6 +25,10 @@ export class Message2RoomDTO {
 
 export class UserIdDto {
 	user_id: number
+}
+
+export class RoomIdDto {
+	room_id: number
 }
 
 class UserRole {
@@ -64,3 +68,20 @@ export class addGroupUserByNameDTO {
 	user_display_name: string;
 }
 
+export class banDTO {
+	room_id: number;
+	user_id: number;
+	
+	@Min(0)
+	@IsNumber()
+	ban_minutes: number;
+}
+
+export class muteDTO {
+	room_id: number;
+	user_id: number;
+	
+	@Min(0)
+	@IsNumber()
+	mute_minutes: number;
+}

@@ -12,14 +12,6 @@ export class Conversation {
 	}
 }
 
-export class Session {
-	id: number;
-	login42: string;
-	selected_room?: number;
-	blocked?: number[];
-	messages?: any[]; // change this later to correct datatype
-	conversations?: Conversation[]
-}
 
 // export interface userJwtPayload {
 // 	id: number;
