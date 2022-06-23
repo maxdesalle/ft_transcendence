@@ -1,8 +1,5 @@
 import { BadRequestException, CanActivate, ExecutionContext, Inject, Injectable } from "@nestjs/common";
-import { WsException } from "@nestjs/websockets";
-import { WsGateway } from "../../ws/ws.gateway";
 import { ChatService } from "../chat.service";
-import { WsService } from "../../ws/ws.service";
 
 /**  - checks if room_id is valid (param or request body)
 - checks if user is a participant in request's parameter room_id */
@@ -25,9 +22,3 @@ export class RoomGuard implements CanActivate {
 		return participants.includes(user.id);	
 	}
 }
-
-
-		// TODO
-		// is user muted?
-		// banned?
-		// blocked?

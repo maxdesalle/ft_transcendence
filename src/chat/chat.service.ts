@@ -250,12 +250,10 @@ export class ChatService {
 			VALUES('${group.name}', ${me.id}, NOW())
 			RETURNING id`);
 
-		// let tmp = await this.pool.query(`SELECT id FROM room WHERE name='${group.name}'`);
 		const room_id = query.rows[0].id;
-		// for (i = 0; i < group.participants.length; i++)
 		await this.pool.query(`INSERT INTO participants(user_id, room_id) VALUES(${me.id}, ${room_id})`);
 		if (group.password)
-			await this.set_password(room_id, group.password);
+			await this.set_password(me, room_id, group.password);
 		if (group.private)
 			await this.set_private(me, room_id, group.private);
 		return room_id;
@@ -294,7 +292,7 @@ export class ChatService {
 		// if (! await this.is_room_participant(user_id, room_id))
 			// throw new BadRequestException("user is not in group");
 
-		// check if you have more priviledges than the user
+		// check if you have more privileges than the user
 		let role1 = await this.get_role(me.id, room_id);
 		let role2 = await this.get_role(user_id, room_id);
 		if (role1 < ADMIN || role1 <= role2)
@@ -385,7 +383,9 @@ export class ChatService {
 		await this.pool.query(`DELETE FROM participants WHERE user_id=${me.id} AND room_id=${room_id}`);
 	}
 	
-	async set_password(room_id: number, password?: string) {
+	async set_password(me: User, room_id: number, password?: string) {
+		if (await this.get_role(me.id, room_id) != OWNER)
+			throw new ForbiddenException("no owner rights");
 		if (!password)
 			return this.pool.query(`
 				UPDATE room

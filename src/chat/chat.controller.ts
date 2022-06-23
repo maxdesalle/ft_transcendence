@@ -6,7 +6,6 @@ import { User } from 'src/users/entities/user.entity';
 import { WsService } from 'src/ws/ws.service';
 import { ChatService } from './chat.service';
 import { PostDmDto, MessageDTO, RoomInfo, RoomInfoShort, GroupConfig, addGroupUserDTO, Message2RoomDTO, addGroupUserByNameDTO, UserIdDto, banDTO, muteDTO, RoomIdDto } from './DTO/chat.dto';
-import { GroupOwnerGuard } from './guards/owner.guard';
 import { RoomGuard } from './guards/participant.guard';
 import { ValidateRoomPipe, ValidGroupRoomPipe } from './pipes/validate_room.pipe';
 import { UserDisplayNameToIdPipe, ValidateUserPipe } from './pipes/validate_user.pipe';
@@ -248,18 +247,18 @@ export class ChatController {
 		return this.getConvs(me); 
 	}
 
+	// TODO: DTO for password, validate it / pswd policy
 	@Post('set_password')
-	@UseGuards(GroupOwnerGuard)
 	async set_pswd(
+		@Usr() me: User,
 		@Body('room_id', ParseIntPipe, ValidGroupRoomPipe) room_id: number,
 		@Body('password') password: string
 	) {
-		await this.chatService.set_password(room_id, password);
+		await this.chatService.set_password(me, room_id, password);
 		return `new password set for room ${room_id}`
 	}
 
 	@Post('set_private')
-	@UseGuards(GroupOwnerGuard)
 	async set_private(
 		@Usr() me: User,
 		@Body('room_id', ParseIntPipe, ValidGroupRoomPipe) room_id: number,
