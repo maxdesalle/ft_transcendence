@@ -1,11 +1,12 @@
-import { CanActivate, ExecutionContext, Inject, Injectable } from "@nestjs/common";
+import { BadRequestException, CanActivate, ExecutionContext, Inject, Injectable } from "@nestjs/common";
 import { WsException } from "@nestjs/websockets";
 import { WsGateway } from "../../ws/ws.gateway";
 import { ChatService } from "../chat.service";
 import { WsService } from "../../ws/ws.service";
 
-// checks if user is a participant in request's parameter room_id
-export class IsParticipant implements CanActivate {
+/**  - checks if room_id is valid (param or request body)
+- checks if user is a participant in request's parameter room_id */
+export class RoomGuard implements CanActivate {
 	constructor (
 		@Inject(ChatService)
 		private chatService: ChatService,
@@ -14,36 +15,19 @@ export class IsParticipant implements CanActivate {
 	async canActivate(context: ExecutionContext): Promise<boolean>{
 		const request = context.switchToHttp().getRequest();
 		const user = request.user;
-		const room_id = request.params.room_id;
-		const participants = await this.chatService.getRoomParcipants(room_id);
+		let room_id = +request.params.room_id; // if GET request param
+		if (!room_id)
+			room_id = request.body.room_id; // if POST request body
+		const rooms = await this.chatService.listRooms();
+		if (!rooms.includes(room_id))
+			throw new BadRequestException("invalid room_id...")
+		const participants = await this.chatService.listRoomParticipants(room_id);
 		return participants.includes(user.id);	
 	}
 }
 
-@Injectable()
-export class RoomGuard implements CanActivate {
-	constructor (
-		private chatService: ChatService,
-		private wsAuthService: WsService
-	) {}
-
-	async canActivate(context: ExecutionContext): Promise<boolean>{
-		const ctx = context.switchToWs();
-		const socket = ctx.getClient();
-		const user = this.wsAuthService.getUserFromSocket(socket);
-		const room_id = +ctx.getData()?.room_id;
-		// is room_id parameter present ?
-		if (!room_id)
-			throw new WsException('missing room_id');
-		const participants = await this.chatService.getRoomParcipants(room_id);
-		// is user a participant in room_id ?
-		if (!participants.includes(user))
-			throw new WsException('user is not a member of this room');
 
 		// TODO
 		// is user muted?
 		// banned?
 		// blocked?
-		return true;	
-	}
-}

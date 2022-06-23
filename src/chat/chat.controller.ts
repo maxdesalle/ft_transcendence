@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Param, ParseIntPipe, Post, Res, UseGuards} from '@nestjs/common';
+import { Body, Controller, ForbiddenException, Get, Param, ParseIntPipe, Post, Res, UseGuards} from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
 import { JwtGuard } from 'src/auth/guards/jwt.guard';
 import { Usr } from 'src/users/decorators/user.decorator';
@@ -6,14 +6,15 @@ import { User } from 'src/users/entities/user.entity';
 import { WsService } from 'src/ws/ws.service';
 import { ChatService } from './chat.service';
 import { Session } from './DTO/chat-user.dto';
-import { PostDM, MessageDTO, RoomInfo, RoomInfoShort, GroupConfig, addGroupUserDTO, Message2Room, addGroupUserByNameDTO } from './DTO/chat.dto';
+import { PostDmDto, MessageDTO, RoomInfo, RoomInfoShort, GroupConfig, addGroupUserDTO, Message2RoomDTO, addGroupUserByNameDTO, UserIdDto } from './DTO/chat.dto';
 import { GroupOwnerGuard } from './guards/owner.guard';
-import { IsParticipant } from './guards/participant.guard';
-import { ValidateRoomPipe } from './pipes/validate_room.pipe';
+import { RoomGuard } from './guards/participant.guard';
+import { ValidateRoomPipe, ValidGroupRoomPipe } from './pipes/validate_room.pipe';
 import { UserDisplayNameToIdPipe, ValidateUserPipe } from './pipes/validate_user.pipe';
 
 @Controller('chat')
 @UseGuards(JwtGuard)
+@ApiTags('chat')
 export class ChatController {
 	constructor(
 		private chatService: ChatService,
@@ -23,100 +24,96 @@ export class ChatController {
 	// ============ DM ===========
 
 	@Post('dm')
-	@ApiTags('chat')
 	async postDM(
 		@Usr() me: User,
 		@Body('user_id', ParseIntPipe, ValidateUserPipe) destUserId: number,
 		// @Body('message') message: string,
-		@Body() body: PostDM
+		@Body() body: PostDmDto
 	) {
 		const message: MessageDTO = 
 			await this.chatService.sendDMtoUser(me, destUserId, body.message);
-		this.wsService.sendMsgToUsersList([me.id, destUserId], {
-			event: 'chat_dm',
-			message
-		})
-		return message;
-	}
-	
-	@Post('message_to_room')
-	@ApiTags('chat')
-	async postMsgToRoom(
-		@Usr() me: User,
-		@Body('room_id', ParseIntPipe, ValidateRoomPipe) room_id: number,
-		@Body('message') msg: string,
-		@Body() _body: Message2Room
-	) {
-		const message: MessageDTO =
-			await this.chatService.send_msg_to_room(me, room_id, msg);
-		this.wsService.sendMsgToUsersList(
-			await this.chatService.getRoomParcipants(room_id),
-			{
-				event: 'chat_room_msg',
-				message
-			}
-		)
-		return message;
-	}
 
+		// notify both users, if not blocked
+		if (! await this.chatService.is_blocked(me.id, destUserId)) {
+			this.wsService.sendMsgToUsersList([me.id, destUserId], {
+				event: 'chat_dm',
+				message
+			});
+		}
+		return message;
+	}
 
 	@Get('dm/:user_id')
-	@ApiTags('chat')
-	getDMs(
+	async getDMs(
 		@Usr() me: User,
 		@Param('user_id', ParseIntPipe, ValidateUserPipe) user_id: number
 	): Promise<MessageDTO[]> {
+		if (await this.chatService.is_blocked(me.id, user_id))
+			throw new ForbiddenException("you are blocked OR the user is blocked by you")
 		return this.chatService.getDMbyUser(me, user_id);
 	}
 
 	@Post('block')
 	async blockUser(
-		@Usr() user: Session,
-		@Body('user_id') blocked_id: number,
+		@Usr() me: User,
+		@Body('user_id', ParseIntPipe, ValidateUserPipe) blocked_id: number,
+		@Body() _body: UserIdDto,
 	) {
-		await this.chatService.block(user, blocked_id);
-		return this.chatService.get_blocked(user);
+		await this.chatService.block_user(me, blocked_id);
+		return this.chatService.listBlockedUsers(me.id);
 	}
 
 	@Post('unblock')
 	async unblockUser(
-		@Usr() user: Session,
-		@Body('user_id') blocked_id: number,
+		@Usr() me: User,
+		@Body('user_id', ParseIntPipe, ValidateUserPipe) blocked_id: number,
+		@Body() _body: UserIdDto,
 	) {
-		await this.chatService.unblock(user, blocked_id);
-		return this.chatService.get_blocked(user);
+		await this.chatService.unblock_user(me, blocked_id);
+		return this.chatService.listBlockedUsers(me.id);
 	}
 
 	@Get('blocked')
 	checkBlocked(
-		@Usr() user: Session,
+		@Usr() user: User,
 	) {
-		return this.chatService.get_blocked(user);
+		return this.chatService.listBlockedUsers(user.id);
 	}
 
+	// ============ Groups ===========
+	
+	@Post('message_to_room')
+	@UseGuards(RoomGuard)
+	async postMsgToRoom(
+		@Usr() me: User,
+		@Body('room_id', ParseIntPipe) room_id: number,
+		@Body() body: Message2RoomDTO
+	) {
+		const message: MessageDTO =
+			await this.chatService.send_msg_to_room(me, room_id, body.message);
 
-	// @Get('message')
-	// async getMessages(
-	// 	@Usr() user: Session,
-	// ) {
-	// 	await this.chatService.get_message(user);
-	// 	return user;
-	// }
-
-	// ============ Channels ===========
+		// notify users (unless it's DM room and someone is blocked)
+		if (! await this.chatService.isBlockedDMroom(room_id)) {
+			this.wsService.sendMsgToUsersList(
+				await this.chatService.listRoomParticipants(room_id),
+				{ event: 'chat_room_msg', message }
+			);
+		}
+		return message;
+	}
 
 	@Get('room_messages/:room_id')
-	@ApiTags('chat')
-	@UseGuards(IsParticipant)
-	getMessagesByRoomId(
+	@UseGuards(RoomGuard)
+	async getMessagesByRoomId(
 		@Usr() user: User,
-		@Param('room_id', ParseIntPipe, ValidateRoomPipe) room_id: number
-	): Promise<MessageDTO[]> {
+		@Param('room_id', ParseIntPipe) room_id: number
+	) {
+		if (await this.chatService.isBlockedDMroom(room_id))
+			throw new ForbiddenException("you are blocked OR the user is blocked by you")
 		return this.chatService.getMessagesByRoomId(user, room_id);
 	}
 
 	@Get('room_info/:room_id')
-	@ApiTags('chat')
 	async groupInfo(
 		@Param('room_id', ParseIntPipe, ValidateRoomPipe) room_id: number,
 	): Promise<RoomInfo> {
@@ -124,56 +121,15 @@ export class ChatController {
 		return await this.chatService.roomInfo(room_id);
 	}
 
-	@Get('rooms')
-	@ApiTags('chat')
+	@Get('conversations')
 	async getConvs(
 		@Usr() user: User,
 	): Promise<RoomInfoShort[]> {
 		return await this.chatService.get_convs(user);
 	}
 
-	// @Post('add_friend')
-	// async addFriend(
-	// 	@Usr() user: Session,
-	// 	@Body('value') friend_id: number,
-	// ) {
-	// 	await this.chatService.create_dm_room(user, friend_id);
-
-	// 	// possibly move this call to inside addFriend()
-	// 	await this.chatService.get_convs(user);
-	// 	return user;
-	// }
-
-	// // route for debug only, no point in removing a dm_room
-	// @Post('rm_friend')
-	// async removeFriend(
-	// 	@Usr() user: Session,
-	// 	@Body('value') friend_id: number,
-	// ) {
-	// 	await this.chatService.rm_dm_room(user, friend_id);
-
-	// 	// possibly move this call to inside addFriend()
-	// 	await this.chatService.get_convs(user);
-	// 	return user;
-	// }
-
-	// @Get('friends')
-	// getFriends(
-	// 	@Usr() user: Session
-	// ) {
-	// 	return this.chatService.getDMusersID(user);
-	// }
-
-	// @Get('dm_room/:friend_id')
-	// getDmRoom(
-	// 	@Usr() user: Session,
-	// 	@Param('friend_id') friend_id: number,
-	// ) {
-	// 	return this.chatService.get_dm_room(user, friend_id);
-	// }
 
 	@Post('create_group')
-	@ApiTags('chat')
 	async createGroup(
 		@Usr() me: User,
 		@Body() group_config: GroupConfig 
@@ -188,9 +144,8 @@ export class ChatController {
 	}
 
 	@Post('add_group_user')
-	@ApiTags('chat')
 	async addGroupUser(
-		@Usr() me: Session,
+		@Usr() me: User,
 		@Body('room_id', ParseIntPipe, ValidateRoomPipe) room_id: number,
 		@Body('user_id', ParseIntPipe, ValidateUserPipe) user_id: number,
 		@Body() _body?: addGroupUserDTO
@@ -203,7 +158,7 @@ export class ChatController {
 		});
 		// notify all users in group
 		this.wsService.sendMsgToUsersList(
-			await this.chatService.getRoomParcipants(room_id),
+			await this.chatService.listRoomParticipants(room_id),
 			{
 				event: 'chat_new_user_in_group',
 				room_id,
@@ -214,9 +169,8 @@ export class ChatController {
 	}
 	
 	@Post('add_group_user_by_name')
-	@ApiTags('chat')
 	async addGroupUserbyName(
-		@Usr() me: Session,
+		@Usr() me: User,
 		@Body('room_id', ParseIntPipe, ValidateRoomPipe) room_id: number,
 		@Body('user_display_name', UserDisplayNameToIdPipe) user_id: number,
 		@Body() _body: addGroupUserByNameDTO
@@ -225,7 +179,6 @@ export class ChatController {
 	}
 
 	@Post('rm_group')
-	@UseGuards(GroupOwnerGuard)
 	async removeGroup(
 		@Usr() me: User,
 		@Body('room_id', ParseIntPipe, ValidateRoomPipe) room_id: number 
@@ -234,14 +187,14 @@ export class ChatController {
 		return this.chatService.get_convs(me);
 	}
 
-	@Post('rm_group_user')
+	@Post('ban_group_user')
 	async rmGroupUser(
-		@Usr() me: Session,
-		@Body('room_id', ParseIntPipe, ValidateRoomPipe) room_id: number,
-		@Body('user_id') user_id: number,
+		@Usr() me: User,
+		@Body('room_id', ParseIntPipe, ValidGroupRoomPipe) room_id: number,
+		@Body('user_id', ParseIntPipe, ValidateUserPipe) user_id: number,
 		@Body('unban_hours') unban_hours: number
 	) {
-		await this.chatService.rm_user_group(me, room_id, user_id, unban_hours);
+		await this.chatService.ban_group_user(me, room_id, user_id, unban_hours);
 		return this.chatService.roomInfo(room_id);
 	}
 
@@ -336,5 +289,10 @@ export class ChatController {
 	) {
 		await this.chatService.join_public_group(me, room_id, password);
 		return this.chatService.roomInfo(room_id);
+	}
+
+	@Get('test')
+	test() {
+		return this.chatService.isDmRoom(1);
 	}
 }

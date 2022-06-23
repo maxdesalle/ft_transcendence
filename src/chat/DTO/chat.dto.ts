@@ -1,5 +1,9 @@
-export class PostDM {
+import { IsNotEmpty } from "class-validator";
+
+export class PostDmDto {
 	user_id: number;
+
+	@IsNotEmpty()
 	message: string;
 }
 
@@ -12,9 +16,15 @@ export class MessageDTO {
 	timestamp: Date;
 }
 
-export class Message2Room {
+export class Message2RoomDTO {
 	room_id: number;
+	
+	@IsNotEmpty()
 	message: string;
+}
+
+export class UserIdDto {
+	user_id: number
 }
 
 class UserRole {

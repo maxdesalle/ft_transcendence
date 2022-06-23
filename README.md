@@ -327,3 +327,13 @@ When a Pong match is over, points in the general ladder are changed
     ]
 }
 ```
+
+
+## Chat specification
+Block: applies only to DMs
+    both users cannot see (GET) messages from a DM room if one has blocked the other one
+    but they the send (POST) new messages...
+
+Banned: removed from a group, cannot re-join until unban_hours
+
+Muted: cannot POST messages to a group until unban_hours

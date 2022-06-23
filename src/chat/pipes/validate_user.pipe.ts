@@ -13,6 +13,7 @@ export class ValidateUserPipe implements PipeTransform {
 		return value;
 	}
 }
+
 @Injectable()
 export class UserDisplayNameToIdPipe implements PipeTransform {
 	constructor(private usersService: UsersService) {}
