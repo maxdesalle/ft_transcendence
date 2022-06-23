@@ -2,7 +2,6 @@ import { BadRequestException, ForbiddenException, Injectable } from '@nestjs/com
 import { User } from 'src/users/entities/user.entity';
 import { UsersService } from 'src/users/users.service';
 import { Connection, EntityManager } from 'typeorm';
-import { Conversation } from './DTO/chat-user.dto';
 import { GroupConfig, MessageDTO } from './DTO/chat.dto';
 import { Message } from './entities/message.entity';
 
@@ -24,22 +23,6 @@ class queryAdaptor {
 	}
 }
 
-// class Group {
-// 	name: string;
-// 	owner: number;
-// 	private: boolean;
-// 	password: string
-// 	participants: number[];
-	
-// 	constructor(owner_id: number, config: GroupConfig) {
-// 		this.name = config.name;
-// 		this.owner = owner_id;
-// 		this.private = config.private 
-// 		this.password = config.password;
-// 		this.participants = [owner_id];
-// 	}
-// }
-
 @Injectable()
 export class ChatService {
 	pool: queryAdaptor;
@@ -50,6 +33,116 @@ export class ChatService {
 		) {
 		this.pool = new queryAdaptor(connection.manager);
 	}
+
+	async send_msg_to_room(me: User, room_id: number, message: string) {
+		// check if muted
+		if (await this.is_muted(me.id, room_id))
+			throw new ForbiddenException("you are muted");
+
+		// in order to allow messages containing single quotes, I'm not using the
+		// raw query on this one.
+		const messageRepository = this.connection.getRepository(Message);
+		const new_message = new Message();
+		new_message.room_id = room_id;
+		new_message.user_id = me.id;
+		new_message.message = message;
+		new_message.timestamp = new Date();
+		messageRepository.save(new_message);
+
+		await this.pool.query(`
+			UPDATE room SET activity=NOW() WHERE id=${room_id}`);
+
+		const user = await this.usersService.findById(me.id);
+		const msg: MessageDTO = {
+			...new_message,
+			login42: user.login42,
+			display_name: user.display_name
+		}
+		return msg;
+	}
+
+
+	async getMessagesByRoomId(me: User, room_id: number): Promise<MessageDTO[]> {
+
+		const my_query = await this.pool.query(`
+			SELECT message.id, user_id, login42, display_name, message, timestamp
+			FROM message
+			JOIN public.user ON message.user_id=public.user.id
+			WHERE room_id=${room_id}
+			ORDER BY timestamp DESC;
+			`
+		);
+		return my_query.rows;
+	}
+
+	async  get_convs(me: User) {
+		const blocked = await this.listBlockedUsers(me.id);
+		let room_query = await this.pool.query(
+			`SELECT id, name, owner FROM room
+			WHERE id IN (SELECT room_id FROM participants WHERE user_id = ${me.id})
+			ORDER BY activity DESC`
+		);
+		const conversations = [];
+		for (let i = 0; i < room_query.rowCount; i++) //for every conversation
+		{
+			let room_row = room_query.rows[i];
+			let room_id = room_row.id;
+			let part_q = await this.pool.query(`
+				SELECT user_id FROM participants
+				WHERE room_id = ${room_row.id}`
+			);
+			// blocked DM conversation will not be shown
+			if (!room_row.owner && (blocked.includes(part_q.rows[0].user_id) || blocked.includes(part_q.rows[1].user_id)))
+				continue;
+			const type = room_row.owner ? 'group':'DM'
+			let conv = {
+				room_id,
+				room_name: room_row.name, type,
+				participants: []
+			}
+			for (let n = 0; n < part_q.rowCount; n++) //get all participants of a given conversation
+				conv.participants.push(part_q.rows[n].user_id);
+			conversations.push(conv);
+		}
+		return conversations;
+	}
+
+	async roomInfo(room_id: number) {
+		// get room info
+		const query = await this.pool.query(`
+			SELECT name, private, owner, password
+			FROM room
+			WHERE id = ${room_id};`);
+		const info = query.rows[0];		
+		const is_group = !!info.owner;
+		
+		// get users
+		const userIDs = await this.listRoomParticipants(room_id);
+
+		// get their roles
+		const roles: string[] = ['participant', 'admin', 'owner'];
+		const users = [];
+		for (let user_id of userIDs){
+			users.push({
+				user_id,
+				role: is_group ? roles[await this.get_role(user_id, room_id)] : undefined,
+				muted: is_group ? await this.is_muted(user_id, room_id) : undefined,
+			})
+		}
+
+		return {
+			room_id: room_id,
+			room_name: info.name,
+			type: is_group ? 'group':'DM',
+			private: info.private,
+			password_protected: !!info.password,
+			users
+		};
+	}
+
+
+
+	// ============= DM ==================
 	
 	async sendDMtoUser(me: User, toId: number, msg: string) {
 		if (me.id === toId)
@@ -115,33 +208,6 @@ export class ChatService {
 		return (new_room_id);
 	}
 
-	async send_msg_to_room(me: User, room_id: number, message: string) {
-		// check if muted
-		if (await this.is_muted(me.id, room_id))
-			throw new ForbiddenException("you are muted");
-
-		// in order to allow messages containing single quotes, I'm not using the
-		// raw query on this one.
-		const messageRepository = this.connection.getRepository(Message);
-		const new_message = new Message();
-		new_message.room_id = room_id;
-		new_message.user_id = me.id;
-		new_message.message = message;
-		new_message.timestamp = new Date();
-		messageRepository.save(new_message);
-
-		await this.pool.query(`
-			UPDATE room SET activity=NOW() WHERE id=${room_id}`);
-
-		const user = await this.usersService.findById(me.id);
-		const msg: MessageDTO = {
-			...new_message,
-			login42: user.login42,
-			display_name: user.display_name
-		}
-		return msg;
-	}
-
 	async getDMbyUser(me: User, user_id: number) {
 		// checks
 		if (await this.is_blocked(me.id, user_id))
@@ -155,18 +221,7 @@ export class ChatService {
 		return this.getMessagesByRoomId(me, room_id);
 	}
 
-	async getMessagesByRoomId(me: User, room_id: number): Promise<MessageDTO[]> {
 
-		const my_query = await this.pool.query(`
-			SELECT message.id, user_id, login42, display_name, message, timestamp
-			FROM message
-			JOIN public.user ON message.user_id=public.user.id
-			WHERE room_id=${room_id}
-			ORDER BY timestamp DESC;
-			`
-		);
-		return my_query.rows;
-	}
 
 	async block_user(me: User, block_id: number) {
 		if (me.id === block_id)
@@ -183,34 +238,8 @@ export class ChatService {
 			`DELETE FROM blocked WHERE blocked_id=${block_id} and user_id=${me.id}`
 		);
 	}
-
-	// returns array of conversations
-	async  get_convs(me: User) {
-		const blocked = await this.listBlockedUsers(me.id);
-		let room_query = await this.pool.query(
-			`SELECT id, name, owner FROM room
-			WHERE id IN (SELECT room_id FROM participants WHERE user_id = ${me.id})
-			ORDER BY activity DESC`
-		);
-		const conversations = [];
-		for (let i = 0; i < room_query.rowCount; i++) //for every conversation
-		{
-			let room_row = room_query.rows[i];
-			let room_id = room_row.id;
-			let part_q = await this.pool.query(`
-				SELECT user_id FROM participants
-				WHERE room_id = ${room_row.id}`
-			);
-			if (!room_row.owner && (blocked.includes(part_q.rows[0].user_id) || blocked.includes(part_q.rows[1].user_id)))
-				continue;
-			const type = room_row.owner ? 'group':'DM'
-			let tmp = new Conversation(room_id, room_row.name, type);
-			for (let n = 0; n < part_q.rowCount; n++) //get all participants of a given conversation
-				tmp.participants.push(part_q.rows[n].user_id);
-			conversations.push(tmp);
-		}
-		return conversations;
-	}
+	
+	// ================= GROUPS ===========================
 
 	async create_group(me: User, group: GroupConfig) {
 		if (await this.groupNameExists(group.name))
@@ -402,42 +431,6 @@ export class ChatService {
 		return query.rows[0].pswmatch;
 	}
 
-
-	async roomInfo(room_id: number) {
-		// get room info
-		const query = await this.pool.query(`
-			SELECT name, private, owner, password
-			FROM room
-			WHERE id = ${room_id};`);
-		const info = query.rows[0];		
-		const is_group = !!info.owner;
-		
-		// get users
-		const userIDs = await this.listRoomParticipants(room_id);
-
-		// get their roles
-		const roles: string[] = ['participant', 'admin', 'owner'];
-		const users = [];
-		for (let user_id of userIDs){
-			users.push({
-				user_id,
-				role: is_group ? roles[await this.get_role(user_id, room_id)] : undefined,
-				muted: is_group ? await this.is_muted(user_id, room_id) : undefined,
-			})
-		}
-
-		return {
-			room_id: room_id,
-			room_name: info.name,
-			type: is_group ? 'group':'DM',
-			private: info.private,
-			password_protected: !!info.password,
-			users
-		};
-	}
-
-
-
 	async join_public_group(me: User, room_id: number, password?: string) {
 		// check if private
 		if (await this.is_group_private(room_id))
@@ -504,8 +497,6 @@ export class ChatService {
 	}
 	
 	async get_role(id: number, room_id: number) {
-		// if (!(await this.groupExists(room_id)))
-			// throw new BadRequestException("bad room_id");
 		let tmp = await this.pool.query(`SELECT owner FROM room WHERE id=${room_id}`);
 		if (tmp.rows[0].owner == id)
 			return OWNER;
