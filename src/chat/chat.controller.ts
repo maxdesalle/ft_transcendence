@@ -77,25 +77,34 @@ export class ChatController {
 	}
 
 	// ============ Groups ===========
-	
-	@Post('message_to_room')
-	@UseGuards(RoomGuard)
-	async postMsgToRoom(
+
+	@Post('group_message') // OK
+	async postGroupMsg(
 		@Usr() me: User,
-		@Body('room_id', ParseIntPipe) room_id: number,
+		@Body('room_id', ParseIntPipe, ValidGroupRoomPipe) room_id: number,
 		@Body() body: Message2RoomDTO
 	) {
-		const message: MessageDTO =
-			await this.chatService.send_msg_to_room(me, room_id, body.message);
-
-		// notify users (unless it's DM room and someone is blocked)
-		if (! await this.chatService.isBlockedDMroom(room_id)) {
-			this.wsService.sendMsgToUsersList(
-				await this.chatService.listRoomParticipants(room_id),
-				{ event: 'chat_room_msg', message }
-			);
-		}
+		const message = await this.chatService.postGroupMsg(me, room_id, body.message);
+		// notify group members
+		this.wsService.sendMsgToUsersList(
+			await this.chatService.listRoomParticipants(room_id),
+			{ event: 'chat_room_msg', message }
+		)
 		return message;
+
+	}
+	
+	// for compability. prefer post /group_message
+	@Post('message_to_room')
+	async postMsgToRoom(
+		@Usr() me: User,
+		@Body('room_id', ParseIntPipe, ValidateRoomPipe) room_id: number,
+		@Body() body: Message2RoomDTO
+	) {
+		if (await this.chatService.isGroupRoom(room_id))
+			return this.postGroupMsg(me, room_id, body);
+		// TODO: else call postDM
+		return 'hello'
 	}
 
 	@Get('room_messages/:room_id')

@@ -36,8 +36,8 @@ export class ChatService {
 
 	async send_msg_to_room(me: User, room_id: number, message: string) {
 		// check if muted
-		if (await this.is_muted(me.id, room_id))
-			throw new ForbiddenException("you are muted");
+		// if (await this.is_muted(me.id, room_id))
+		// 	throw new ForbiddenException("you are muted");
 
 		// in order to allow messages containing single quotes, I'm not using the
 		// raw query on this one.
@@ -238,8 +238,21 @@ export class ChatService {
 			`DELETE FROM blocked WHERE blocked_id=${block_id} and user_id=${me.id}`
 		);
 	}
+
+	// ================= GROUP MESSAGES ==========================
+
+	// valid room_id is assumed
+	async postGroupMsg(me: User, room_id: number, message: string) {
+		// checks
+		if (!await this.is_room_participant(me.id, room_id))
+			throw new ForbiddenException('user is not a group member');
+		if (await this.is_muted(me.id, room_id))
+			throw new ForbiddenException('user is muted');
+
+		return this.send_msg_to_room(me, room_id, message);
+	}
 	
-	// ================= GROUPS ===========================
+	// ================= GROUP ADMIN TASKS ===========================
 
 	async create_group(me: User, group: GroupConfig) {
 		if (await this.groupNameExists(group.name))
@@ -270,6 +283,10 @@ export class ChatService {
 		await this.pool.query(`DELETE FROM room WHERE id=${room_id}`);
 	}
 
+	// TODO: 
+	// check if group "me" is group member
+	// check if group if private
+	// check if admin rights
 	/** add user to group. If user is banned, needs admin rights. */
 	async addGroupUser(me: User, room_id: number, user_id: number) {
 		const participants = await this.listRoomParticipants(room_id);
@@ -346,42 +363,6 @@ export class ChatService {
 			WHERE user_id=${user_id}
 			AND room_id=${room_id}`);
 	}
-
-	async leave_group(me: User, room_id: number) {
-		let participants = await this.listRoomParticipants(room_id);
-		// remove "me" from participants
-		participants = participants.filter((value) => value !== me.id);
-		if (!participants.length)	//last person in group
-		{
-			await this.pool.query(`DELETE FROM admins		WHERE room_id =	${room_id}`);
-			await this.pool.query(`DELETE FROM banned		WHERE room_id =	${room_id}`);
-			await this.pool.query(`DELETE FROM participants	WHERE room_id =	${room_id}`);
-			await this.pool.query(`DELETE FROM message		WHERE room_id =	${room_id}`);
-			await this.pool.query(`DELETE FROM room			WHERE id =		${room_id}`);
-			return;
-		}
-		if (await this.get_role(me.id, room_id) != OWNER)
-		{
-			await this.pool.query(`
-				DELETE FROM participants
-				WHERE user_id=${me.id}
-				AND room_id=${room_id}`);
-			return;		
-		}
-		for (let i = 0; i < participants.length; i++)	//first admin in the list becomes owner
-		{
-			if (await this.get_role(participants[i], room_id) == ADMIN)
-			{
-				await this.pool.query(`UPDATE room SET owner=${participants[i]} WHERE id=${room_id}`);
-				await this.pool.query(`DELETE FROM admins WHERE user_id=${participants[i]} AND room_id=${room_id}`);
-				await this.pool.query(`DELETE FROM participants WHERE user_id=${me.id} AND room_id=${room_id}`);
-				return;
-			}
-		}
-		//first guy in the list becomes owner
-		await this.pool.query(`UPDATE room SET owner=${participants[0]} WHERE id=${room_id}`);
-		await this.pool.query(`DELETE FROM participants WHERE user_id=${me.id} AND room_id=${room_id}`);
-	}
 	
 	async set_password(me: User, room_id: number, password?: string) {
 		if (await this.get_role(me.id, room_id) != OWNER)
@@ -431,6 +412,8 @@ export class ChatService {
 		return query.rows[0].pswmatch;
 	}
 
+	// ====== JOIN / LEAVE GROUP ==================
+
 	async join_public_group(me: User, room_id: number, password?: string) {
 		// check if private
 		if (await this.is_group_private(room_id))
@@ -455,6 +438,44 @@ export class ChatService {
 			VALUES(${me.id}, ${room_id})`);
 	}
 
+	async leave_group(me: User, room_id: number) {
+		let participants = await this.listRoomParticipants(room_id);
+		// remove "me" from participants
+		participants = participants.filter((value) => value !== me.id);
+		if (!participants.length)	//last person in group
+		{
+			await this.pool.query(`DELETE FROM admins		WHERE room_id =	${room_id}`);
+			await this.pool.query(`DELETE FROM banned		WHERE room_id =	${room_id}`);
+			await this.pool.query(`DELETE FROM participants	WHERE room_id =	${room_id}`);
+			await this.pool.query(`DELETE FROM message		WHERE room_id =	${room_id}`);
+			await this.pool.query(`DELETE FROM room			WHERE id =		${room_id}`);
+			return;
+		}
+		if (await this.get_role(me.id, room_id) != OWNER)
+		{
+			await this.pool.query(`
+				DELETE FROM participants
+				WHERE user_id=${me.id}
+				AND room_id=${room_id}`);
+			return;		
+		}
+		for (let i = 0; i < participants.length; i++)	//first admin in the list becomes owner
+		{
+			if (await this.get_role(participants[i], room_id) == ADMIN)
+			{
+				await this.pool.query(`UPDATE room SET owner=${participants[i]} WHERE id=${room_id}`);
+				await this.pool.query(`DELETE FROM admins WHERE user_id=${participants[i]} AND room_id=${room_id}`);
+				await this.pool.query(`DELETE FROM participants WHERE user_id=${me.id} AND room_id=${room_id}`);
+				return;
+			}
+		}
+		//first guy in the list becomes owner
+		await this.pool.query(`UPDATE room SET owner=${participants[0]} WHERE id=${room_id}`);
+		await this.pool.query(`DELETE FROM participants WHERE user_id=${me.id} AND room_id=${room_id}`);
+	}
+
+
+
 	// ===== USER CHECKS ========================================
 
 	async is_muted(user_id: number, room_id: number) {
@@ -464,7 +485,7 @@ export class ChatService {
 			AND banned_id = ${user_id}
 			AND mute = true
 			AND unban > NOW();
-		`)
+		`);
 		if (query.rowCount)
 			return true;
 		return false;
