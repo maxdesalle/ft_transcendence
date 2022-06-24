@@ -75,8 +75,9 @@ You should ignore the routes under the "default" section, as they probably don't
 You have to be logged in first.  
 `127.0.0.1:3000/player` will get you a player.   
 Login as someone else in ANOTHER BROWSER (or use a incognito tab x normal tab... just mind the cookies!) and open the same page so you can play... against yourself. 
+Your game session id will be displayed at the top-left corner of the screen once the game is started.
 
-Wanna watch you VS you ? `127.0.0.1:3000/viewer.html`. Check the terminal for the game session id. (or try 1). or the screen on the actual game.
+Wanna watch you VS you? `127.0.0.1:3000/viewer.html`. Check the top of the screen to see the list of the ongoing game sessions.
 
 ## Pong: for the front-end dev
 1. be logged in
