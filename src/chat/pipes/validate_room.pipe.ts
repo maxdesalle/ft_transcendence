@@ -15,7 +15,7 @@ export class ValidateRoomPipe implements PipeTransform {
 	}
 }
 
-/** checks is room exists AND is a group */
+/** checks if room exists AND is a group */
 @Injectable()
 export class ValidGroupRoomPipe implements PipeTransform {
 	constructor(private chatService: ChatService) {}

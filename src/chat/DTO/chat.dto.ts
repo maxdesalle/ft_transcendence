@@ -96,3 +96,10 @@ export class RoomAndPasswordDto {
 	@NotContains("'")
 	password: string;
 }
+
+export class SetPrivateDto {
+	room_id: number;
+
+	@IsBoolean()
+	private: boolean;
+}

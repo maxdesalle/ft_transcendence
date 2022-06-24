@@ -5,7 +5,7 @@ import { Usr } from 'src/users/decorators/user.decorator';
 import { User } from 'src/users/entities/user.entity';
 import { WsService } from 'src/ws/ws.service';
 import { ChatService } from './chat.service';
-import { PostDmDto, MessageDTO, RoomInfo, RoomInfoShort, GroupConfigDto, Message2RoomDTO, AddGroupUserByNameDTO, UserIdDto, BanMuteDTO, RoomIdDto, RoomAndUserDto, RoomAndPasswordDto } from './DTO/chat.dto';
+import { PostDmDto, MessageDTO, RoomInfo, RoomInfoShort, GroupConfigDto, Message2RoomDTO, AddGroupUserByNameDTO, UserIdDto, BanMuteDTO, RoomIdDto, RoomAndUserDto, RoomAndPasswordDto, SetPrivateDto } from './DTO/chat.dto';
 import { ValidateRoomPipe, ValidGroupRoomPipe } from './pipes/validate_room.pipe';
 import { UserDisplayNameToIdPipe, ValidateUserPipe } from './pipes/validate_user.pipe';
 
@@ -291,9 +291,9 @@ export class ChatController {
 	async set_private(
 		@Usr() me: User,
 		@Body('room_id', ParseIntPipe, ValidGroupRoomPipe) room_id: number,
-		@Body('private') is_private: boolean
+		@Body() body: SetPrivateDto
 	) {
-		await this.chatService.set_private(me, room_id, is_private);
+		await this.chatService.set_private(me, room_id, body.private);
 		return this.chatService.roomInfo(room_id);
 	}
 	

@@ -330,12 +330,28 @@ When a Pong match is over, points in the general ladder are changed
 
 
 ## Chat specification
-Block: applies only to DMs
-    applies both ways (one blocking the other results in the DM beign blocked)
-    users in a blocked DM cannot POST new messages. But the old ones are still there to be seen.
+(things that are not cristal clear in the subject and a decision had to be made)
+### Block: 
 
-Banned and muted: applies only to Groups
+applies only to DMs
+
+applies both ways (one blocking the other results in the DM beign blocked)
+
+users in a blocked DM cannot POST new messages. But the old ones are still there to be seen.
+(this has been changed from David's original design. And it's open to discussion, of course)
+
+### Banned and muted:
+
+applies only to Groups
 
 Banned: temporarily removed from a group, rejoins automatically after ban time. 
 
 Muted: temporarily cannot POST messages to a group
+
+### Join a group:
+can only be done to public groups (password protected or not).  Might need to provide a valid password.  
+
+To join a private group, you need to be added to it by one of the group's admin.
+
+### Add user to group :
+needs to be done by an admin (public or private group). Password not required in this case. (so protecting a private group with password makes little sense)

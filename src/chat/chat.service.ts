@@ -3,7 +3,7 @@ import { identity } from 'rxjs';
 import { User } from 'src/users/entities/user.entity';
 import { UsersService } from 'src/users/users.service';
 import { Connection, EntityManager } from 'typeorm';
-import { GroupConfigDto, MessageDTO, RoomInfo } from './DTO/chat.dto';
+import { GroupConfigDto, MessageDTO, RoomInfo, RoomInfoShort } from './DTO/chat.dto';
 import { Message } from './entities/message.entity';
 
 const PARTICIPANT = 0;
@@ -71,14 +71,14 @@ export class ChatService {
 		return my_query.rows;
 	}
 
-	async  get_convs(me: User) {
+	async  get_convs(me: User): Promise<RoomInfoShort[]> {
 		const blockedList = await this.listBlockedUsers(me.id);
 		let room_query = await this.pool.query(
 			`SELECT id, name, owner FROM room
 			WHERE id IN (SELECT room_id FROM participants WHERE user_id = ${me.id})
 			ORDER BY activity DESC`
 		);
-		const conversations = [];
+		const conversations: RoomInfoShort[] = [];
 		for (let i = 0; i < room_query.rowCount; i++) //for every conversation
 		{
 			let room_row = room_query.rows[i];
@@ -314,7 +314,6 @@ export class ChatService {
 		// checks:
 		// me must have admins 
 		const role = await this.get_role(me.id, room_id);
-		console.log(role);
 		if (role < ADMIN)
 			throw new ForbiddenException("no admin rights");
 		// user must not already be in the group
