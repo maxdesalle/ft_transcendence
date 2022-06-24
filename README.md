@@ -68,7 +68,6 @@ GET 127.0.0.1:3000/mock-auth/logout
 
 ## API documentation (by Swagger)  
     127.0.0.1:3000/api  
-You should ignore the routes under the "default" section, as they probably don't work well.
 
 ## Play Pong!
 
