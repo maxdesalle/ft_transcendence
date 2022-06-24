@@ -3,7 +3,7 @@ import { identity } from 'rxjs';
 import { User } from 'src/users/entities/user.entity';
 import { UsersService } from 'src/users/users.service';
 import { Connection, EntityManager } from 'typeorm';
-import { GroupConfigDto, MessageDTO } from './DTO/chat.dto';
+import { GroupConfigDto, MessageDTO, RoomInfo } from './DTO/chat.dto';
 import { Message } from './entities/message.entity';
 
 const PARTICIPANT = 0;
@@ -105,7 +105,7 @@ export class ChatService {
 		return conversations;
 	}
 
-	async roomInfo(room_id: number) {
+	async roomInfo(room_id: number): Promise<RoomInfo> {
 		// get room info
 		const query = await this.pool.query(`
 			SELECT name, private, owner, password
@@ -293,8 +293,8 @@ export class ChatService {
 		await this.pool.query(`INSERT INTO participants(user_id, room_id) VALUES(${me.id}, ${room_id})`);
 		if (group.password)
 			await this.set_password(me, room_id, group.password);
-		if (group.private)
-			await this.set_private(me, room_id, group.private);
+		if (group.private === false) // room is create private by default
+			await this.set_private(me, room_id, false);
 		return room_id;
 	}
 
@@ -312,7 +312,7 @@ export class ChatService {
 	/** add user to group. needs admin rights. */
 	async addGroupUser(me: User, room_id: number, user_id: number) {
 		// checks:
-		// me must have admins rights to add or unban a user
+		// me must have admins 
 		const role = await this.get_role(me.id, room_id);
 		console.log(role);
 		if (role < ADMIN)
@@ -320,6 +320,9 @@ export class ChatService {
 		// user must not already be in the group
 		if (await this.is_room_participant(user_id, room_id))
 			throw new BadRequestException("user is already in the room");
+		// user must not be banned from group
+		if (await this.is_banned(user_id, room_id))
+			throw new ForbiddenException("user is banned. (unban it first)");
 		
 		// add user
 		await this.pool.query(`
@@ -344,7 +347,7 @@ export class ChatService {
 			INSERT INTO participants(user_id, room_id)
 			VALUES(${user_id}, ${room_id})`);
 	}
-
+	
 	set_unban_timer(room_id: number, user_id: number, time_minutes: number) {
 		setTimeout(() => {
 			this.addGroupUserRoot(room_id, user_id);
@@ -545,6 +548,13 @@ export class ChatService {
 		await this.pool.query(`DELETE FROM participants WHERE user_id=${me.id} AND room_id=${room_id}`);
 	}
 
+	async showPublicRooms(): Promise<RoomInfo[]> {
+		const public_groups = await this.listPublicGroups();
+		const info_array: RoomInfo[] = [];
+		for (let room_id of public_groups)
+			info_array.push(await this.roomInfo(room_id));
+		return info_array;
+	}
 
 
 	// ===== USER CHECKS ========================================
@@ -662,7 +672,7 @@ export class ChatService {
 
 	// ====== LISTS ============================
 	 
-		/** DM and groups */ 
+	/** DM and groups */ 
 	async listRooms(): Promise<number[]> {
 		const query = await this.pool.query(`
 			SELECT id FROM room;
@@ -679,10 +689,16 @@ export class ChatService {
 			SELECT id FROM room
 			WHERE owner IS NOT NULL;
 		`);
-		const rooms = [];
-		for (let i = 0; i < query.rowCount; ++i)
-			rooms.push(query.rows[i].id);
-		return rooms;
+		return query.rows.map(obj => obj.id);
+	}
+
+	async listPublicGroups(): Promise<number[]> {
+		const query = await this.pool.query(`
+			SELECT id FROM room
+			WHERE owner IS NOT NULL
+			AND private=false;
+		`);
+		return query.rows.map(obj => obj.id);
 	}
 
 	async listRoomParticipants(room_id: number): Promise<number[]> {
