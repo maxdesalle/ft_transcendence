@@ -1,11 +1,11 @@
 import { Body, Controller, ForbiddenException, Get, Param, ParseIntPipe, Post, Res, UseGuards} from '@nestjs/common';
-import { ApiOperation, ApiTags } from '@nestjs/swagger';
+import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { JwtGuard } from 'src/auth/guards/jwt.guard';
 import { Usr } from 'src/users/decorators/user.decorator';
 import { User } from 'src/users/entities/user.entity';
 import { WsService } from 'src/ws/ws.service';
 import { ChatService } from './chat.service';
-import { PostDmDto, MessageDTO, RoomInfo, RoomInfoShort, GroupConfig, addGroupUserDTO, Message2RoomDTO, addGroupUserByNameDTO, UserIdDto, banDTO, muteDTO, RoomIdDto } from './DTO/chat.dto';
+import { PostDmDto, MessageDTO, RoomInfo, RoomInfoShort, GroupConfigDto, addGroupUserDTO, Message2RoomDTO, addGroupUserByNameDTO, UserIdDto, banDTO, muteDTO, RoomIdDto, unbanDTO } from './DTO/chat.dto';
 import { RoomGuard } from './guards/participant.guard';
 import { ValidateRoomPipe, ValidGroupRoomPipe } from './pipes/validate_room.pipe';
 import { UserDisplayNameToIdPipe, ValidateUserPipe } from './pipes/validate_user.pipe';
@@ -89,6 +89,7 @@ export class ChatController {
 	}
 
 	@Post('block')
+	@ApiResponse({description: 'list of users that you blocked + blocked you'})
 	async blockUser(
 		@Usr() me: User,
 		@Body('user_id', ParseIntPipe, ValidateUserPipe) blocked_id: number,
@@ -99,6 +100,7 @@ export class ChatController {
 	}
 
 	@Post('unblock')
+	@ApiResponse({description: 'list of users that you blocked + blocked you'})
 	async unblockUser(
 		@Usr() me: User,
 		@Body('user_id', ParseIntPipe, ValidateUserPipe) blocked_id: number,
@@ -109,6 +111,7 @@ export class ChatController {
 	}
 
 	@Get('blocked')
+	@ApiResponse({description: 'list of users that you blocked + blocked you'})
 	checkBlocked(
 		@Usr() user: User,
 	) {
@@ -140,26 +143,26 @@ export class ChatController {
 		return this.chatService.getGroupMessages(me, room_id);
 	}
 	
-	@Get('room_info/:room_id')
-	async groupInfo(
+	@Get('room_info/:room_id') // OK
+	groupInfo(
 		@Param('room_id', ParseIntPipe, ValidateRoomPipe) room_id: number,
 	): Promise<RoomInfo> {
-		// return this.chatService.roomInfo(room_id);
-		return await this.chatService.roomInfo(room_id);
+		return this.chatService.roomInfo(room_id);
 	}
 
-	@Get('conversations')
-	async getConvs(
+	@Get('conversations') // OK
+	@ApiOperation({summary:' DMs + groups'})
+	getConvs(
 		@Usr() user: User,
 	): Promise<RoomInfoShort[]> {
-		return await this.chatService.get_convs(user);
+		return this.chatService.get_convs(user);
 	}
 
 
 	@Post('create_group')
 	async createGroup(
 		@Usr() me: User,
-		@Body() group_config: GroupConfig 
+		@Body() group_config: GroupConfigDto 
 	): Promise<RoomInfoShort[]> {
 		const room_id = await this.chatService.create_group(me, group_config);
 		this.wsService.sendMsgToUser(me.id, {
@@ -216,7 +219,7 @@ export class ChatController {
 	}
 
 	@Post('ban_group_user')
-	async rmGroupUser(
+	async banUser(
 		@Usr() me: User,
 		@Body('room_id', ParseIntPipe, ValidGroupRoomPipe) room_id: number,
 		@Body('user_id', ParseIntPipe, ValidateUserPipe) user_id: number,
@@ -224,6 +227,17 @@ export class ChatController {
 		@Body() _body: banDTO
 	) {
 		await this.chatService.ban_group_user(me, room_id, user_id, ban_minutes);
+		return this.chatService.roomInfo(room_id);
+	}
+
+	@Post('unban_group_user')
+	async unbanUser(
+		@Usr() me: User,
+		@Body('room_id', ParseIntPipe, ValidGroupRoomPipe) room_id: number,
+		@Body('user_id', ParseIntPipe, ValidateUserPipe) user_id: number,
+		@Body() _body: unbanDTO
+	) {
+		await this.chatService.unban_group_user(me, room_id, user_id);
 		return this.chatService.roomInfo(room_id);
 	}
 

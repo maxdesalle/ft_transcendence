@@ -331,9 +331,11 @@ When a Pong match is over, points in the general ladder are changed
 
 ## Chat specification
 Block: applies only to DMs
-    both users cannot see (GET) messages from a DM room if one has blocked the other one
-    but they the send (POST) new messages...
+    applies both ways (one blocking the other results in the DM beign blocked)
+    users in a blocked DM cannot POST new messages. But the old ones are still there to be seen.
 
-Banned: removed from a group, cannot re-join until unban_hours
+Banned and muted: applies only to Groups
 
-Muted: cannot POST messages to a group until unban_hours
+Banned: temporarily removed from a group, rejoins automatically after ban time. 
+
+Muted: temporarily cannot POST messages to a group

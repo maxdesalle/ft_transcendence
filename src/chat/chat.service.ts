@@ -1,8 +1,9 @@
 import { BadRequestException, ForbiddenException, Injectable } from '@nestjs/common';
+import { identity } from 'rxjs';
 import { User } from 'src/users/entities/user.entity';
 import { UsersService } from 'src/users/users.service';
 import { Connection, EntityManager } from 'typeorm';
-import { GroupConfig, MessageDTO } from './DTO/chat.dto';
+import { GroupConfigDto, MessageDTO } from './DTO/chat.dto';
 import { Message } from './entities/message.entity';
 
 const PARTICIPANT = 0;
@@ -71,7 +72,7 @@ export class ChatService {
 	}
 
 	async  get_convs(me: User) {
-		const blocked = await this.listBlockedUsers(me.id);
+		const blockedList = await this.listBlockedUsers(me.id);
 		let room_query = await this.pool.query(
 			`SELECT id, name, owner FROM room
 			WHERE id IN (SELECT room_id FROM participants WHERE user_id = ${me.id})
@@ -86,13 +87,15 @@ export class ChatService {
 				SELECT user_id FROM participants
 				WHERE room_id = ${room_row.id}`
 			);
-			// blocked DM conversation will not be shown
-			if (!room_row.owner && (blocked.includes(part_q.rows[0].user_id) || blocked.includes(part_q.rows[1].user_id)))
-				continue;
 			const type = room_row.owner ? 'group':'DM'
+			let blocked: boolean;
+			if (type === 'DM' && (blockedList.includes(part_q.rows[0].user_id) || blockedList.includes(part_q.rows[1].user_id)))
+				blocked = true;
 			let conv = {
 				room_id,
-				room_name: room_row.name, type,
+				room_name: room_row.name,
+				type,
+				blocked,
 				participants: []
 			}
 			for (let n = 0; n < part_q.rowCount; n++) //get all participants of a given conversation
@@ -129,6 +132,8 @@ export class ChatService {
 			room_id: room_id,
 			room_name: info.name,
 			type: is_group ? 'group':'DM',
+			blocked: !is_group ? 
+				await this.is_blocked(users[0].user_id, users[1].user_id): undefined,
 			private: info.private,
 			password_protected: !!info.password,
 			users
@@ -275,7 +280,7 @@ export class ChatService {
 
 	// ================= GROUP ADMIN TASKS ===========================
 
-	async create_group(me: User, group: GroupConfig) {
+	async create_group(me: User, group: GroupConfigDto) {
 		if (await this.groupNameExists(group.name))
 			throw new BadRequestException('group name already taken');
 
@@ -304,31 +309,52 @@ export class ChatService {
 		await this.pool.query(`DELETE FROM room WHERE id=${room_id}`);
 	}
 
-	// TODO: 
-	// check if group "me" is group member
-	// check if group if private
-	// check if admin rights
-	/** add user to group. If user is banned, needs admin rights. */
+	/** add user to group. needs admin rights. */
 	async addGroupUser(me: User, room_id: number, user_id: number) {
-		const participants = await this.listRoomParticipants(room_id);
-		if (participants.includes(user_id))
+		// checks:
+		// me must have admins rights to add or unban a user
+		const role = await this.get_role(me.id, room_id);
+		console.log(role);
+		if (role < ADMIN)
+			throw new ForbiddenException("no admin rights");
+		// user must not already be in the group
+		if (await this.is_room_participant(user_id, room_id))
 			throw new BadRequestException("user is already in the room");
-		// check if added user was banned
-		if (await this.is_banned(user_id, room_id)) {
-			let role = await this.get_role(me.id, room_id);
-			if (role < ADMIN)
-				throw new ForbiddenException("Unban user: no admin rights");
-		}
+		
 		// add user
 		await this.pool.query(`
 			INSERT INTO participants(user_id, room_id)
 			VALUES(${user_id}, ${room_id})`);
 	}
 
+	// to be called when someone gets unbanned
+	async addGroupUserRoot(room_id: number, user_id: number) {
+		// check if group still exists
+		if (!(await this.listGroups()).includes(room_id))
+			return;
+		// check if user already in group
+		if (await this.is_room_participant(user_id, room_id))
+			return;
+		// check if user is still banned
+		if (await this.is_banned(user_id, room_id))
+			return;
+
+		// add user
+		await this.pool.query(`
+			INSERT INTO participants(user_id, room_id)
+			VALUES(${user_id}, ${room_id})`);
+	}
+
+	set_unban_timer(room_id: number, user_id: number, time_minutes: number) {
+		setTimeout(() => {
+			this.addGroupUserRoot(room_id, user_id);
+		}, time_minutes * 60 * 1000);
+	}
+
 	async ban_group_user(me: User, room_id: number, user_id: number, ban_minutes: number) {
 		// check if user in the group
-		// if (! await this.is_room_participant(user_id, room_id))
-			// throw new BadRequestException("user is not in group");
+		if (! await this.is_room_participant(user_id, room_id))
+			throw new BadRequestException("user is not in group");
 
 		// check if you have more privileges than the user
 		let role1 = await this.get_role(me.id, room_id);
@@ -341,9 +367,33 @@ export class ChatService {
 		await this.pool.query(`DELETE FROM participants WHERE user_id=${user_id} AND room_id=${room_id}`);
 		await this.pool.query(`DELETE FROM banned WHERE banned_id=${user_id} AND room_id=${room_id} AND mute=true`);
 		await this.pool.query(`INSERT INTO banned (user_id, banned_id, room_id, unban, mute, role) VALUES(${me.id}, ${user_id}, ${room_id}, to_timestamp(${unban_date.getTime() / 1000}), false, ${role1})`);
+		this.set_unban_timer(room_id, user_id, ban_minutes);
+	}
+
+	async unban_group_user(me: User, room_id: number, user_id: number) {
+		// checks
+		// must be admin
+		let role = await this.get_role(me.id, room_id);
+		if (role < ADMIN)
+			throw new ForbiddenException("insufficient rights");
+		// user is banned from group
+		if (! await this.is_banned(user_id, room_id))
+			throw new BadRequestException("user is not banned from this group");
+
+		// remove all ban entries from DB
+		await this.pool.query(`
+			DELETE FROM banned
+			WHERE banned_id= ${user_id}
+			AND room_id= ${room_id}
+			AND mute=false
+			;`);
+		
+		// reinsert in group
+		await this.addGroupUserRoot(room_id, user_id);
 	}
 
 	async mute_user(me: User, room_id: number, user_id: number, mute_minutes: number) {
+		// check rights
 		let role1 = await this.get_role(me.id, room_id);
 		let role2 = await this.get_role(user_id, room_id);
 		if (role1 < ADMIN || role1 <= role2)

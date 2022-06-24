@@ -1,4 +1,4 @@
-import { IsNegative, IsNotEmpty, IsNumber, IsPositive, Min } from "class-validator";
+import { IsBoolean, IsNegative, IsNotEmpty, IsNumber, IsOptional, IsPositive, IsString, Min, NotContains } from "class-validator";
 
 export class PostDmDto {
 	user_id: number;
@@ -49,12 +49,21 @@ export class RoomInfoShort {
 	room_id: number;
 	room_name: string;
 	type: string;
+	blocked?: boolean;
 	participants: number[];
 }
 
-export class GroupConfig {
+export class GroupConfigDto {
+	@IsNotEmpty()
 	name: string;
+
+	@IsBoolean()
+	@IsOptional()
 	private?: boolean;
+
+	@IsOptional()
+	@IsString()
+	@NotContains("'")
 	password?: string;
 }
 
@@ -76,7 +85,10 @@ export class banDTO {
 	@IsNumber()
 	ban_minutes: number;
 }
-
+export class unbanDTO {
+	room_id: number;
+	user_id: number;
+}
 export class muteDTO {
 	room_id: number;
 	user_id: number;
