@@ -7,6 +7,13 @@ export class PostDmDto {
 	message: string;
 }
 
+export class Message2RoomDTO {
+	room_id: number;
+	
+	@IsNotEmpty()
+	message: string;
+}
+
 export class MessageDTO {
 	id: number;
 	user_id: number;
@@ -14,13 +21,6 @@ export class MessageDTO {
 	display_name: string;
 	message: string;
 	timestamp: Date;
-}
-
-export class Message2RoomDTO {
-	room_id: number;
-	
-	@IsNotEmpty()
-	message: string;
 }
 
 export class UserIdDto {

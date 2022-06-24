@@ -18,26 +18,45 @@ export class ChatController {
 		private chatService: ChatService,
 		private wsService: WsService
 	) {}
+	
+	// for compability.
+	// prefer post /group_message
+	@Post('message_to_room') // OK
+	async postMsgToRoom(
+		@Usr() me: User,
+		@Body('room_id', ParseIntPipe, ValidateRoomPipe) room_id: number,
+		@Body() body: Message2RoomDTO
+	): Promise<MessageDTO> {
+		// case: group room
+		if (await this.chatService.isGroupRoom(room_id))
+			return this.postGroupMsg(me, room_id, body);
+
+		// case DM room
+		const message = 
+			await this.chatService.postDMbyRoomId(me, room_id, body.message);
+		// notify both users
+		this.wsService.sendMsgToUsersList(
+			await this.chatService.listRoomParticipants(room_id),
+			{ event: 'chat_dm',	message }
+		);
+		return message;
+	}
 
 	// ============ DM ===========
 
-	@Post('dm')
+	@Post('dm') // OK
 	async postDM(
 		@Usr() me: User,
 		@Body('user_id', ParseIntPipe, ValidateUserPipe) destUserId: number,
-		// @Body('message') message: string,
 		@Body() body: PostDmDto
 	) {
 		const message: MessageDTO = 
-			await this.chatService.sendDMtoUser(me, destUserId, body.message);
-
-		// notify both users, if not blocked
-		if (! await this.chatService.is_blocked(me.id, destUserId)) {
-			this.wsService.sendMsgToUsersList([me.id, destUserId], {
-				event: 'chat_dm',
-				message
-			});
-		}
+			await this.chatService.postDM(me, destUserId, body.message);
+		// notify both users
+		this.wsService.sendMsgToUsersList([me.id, destUserId], {
+			event: 'chat_dm',
+			message
+		});
 		return message;
 	}
 
@@ -83,7 +102,7 @@ export class ChatController {
 		@Usr() me: User,
 		@Body('room_id', ParseIntPipe, ValidGroupRoomPipe) room_id: number,
 		@Body() body: Message2RoomDTO
-	) {
+	): Promise<MessageDTO> {
 		const message = await this.chatService.postGroupMsg(me, room_id, body.message);
 		// notify group members
 		this.wsService.sendMsgToUsersList(
@@ -91,22 +110,8 @@ export class ChatController {
 			{ event: 'chat_room_msg', message }
 		)
 		return message;
-
 	}
 	
-	// for compability. prefer post /group_message
-	@Post('message_to_room')
-	async postMsgToRoom(
-		@Usr() me: User,
-		@Body('room_id', ParseIntPipe, ValidateRoomPipe) room_id: number,
-		@Body() body: Message2RoomDTO
-	) {
-		if (await this.chatService.isGroupRoom(room_id))
-			return this.postGroupMsg(me, room_id, body);
-		// TODO: else call postDM
-		return 'hello'
-	}
-
 	@Get('room_messages/:room_id')
 	@UseGuards(RoomGuard)
 	async getMessagesByRoomId(
@@ -213,7 +218,7 @@ export class ChatController {
 		@Body('mute_minutes') mute_minutes: number,
 		@Body() _body: muteDTO
 	) {
-		this.chatService.mute_user(me, room_id, user_id, mute_minutes);
+		await this.chatService.mute_user(me, room_id, user_id, mute_minutes);
 		return this.chatService.roomInfo(room_id);
 	}
 
@@ -223,7 +228,7 @@ export class ChatController {
 		@Body('room_id', ParseIntPipe, ValidGroupRoomPipe) room_id: number,
 		@Body('user_id') user_id: number,
 	) {
-		this.chatService.unmute_user(me, room_id, user_id);
+		await this.chatService.unmute_user(me, room_id, user_id);
 		return this.chatService.roomInfo(room_id);
 	}
 

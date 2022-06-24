@@ -1,6 +1,7 @@
 import { ArgumentMetadata, BadRequestException, Injectable, PipeTransform } from "@nestjs/common";
 import { UsersService } from "src/users/users.service";
 
+/** check if user exists */
 @Injectable()
 export class ValidateUserPipe implements PipeTransform {
 	constructor(private usersService: UsersService) {}

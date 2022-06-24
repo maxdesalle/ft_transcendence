@@ -35,10 +35,6 @@ export class ChatService {
 	}
 
 	async send_msg_to_room(me: User, room_id: number, message: string) {
-		// check if muted
-		// if (await this.is_muted(me.id, room_id))
-		// 	throw new ForbiddenException("you are muted");
-
 		// in order to allow messages containing single quotes, I'm not using the
 		// raw query on this one.
 		const messageRepository = this.connection.getRepository(Message);
@@ -144,21 +140,34 @@ export class ChatService {
 
 	// ============= DM ==================
 	
-	async sendDMtoUser(me: User, toId: number, msg: string) {
+	// assumes valid user in toId
+	async postDM(me: User, toId: number, msg: string) {
+		// checks
 		if (me.id === toId)
 			throw new BadRequestException("You shall not talk to yourself");
-		// check if room exists
+		if (await this.is_blocked(me.id, toId))
+			throw new ForbiddenException('You are blocked by the user OR the user is blocked by you');
+
+		// check if dm_room already exists
 		let room_id = await this.get_dm_room(me, toId);
-		// create room if necessary
-		// console.log(room_id);
-		if (!room_id) 
+		if (!room_id) // create room if necessary
 			room_id = await this.create_dm_room(me, toId);
-		// insert message into table	
-		// await this.pool.query(`
-		// 	INSERT INTO message(user_id, timestamp, message, room_id)
-		// 	VALUES(${me.id}, NOW(), '${msg}', ${room_id})`
-		// );
-		// return room_id;
+
+		return this.send_msg_to_room(me, room_id, msg);
+	}
+
+	// room_id is assumed to be valid DM room
+	// for compability. prefer postDM.
+	async postDMbyRoomId(me: User, room_id: number, msg: string) {
+		// check if you're part of this DM room
+		const room_members = await this.listRoomParticipants(room_id);
+		if (!room_members.includes(me.id))
+			throw new ForbiddenException("user is not a member of this DM room");
+		const toId = room_members.find(user_id => user_id !== me.id);
+		// check if blocked
+		if (await this.is_blocked(me.id, toId))
+			throw new ForbiddenException('You are blocked by the user OR the user is blocked by you');
+		
 		return this.send_msg_to_room(me, room_id, msg);
 	}
 
@@ -513,6 +522,7 @@ export class ChatService {
 		return !!query.rowCount;
 	}
 
+	// is one of the users blocked by the other one
 	async is_blocked(my_id: number, other_user_id: number) {
 		return ((await this.listBlockedUsers(my_id)).includes(other_user_id));
 	}
