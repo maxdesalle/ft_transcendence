@@ -57,8 +57,7 @@ export class ChatService {
 		return msg;
 	}
 
-
-	async getMessagesByRoomId(me: User, room_id: number): Promise<MessageDTO[]> {
+	async getMessagesByRoomId(room_id: number): Promise<MessageDTO[]> {
 
 		const my_query = await this.pool.query(`
 			SELECT message.id, user_id, login42, display_name, message, timestamp
@@ -217,20 +216,23 @@ export class ChatService {
 		return (new_room_id);
 	}
 
-	async getDMbyUser(me: User, user_id: number) {
+	async getDMbyUser(me: User, user_id: number): Promise<MessageDTO[]> {
 		// checks
-		if (await this.is_blocked(me.id, user_id))
-			throw new ForbiddenException("you are blocked OR the user is blocked by you")
 		if (me.id === user_id)
 			throw new BadRequestException("No talking to yourself, plz...")
 
 		const room_id = await this.get_dm_room(me, user_id);
 		if (!room_id)
 			return [];
-		return this.getMessagesByRoomId(me, room_id);
+		return this.getMessagesByRoomId(room_id);
 	}
 
-
+	// assumes room_id is a DM room
+	async getDMsByRoomID(me: User, room_id: number) {
+		if (! await this.is_room_participant(me.id, room_id))
+			throw new ForbiddenException("you're not part of this DM room");
+		return this.getMessagesByRoomId(room_id);
+	}
 
 	async block_user(me: User, block_id: number) {
 		if (me.id === block_id)
@@ -260,7 +262,17 @@ export class ChatService {
 
 		return this.send_msg_to_room(me, room_id, message);
 	}
-	
+
+		// assumes valid group room
+	async getGroupMessages(me: User, room_id: number) {
+		// checks
+		if (! await this.is_room_participant(me.id, room_id))
+			throw new ForbiddenException('not a group member');
+
+		return this.getMessagesByRoomId(room_id);
+	}
+
+
 	// ================= GROUP ADMIN TASKS ===========================
 
 	async create_group(me: User, group: GroupConfig) {

@@ -1,5 +1,5 @@
 import { Body, Controller, ForbiddenException, Get, Param, ParseIntPipe, Post, Res, UseGuards} from '@nestjs/common';
-import { ApiTags } from '@nestjs/swagger';
+import { ApiOperation, ApiTags } from '@nestjs/swagger';
 import { JwtGuard } from 'src/auth/guards/jwt.guard';
 import { Usr } from 'src/users/decorators/user.decorator';
 import { User } from 'src/users/entities/user.entity';
@@ -20,8 +20,10 @@ export class ChatController {
 	) {}
 	
 	// for compability.
-	// prefer post /group_message
+	// prefer post /group_message and /dm
 	@Post('message_to_room') // OK
+	@ApiOperation({summary: `Route for compability with previous versions.
+		Prefer POST /dm or /group message`})
 	async postMsgToRoom(
 		@Usr() me: User,
 		@Body('room_id', ParseIntPipe, ValidateRoomPipe) room_id: number,
@@ -42,6 +44,24 @@ export class ChatController {
 		return message;
 	}
 
+	// for compability.
+	// prefer get /group_messages and /dm
+	@Get('room_messages/:room_id') // OK
+	@ApiOperation({summary: `Route for compability with previous versions.
+		Prefer GET /dm or /group messages`})
+	async getMessagesByRoomId(
+		@Usr() me: User,
+		@Param('room_id', ParseIntPipe, ValidateRoomPipe) room_id: number
+	) {
+		// case: group room
+		if (await this.chatService.isGroupRoom(room_id))
+			return this.getGroupMessages(me, room_id);
+		
+		// case: DM room
+		return this.chatService.getDMsByRoomID(me, room_id);
+	}
+
+
 	// ============ DM ===========
 
 	@Post('dm') // OK
@@ -60,7 +80,7 @@ export class ChatController {
 		return message;
 	}
 
-	@Get('dm/:user_id')
+	@Get('dm/:user_id') // OK
 	async getDMs(
 		@Usr() me: User,
 		@Param('user_id', ParseIntPipe, ValidateUserPipe) user_id: number
@@ -111,18 +131,15 @@ export class ChatController {
 		)
 		return message;
 	}
-	
-	@Get('room_messages/:room_id')
-	@UseGuards(RoomGuard)
-	async getMessagesByRoomId(
-		@Usr() user: User,
-		@Param('room_id', ParseIntPipe) room_id: number
-	) {
-		if (await this.chatService.isBlockedDMroom(room_id))
-			throw new ForbiddenException("you are blocked OR the user is blocked by you")
-		return this.chatService.getMessagesByRoomId(user, room_id);
-	}
 
+	@Get('group_messages/:room_id') // OK
+	async getGroupMessages(
+		@Usr() me: User,
+		@Param('room_id', ParseIntPipe, ValidGroupRoomPipe) room_id: number
+	) {
+		return this.chatService.getGroupMessages(me, room_id);
+	}
+	
 	@Get('room_info/:room_id')
 	async groupInfo(
 		@Param('room_id', ParseIntPipe, ValidateRoomPipe) room_id: number,
