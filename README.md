@@ -1,6 +1,7 @@
 ## How to make stuff happen
 
 First you need a .env file at the repo's root, like this: (cannot put secret stuff in a public repo, sorry)
+
 Docker does not seem to like quotes, so don't use any single or double quotes in the env file.
 ```
     # auth
@@ -23,6 +24,12 @@ Then:
 The app should be available at 127.0.0.1:3000
 
 -----------------------
+
+## Known issues:
+
+* npm dependencies (using npm install --force for now, but it's not the right way to do things)
+
+------------------------
 
 ### How to access the database:
 **Adminer** is available at 127.0.0.1:8080

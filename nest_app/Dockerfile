@@ -8,6 +8,7 @@ WORKDIR /usr/src/app
 COPY package*.json ./
 
 # Install app dependencies
+# TODO: solve dependency issues and drop the 'force' flag
 RUN npm install --force
 
 # Bundle app source
