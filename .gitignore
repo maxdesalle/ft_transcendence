@@ -2,8 +2,8 @@
 /dist
 /node_modules
 
-node_app/dist
-node_app/node_modules
+nest_app/dist
+nest_app/node_modules
 
 # Logs
 logs

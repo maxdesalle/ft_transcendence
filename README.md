@@ -1,29 +1,24 @@
 ## How to make stuff happen
 
 First you need a .env file at the repo's root, like this: (cannot put secret stuff in a public repo, sorry)
+Docker does not seem to like quotes, so don't use any single or double quotes in the env file.
 ```
     # auth
     FORTYTWO_CLIENT_ID=<you gotta provide the right one>  
     FORTYTWO_CLIENT_SECRET=<you gotta provide the right one>  
-    FORTYTWO_CALLBACK_URL="http://127.0.0.1:3000/login/42/return"  
+    FORTYTWO_CALLBACK_URL=http://127.0.0.1:3000/login/42/return  
     JWT_TOKEN_SECRET=<whatever you wish>  
-    JWT_TOKEN_EXPIRY=<some time, like "3600s"> 
+    JWT_TOKEN_EXPIRY=1d
 
     # database
     DB_PASSWORD=<whatever you wish, but DON'T USE QUOTES around it>
 
     # avatar photo
-    AVATAR_DEFAULT_FILE="images/avatardefault.png"
+    AVATAR_DEFAULT_FILE=images/avatardefault.png
     AVATAR_MAX_SIZE=1000000
 ```
-Then:
-* install node dependencies (if not yet done): `npm install`
-* launch database container: `docker-compose up -d`
-* launch node server in watch mode: `npm run start:dev`
-
-OR: `./launch.sh` (have the **.env** file ready)
-
-Wanna restart with a fresh DB? `./restart.sh`
+Then:  
+`docker-compose up`
 
 The app should be available at 127.0.0.1:3000
 
