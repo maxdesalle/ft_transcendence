@@ -1,5 +1,14 @@
 version: '3.5'
 services:
+  nest_app:
+    build: ./node_app
+    depends_on:
+      - db
+    ports: 
+      - 3000:3000
+    env_file:
+      - .env
+
   db:
     container_name: db
     image: postgres

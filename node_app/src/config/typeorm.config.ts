@@ -6,7 +6,7 @@ export const typeormConfig: TypeOrmModuleAsyncOptions = {
 	useFactory: (configService: ConfigService) => {
 		return {
 			type: "postgres",
-			host: "127.0.0.1",
+			host: 'db',
 			port: 5432,
 			username: "postgres",
 			password: configService.get<string>('DB_PASSWORD'),
