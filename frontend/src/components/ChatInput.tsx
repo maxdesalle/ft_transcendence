@@ -2,7 +2,7 @@ import { Button, TextField } from "@mui/material";
 import SendIcon from "@mui/icons-material/Send";
 import { styled } from "@mui/material/styles";
 import { useEffect, useState } from "react";
-import { RoomInfoShort } from "../types/chat";
+import { RoomInfoShort } from "../types/chat.interface";
 
 const WrapForm = styled("form")(({ theme }) => ({
   display: "flex",
@@ -20,7 +20,7 @@ const ChatInput = ({
 }) => {
   const [message, setMessage] = useState("");
 
-  useEffect(() => {}, [room]);
+  useEffect(() => { }, [room]);
 
   return (
     <WrapForm

@@ -5,3 +5,4 @@ export interface User {
   avatarId: number;
   isTwoFactorAuthenticationEnabled: boolean;
 }
+

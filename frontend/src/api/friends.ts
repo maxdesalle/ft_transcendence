@@ -1,3 +1,4 @@
+import { User } from "../types/user.interface";
 import { useFetch, usePost } from "../utils/reactQuery";
 import { routes } from "./utils";
 
@@ -25,7 +26,7 @@ export const useAcceptFriendRequest = () => {
   });
 };
 
-export const useGetAllFriends = () => {
+export const useGetAllFriendsIds = () => {
   const context = useFetch<number[]>(`${routes.friends}/id`);
 
   return {
@@ -33,6 +34,18 @@ export const useGetAllFriends = () => {
     friendsIds: context.data,
   };
 };
+
+export const useGetAllFriendsObjects = () => {
+  const context = useFetch<User[]>(`${routes.friends}`);
+  return {
+    ...context,
+    friends: context.data
+  }
+}
+
+export const useSendDmToFriend = () => {
+  return usePost(`${routes.sendDm}`, {});
+}
 
 export const useRejectFriendRequest = () => {
   return usePost(`${routes.friends}/reject_friend_request`, {

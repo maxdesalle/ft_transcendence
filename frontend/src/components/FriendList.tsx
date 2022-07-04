@@ -1,15 +1,15 @@
-import { Stack, Typography } from "@mui/material";
-import { useGetAllFriends } from "../api/friends";
-import FriendCard from "./FriendCard";
+import { Stack, Typography } from '@mui/material';
+import { useGetAllFriendsIds, useGetAllFriendsObjects } from '../api/friends';
+import FriendCard from './FriendCard';
 
 const FriendList = () => {
-  const { friendsIds } = useGetAllFriends();
+  const { friends } = useGetAllFriendsObjects();
 
   return (
     <Stack spacing={2}>
       <Typography variant="h4">Friend List</Typography>
-      {friendsIds &&
-        friendsIds.map((id) => <FriendCard key={id} user_id={id} />)}
+      {friends &&
+        friends.map((friend) => <FriendCard key={friend.id} friend={friend} />)}
     </Stack>
   );
 };

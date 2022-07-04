@@ -1,12 +1,9 @@
-import { useGetProfile } from "../api/auth";
+import { useGetProfile } from '../api/auth';
 
 function Profile() {
+  const { me } = useGetProfile();
 
-  const { data } = useGetProfile();
-
-  return (
-    <div>{data && `Profile of ${data.username}`}</div>
-  )
+  return <div>{me && `Profile of ${me.login42}`}</div>;
 }
 
 export default Profile;

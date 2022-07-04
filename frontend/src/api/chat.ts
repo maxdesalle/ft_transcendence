@@ -1,13 +1,17 @@
-import { Message, RoomInfoShort } from "../types/chat";
-import { useFetch, useFetchById, usePost } from "../utils/reactQuery";
-import { routes } from "./utils";
+import { Message, RoomInfoShort } from '../types/chat.interface';
+import { useFetch, useFetchById, usePost } from '../utils/reactQuery';
+import { routes } from './utils';
 
 export const useCreateRoom = () => {
   return usePost(routes.createGroup, { invalidQueries: [routes.getRooms] });
 };
 
 export const useGetRooms = () => {
-  return useFetch<RoomInfoShort[]>(routes.getRooms);
+  const context = useFetch<RoomInfoShort[]>(routes.getRooms);
+  return {
+    ...context,
+    rooms: context.data,
+  };
 };
 
 export const useAddUserToRoom = () => {
@@ -22,6 +26,14 @@ export const useGetMessagesByRoomId = (id: number | undefined) => {
   };
 };
 
-export const usePostDm = () => {
-  return usePost(routes.sendDm, {});
+export const useGetFriendMessages = (id: number | undefined) => {
+  const context = useFetchById<Message[]>(`${routes.chat}/dm`, id);
+  return {
+    ...context,
+    friendmessages: context.data,
+  };
+};
+
+export const usePostMsgToRoom = () => {
+  return usePost(routes.sendMessageToRoom, {});
 };

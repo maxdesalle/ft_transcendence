@@ -1,180 +1,224 @@
+import { ArrowBack } from '@mui/icons-material';
+import SendIcon from '@mui/icons-material/Send';
 import {
-  Paper,
-  Avatar,
-  Stack,
-  Typography,
   Box,
+  Button,
+  IconButton,
+  Paper,
+  Stack,
   styled,
   TextField,
-  Button,
-} from "@mui/material";
-import { useCallback, useEffect, useRef, useState } from "react";
-import { useGetProfile } from "../api/auth";
-import { useGetMessagesByRoomId, useGetRooms, usePostDm } from "../api/chat";
-import { Message, RoomInfoShort } from "../types/chat";
-import { compareAsc, format, parseISO } from "date-fns";
-import ChatMessageLeft from "./ChatMessageLeft";
-import ChatMessageRight from "./ChatMessageRight";
-import { urls } from "../api/utils";
-import SendIcon from "@mui/icons-material/Send";
-import useWebSocket from "react-use-websocket";
-const WrapForm = styled("form")(({ theme }) => ({
-  display: "flex",
-  justifyContent: "center",
-  width: "100%",
+  Typography,
+} from '@mui/material';
+import { compareAsc, format, parseISO } from 'date-fns';
+import { useCallback, useEffect, useRef, useState } from 'react';
+import useWebSocket from 'react-use-websocket';
+import { useGetProfile } from '../api/auth';
+import { usePostMsgToRoom } from '../api/chat';
+import { useSendDmToFriend } from '../api/friends';
+import { urls } from '../api/utils';
+import { useAppDispatch, useAppSelector } from '../app/hooks';
+import {
+  addMessage,
+  changeStatus,
+  fetchFriendMessage,
+  fetchMessages,
+  resetMessages,
+} from '../features/Chat/ChatSlice';
+import { RoomInfoShort } from '../types/chat.interface';
+import { User } from '../types/user.interface';
+import ChatBackButton from './ChatBackButton';
+import ChatMessageLeft from './ChatMessageLeft';
+import ChatMessageRight from './ChatMessageRight';
+import ChatTabs from './ChatTabs';
+
+const WrapForm = styled('form')(({ theme }) => ({
+  display: 'flex',
+  justifyContent: 'center',
+  width: '100%',
   margin: `${theme.spacing(0)} auto`,
 }));
 
 const Chat = () => {
-  const [message, setMessage] = useState("");
-  const { data } = useGetRooms();
+  const [message, setMessage] = useState('');
   const [selectedRoom, setSelectedRoom] = useState<RoomInfoShort>();
-  const [roomId, setRoomId] = useState<number | undefined>();
-  const { messages } = useGetMessagesByRoomId(roomId);
-  const [wsMessages, setWsMessages] = useState<Message[]>([]);
+  const [room_id, setRoomId] = useState<number | undefined>();
+  const [user_id, setFriendId] = useState<number | undefined>();
+  const [selectedFriend, setSelectedFriend] = useState<User | undefined>();
+  const messages = useAppSelector((state) => state.chat.messages);
+  const status = useAppSelector((state) => state.chat.status);
+  const dispatch = useAppDispatch();
   const { data: user } = useGetProfile();
-  const { mutate } = usePostDm();
+  const { mutate: mutateRoomMsg } = usePostMsgToRoom();
+  const { mutate: mutateFriendMsg } = useSendDmToFriend();
+  const [receiver, setReceiver] = useState<string | undefined>();
   const chatRef = useRef<HTMLDivElement | null>(null);
   const {} = useWebSocket(urls.wsUrl, {
     onMessage: (e) => {
-      let data = JSON.parse(e.data);
-      onUpdate(data.message);
+      const data = JSON.parse(e.data);
+      if (data.event === 'chat_dm' || data.event === 'chat_room_msg') {
+        dispatch(addMessage(data.message));
+      }
     },
   });
 
-  const onUpdate = useCallback(
-    (msg: Message) => {
-      setWsMessages((state) => [...state, msg]);
+  const resetAll = useCallback(() => {
+    dispatch(resetMessages());
+    setFriendId(undefined);
+    setRoomId(undefined);
+  }, []);
+  const onSelectRoom = useCallback(
+    (room: RoomInfoShort) => {
+      setSelectedRoom(() => ({ ...room }));
+      setRoomId(room.room_id);
+      setReceiver('room');
     },
-    [setWsMessages]
+    [setSelectedRoom, setRoomId, setReceiver],
   );
 
-  const onSelectRoom = (room: RoomInfoShort) => {
-    setSelectedRoom((old) => ({ ...old, ...room }));
-    setRoomId(room.room_id);
-    setWsMessages([]);
-  };
+  const onSelectFriend = useCallback(
+    (friend: User) => {
+      setSelectedFriend(() => ({ ...friend }));
+      setFriendId(friend.id);
+      setReceiver('friend');
+    },
+    [setSelectedFriend, setFriendId, setReceiver],
+  );
 
-  const onSend = (msg: string) => {
-    if (selectedRoom && msg) {
-      mutate({
-        room_id: selectedRoom.room_id,
-        message: msg,
-      });
-    }
-  };
+  const onSend = useCallback(
+    (msg: string) => {
+      if (selectedRoom && msg && receiver === 'room') {
+        mutateRoomMsg({
+          room_id: selectedRoom.room_id,
+          message: msg,
+        });
+      }
+      if (selectedFriend && msg && receiver === 'friend') {
+        mutateFriendMsg({
+          user_id: selectedFriend.id,
+          message: msg,
+        });
+      }
+    },
+    [message],
+  );
 
   useEffect(() => {
     if (chatRef.current) {
       chatRef.current.scrollTo(0, chatRef.current.scrollHeight as number);
     }
-    console.log(wsMessages);
-  }, [wsMessages, messages]);
-
-  const renderRooms = () => {
-    return (
-      <Stack component="div" spacing={1} p={1}>
-        {data &&
-          data.map((room) => (
-            <Box
-              component="button"
-              onClick={() => onSelectRoom(room)}
-              key={room.room_id}
-              sx={{ display: "flex", padding: "3px", borderRadius: "5px" }}
-            >
-              <Avatar />
-              <Stack pl={2}>
-                <Typography textAlign="start">{room.room_name}</Typography>
-                <Typography component="p">last message</Typography>
-              </Stack>
-            </Box>
-          ))}
-      </Stack>
-    );
-  };
+    if (receiver === 'room' && room_id) {
+      dispatch(fetchMessages(room_id));
+    }
+    if (receiver == 'friend' && user_id) {
+      dispatch(fetchFriendMessage(user_id));
+    }
+    return () => {
+      dispatch(resetMessages());
+    };
+  }, [room_id, receiver, user_id]);
 
   return (
     <Paper
       sx={{
         padding: 1,
-        width: "400px",
-        maxHeight: "600px",
-        height: "80vh",
-        display: "flex",
-        flexDirection: "column",
+        width: '400px',
+        maxHeight: '600px',
+        height: '80vh',
+        display: 'flex',
+        flexDirection: 'column',
       }}
     >
-      {selectedRoom && <Typography>{selectedRoom.room_name}</Typography>}
+      {status === 'success' ? (
+        <Box>
+          <ChatBackButton onClick={resetAll} />
+        </Box>
+      ) : null}
       <Paper
-        ref={chatRef}
         component="div"
         sx={{
-          display: "flex",
-          flexDirection: "column",
-          width: "100%",
-          overflowY: "scroll",
-          height: "calc(100% - 40px)",
+          display: 'flex',
+          flexDirection: 'column',
+          width: '100%',
+          overflowY: status === 'success' ? 'scroll' : 'hidden',
+          height: '100%',
         }}
       >
-        {!messages && renderRooms()}
-        {messages &&
-          messages
-            .concat(wsMessages)
-            .sort((a, b) =>
-              compareAsc(
-                parseISO(a.timestamp.toString()),
-                parseISO(b.timestamp.toString())
+        {status === 'idle' ? (
+          <ChatTabs
+            onSelectRoom={onSelectRoom}
+            onSelectFriend={onSelectFriend}
+          />
+        ) : status === 'success' ? (
+          <>
+            {messages
+              .slice()
+              .sort((a, b) =>
+                compareAsc(
+                  parseISO(a.timestamp.toString()),
+                  parseISO(b.timestamp.toString()),
+                ),
               )
-            )
-            .map((msg) => (
-              <Stack key={msg.id}>
-                {user && user.id == msg.user_id ? (
-                  <ChatMessageRight
-                    timestamp={format(parseISO(msg.timestamp.toString()), "pp")}
-                    message={msg.message}
-                  />
-                ) : (
-                  <ChatMessageLeft
-                    name={msg.chosen_name}
-                    timestamp={format(parseISO(msg.timestamp.toString()), "pp")}
-                    message={msg.message}
-                  />
-                )}
-              </Stack>
-            ))}
+              .map((msg) => (
+                <Stack ref={chatRef} key={msg.id}>
+                  {user && user.id == msg.user_id ? (
+                    <ChatMessageRight
+                      timestamp={format(
+                        parseISO(msg.timestamp.toString()),
+                        'pp',
+                      )}
+                      message={msg.message}
+                    />
+                  ) : (
+                    <ChatMessageLeft
+                      name={msg.chosen_name}
+                      timestamp={format(
+                        parseISO(msg.timestamp.toString()),
+                        'pp',
+                      )}
+                      message={msg.message}
+                    />
+                  )}
+                </Stack>
+              ))}
+          </>
+        ) : null}
       </Paper>
-      <WrapForm
-        onSubmit={(e) => {
-          e.preventDefault();
-          onSend(message);
-          setMessage("");
-        }}
-        autoComplete="off"
-      >
-        <TextField
-          onChange={(e) => setMessage(e.target.value)}
-          size="small"
-          sx={{
-            width: "100%",
-            height: "auto",
-          }}
-          id="standard-basic"
-          label="Enter message"
-          value={message}
-          variant="standard"
-        />
-        <Button
-          color="primary"
-          onClick={() => {
+      {status === 'success' ? (
+        <WrapForm
+          onSubmit={(e) => {
+            e.preventDefault();
             onSend(message);
-            setMessage("");
+            setMessage('');
           }}
-          size="small"
-          variant="contained"
+          autoComplete="off"
         >
-          <SendIcon />
-        </Button>
-      </WrapForm>
+          <TextField
+            onChange={(e) => setMessage(e.target.value)}
+            size="small"
+            sx={{
+              width: '100%',
+              height: 'auto',
+            }}
+            id="standard-basic"
+            label="Enter message"
+            value={message}
+            variant="standard"
+            autoFocus={true}
+          />
+          <Button
+            color="primary"
+            onClick={() => {
+              onSend(message);
+              setMessage('');
+            }}
+            size="small"
+            variant="contained"
+          >
+            <SendIcon />
+          </Button>
+        </WrapForm>
+      ) : null}
     </Paper>
   );
 };
