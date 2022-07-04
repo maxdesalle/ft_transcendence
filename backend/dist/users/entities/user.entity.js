@@ -17,7 +17,7 @@ const friendship_entity_1 = require("../../friends/entities/friendship.entity");
 const typeorm_1 = require("typeorm");
 let User = class User {
     static _OPENAPI_METADATA_FACTORY() {
-        return { id: { required: true, type: () => Number }, login42: { required: true, type: () => String }, display_name: { required: true, type: () => String }, avatar: { required: false, type: () => require("../../database-files/entities/databaseFile.entity").DatabaseFile }, avatarId: { required: false, type: () => Number }, isTwoFactorAuthenticationEnabled: { required: true, type: () => Boolean }, twoFactorAuthenticationSecret: { required: false, type: () => String }, status: { required: true, type: () => Boolean }, statuss: { required: false, type: () => String }, requested_friendships: { required: true, type: () => [require("../../friends/entities/friendship.entity").Friendship] }, received_friendships: { required: true, type: () => [require("../../friends/entities/friendship.entity").Friendship] } };
+        return { id: { required: true, type: () => Number }, login42: { required: true, type: () => String }, display_name: { required: true, type: () => String }, avatar: { required: false, type: () => require("../../database-files/entities/databaseFile.entity").DatabaseFile }, avatarId: { required: false, type: () => Number }, isTwoFactorAuthenticationEnabled: { required: true, type: () => Boolean }, twoFactorAuthenticationSecret: { required: false, type: () => String }, status: { required: false, type: () => String }, requested_friendships: { required: true, type: () => [require("../../friends/entities/friendship.entity").Friendship] }, received_friendships: { required: true, type: () => [require("../../friends/entities/friendship.entity").Friendship] } };
     }
 };
 __decorate([
@@ -50,10 +50,6 @@ __decorate([
     (0, class_transformer_1.Exclude)(),
     __metadata("design:type", String)
 ], User.prototype, "twoFactorAuthenticationSecret", void 0);
-__decorate([
-    (0, typeorm_1.Column)({ nullable: true }),
-    __metadata("design:type", Boolean)
-], User.prototype, "status", void 0);
 __decorate([
     (0, typeorm_1.OneToMany)(() => friendship_entity_1.Friendship, (friendship) => friendship.requesting_user),
     __metadata("design:type", Array)

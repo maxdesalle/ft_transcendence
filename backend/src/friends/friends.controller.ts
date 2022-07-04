@@ -67,7 +67,6 @@ export class FriendsController {
 
 	@Get('pending_sent')
 	@ApiOperation({ summary: "friendship requests SENT by you that are pending of the other user's approval"})
-	@ApiResponse({ description: 'list of user_ids'})
 	getPendingSent(
 		@Usr() me
 	) {
@@ -76,7 +75,6 @@ export class FriendsController {
 
 	@Get('pending_received')
 	@ApiOperation({ summary: 'friendship requests RECEIVED by you that are pending of your approval'})
-	@ApiResponse({ description: 'list of user_ids'})
 	getPendingReceived(
 		@Usr() me
 	) {
@@ -85,7 +83,6 @@ export class FriendsController {
 
 	@Get('rejected_received')
 	@ApiOperation({ summary: 'friendship requests RECEIVED and rejected BY YOU'})
-	@ApiResponse({ description: 'list of user_ids'})
 	listRejectedFriends(
 		@Usr() me
 	) {

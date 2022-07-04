@@ -1,1 +1,0 @@
-{"version":3,"file":"chat-user.dto.js","sourceRoot":"","sources":["../../../src/chat/DTO/chat-user.dto.ts"],"names":[],"mappings":";;;;AAEA,MAAa,YAAY;IAExB,YACQ,OAAe,EACf,SAAiB,EAEjB,IAAY;QAHZ,YAAO,GAAP,OAAO,CAAQ;QACf,cAAS,GAAT,SAAS,CAAQ;QAEjB,SAAI,GAAJ,IAAI,CAAQ;QAEnB,IAAI,CAAC,YAAY,GAAG,EAAE,CAAC;IACxB,CAAC;;;;CACD;AAVD,oCAUC;AAED,MAAa,OAAO;;;;CAOnB;AAPD,0BAOC"}

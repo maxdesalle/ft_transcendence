@@ -9,14 +9,14 @@ import MenuItem from '@mui/material/MenuItem';
 import Menu from '@mui/material/Menu';
 import SearchIcon from '@mui/icons-material/Search';
 import AccountCircle from '@mui/icons-material/AccountCircle';
-import { Avatar } from '@mui/material';
+import { Avatar, Paper } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
-import { logout } from '../api/auth';
+import { logout, useGetProfile } from '../api/auth';
 import { useQueryClient } from 'react-query';
 import { useGetAllUsers } from '../api/user';
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import FriendCard from './FriendCard';
+import UserCard from './UserCard';
 
 const Search = styled('div')(({ theme }) => ({
   position: 'relative',
@@ -64,7 +64,8 @@ function AppHeader() {
   const queryclient = useQueryClient();
   const isMenuOpen = Boolean(anchorEl);
   const { users } = useGetAllUsers();
-  const [value, setValue] = useState<string | undefined>();
+  const { me } = useGetProfile();
+  const [value, setValue] = useState<string>("");
 
   const handleProfileMenuOpen = (event: React.MouseEvent<HTMLElement>) => {
     setAnchorEl(event.currentTarget);
@@ -78,10 +79,6 @@ function AppHeader() {
     handleMenuClose();
     navigate(path);
   };
-
-  useEffect(() => {
-    console.log(users);
-  }, [users]);
 
   const menuId = 'primary-search-account-menu';
   const renderMenu = (
@@ -146,14 +143,22 @@ function AppHeader() {
           </Box>
         </Toolbar>
       </AppBar>
-      {users &&
-        users
-          .filter((user) => user.login42.includes(value))
-          .map((user) => (
-            <Box sx={{ maxWidth: '250px', ml: '75px' }}>
-              <FriendCard friend={user} />
-            </Box>
-          ))}
+      <Box sx={{ position: 'relative', maxWidth: '240px', ml: '85px' }}>
+        <Paper sx={{ float: 'inline-start', position: 'absolute', zIndex: 10, width: '100%' }}>
+          {users &&
+            users
+              .filter((user) => user.login42.toLowerCase().includes(value) && user.id !== me?.id && value.length > 0)
+              .map((user) => (
+                <Box>
+                  <UserCard key={user.id} onClick={() => {
+                    setValue('');
+                    navigate(`user_profile/${user.id}`);
+                  }}
+                    user={user} />
+                </Box>
+              ))}
+        </Paper>
+      </Box>
     </Box>
   );
 }

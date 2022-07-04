@@ -15,13 +15,13 @@ export class Friendship {
 
 	@PrimaryColumn()
 	recv_user_id: number;
-
+	
 	@ManyToOne(() => User, (user) => user.requested_friendships)
 	requesting_user: User;
 
 	@ManyToOne(() => User, (user) => user.received_friendships)
 	receiving_user: User;
 
-	@Column({ default: FrienshipStatus.pending })
+	@Column({default: FrienshipStatus.pending})
 	status: FrienshipStatus
 }

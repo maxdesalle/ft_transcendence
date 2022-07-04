@@ -1,12 +1,12 @@
 export const urls = {
-  frontendUrl: "http://localhost:8000",
-  backendUrl: "http://localhost:3000",
-  wsUrl: "ws://localhost:3000",
+  frontendUrl: 'http://localhost:8000',
+  backendUrl: 'http://localhost:3000',
+  wsUrl: 'ws://localhost:3000',
 };
 
 export const routes = {
   createGroup: `${urls.backendUrl}/chat/create_group`,
-  getRooms: `${urls.backendUrl}/chat/rooms`,
+  getRooms: `${urls.backendUrl}/chat/conversations`,
   addUserToRoom: `${urls.backendUrl}/chat/add_group_user`,
   roomMessages: `${urls.backendUrl}/chat/room_messages`,
   sendMessageToRoom: `${urls.backendUrl}/chat/message_to_room`,
@@ -16,5 +16,5 @@ export const routes = {
   login42: `${urls.backendUrl}/login/42`,
   friends: `${urls.backendUrl}/friends`,
   sendDm: `${urls.backendUrl}/chat/dm`,
-  chat: `${urls.backendUrl}/chat`
+  chat: `${urls.backendUrl}/chat`,
 };

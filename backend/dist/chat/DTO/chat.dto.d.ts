@@ -1,8 +1,12 @@
-export declare class PostDM {
+export declare class PostDmDto {
     user_id: number;
     message: string;
 }
-export declare class Message {
+export declare class Message2RoomDTO {
+    room_id: number;
+    message: string;
+}
+export declare class MessageDTO {
     id: number;
     user_id: number;
     login42: string;
@@ -10,9 +14,11 @@ export declare class Message {
     message: string;
     timestamp: Date;
 }
-export declare class Message2Room {
+export declare class UserIdDto {
+    user_id: number;
+}
+export declare class RoomIdDto {
     room_id: number;
-    message: string;
 }
 declare class UserRole {
     user_id: number;
@@ -22,6 +28,7 @@ export declare class RoomInfo {
     room_id: number;
     room_name: string;
     type: string;
+    blocked?: boolean;
     private: boolean;
     password_protected: boolean;
     users: UserRole[];
@@ -30,19 +37,33 @@ export declare class RoomInfoShort {
     room_id: number;
     room_name: string;
     type: string;
+    blocked?: boolean;
     participants: number[];
 }
-export declare class GroupConfig {
+export declare class GroupConfigDto {
     name: string;
     private?: boolean;
     password?: string;
 }
-export declare class addGroupUserDTO {
+export declare class RoomAndUserDto {
     room_id: number;
     user_id: number;
 }
-export declare class addGroupUserByNameDTO {
+export declare class AddGroupUserByNameDTO {
     room_id: number;
     user_display_name: string;
+}
+export declare class BanMuteDTO {
+    room_id: number;
+    user_id: number;
+    time_minutes: number;
+}
+export declare class RoomAndPasswordDto {
+    room_id: number;
+    password: string;
+}
+export declare class SetPrivateDto {
+    room_id: number;
+    private: boolean;
 }
 export {};

@@ -12,4 +12,5 @@ export declare class HtmlController {
     getLoginPage(): string;
     getSettingsPage(): string;
     uploadAvatar(): string;
+    pongPlayer(): void;
 }

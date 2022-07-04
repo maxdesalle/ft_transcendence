@@ -1,14 +1,11 @@
-import { ArrowBack } from '@mui/icons-material';
 import SendIcon from '@mui/icons-material/Send';
 import {
   Box,
   Button,
-  IconButton,
   Paper,
   Stack,
   styled,
   TextField,
-  Typography,
 } from '@mui/material';
 import { compareAsc, format, parseISO } from 'date-fns';
 import { useCallback, useEffect, useRef, useState } from 'react';
@@ -20,7 +17,6 @@ import { urls } from '../api/utils';
 import { useAppDispatch, useAppSelector } from '../app/hooks';
 import {
   addMessage,
-  changeStatus,
   fetchFriendMessage,
   fetchMessages,
   resetMessages,
@@ -53,7 +49,7 @@ const Chat = () => {
   const { mutate: mutateFriendMsg } = useSendDmToFriend();
   const [receiver, setReceiver] = useState<string | undefined>();
   const chatRef = useRef<HTMLDivElement | null>(null);
-  const {} = useWebSocket(urls.wsUrl, {
+  const { } = useWebSocket(urls.wsUrl, {
     onMessage: (e) => {
       const data = JSON.parse(e.data);
       if (data.event === 'chat_dm' || data.event === 'chat_room_msg') {

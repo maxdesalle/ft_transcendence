@@ -4,8 +4,9 @@ import { WsService } from 'src/ws/ws.service';
 import { User } from 'src/users/entities/user.entity';
 import { UsersService } from 'src/users/users.service';
 import { Repository } from 'typeorm';
-import { Friendship, FrienshipStatus } from './entities/friendship.entity';
+import { Friendship, FrienshipStatus as FriendshipStatus } from './entities/friendship.entity';
 import { playing } from 'src/pong/pong.gateway';
+import { FriendshipRecvUser, FriendshipRequest, FriendshipReqUser } from './dto/friendReq.dto';
 
 @Injectable()
 export class FriendsService {
@@ -19,7 +20,7 @@ export class FriendsService {
 		private wsService: WsService
 	) {}
 
-	async requestFriendship(my_id: number, user_id: number) {
+	async requestFriendship(my_id: number, user_id: number): Promise<FriendshipRequest> {
 		const me = await this.usersService.findById(my_id); 
 		const friend = await this.usersService.findById(user_id); 
 		if (!friend || my_id === user_id)
@@ -32,18 +33,26 @@ export class FriendsService {
 			req_user_id: my_id,
 			recv_user_id: user_id}))
 			throw new BadRequestException('friendship request already exists');
-		const friendship = new Friendship();
-		friendship.requesting_user = me;
-		friendship.req_user_id = my_id;
-		friendship.receiving_user = friend;
-		friendship.recv_user_id = user_id;
-		await this.friendsRepository.save(friendship);
-		friendship.receiving_user.twoFactorAuthenticationSecret = undefined;
-		friendship.requesting_user.twoFactorAuthenticationSecret = undefined;
-		return friendship;
+		const request = new Friendship();
+		request.requesting_user = me;
+		request.req_user_id = my_id;
+		request.receiving_user = friend;
+		request.recv_user_id = user_id;
+		await this.friendsRepository.save(request);
+		return {
+			requesting_user: {
+				id: request.requesting_user.id,
+				display_name: request.requesting_user.display_name,
+			},
+			receiving_user: {
+				id: request.receiving_user.id,
+				display_name: request.receiving_user.display_name,
+			},
+			status: FriendshipStatus.pending,
+		}
 	}
 
-	async sentRequests(my_id: number) {
+	async sentRequests(my_id: number): Promise<any> {
 		const me = await this.usersRepository.findOne(my_id, {
 			relations: ['requested_friendships']
 		});
@@ -52,32 +61,32 @@ export class FriendsService {
 		// return pending;
 	} 
 
-	async recvdRequests(my_id: number) {
+	async recvdRequests(my_id: number): Promise<any> {
 		const me = await this.usersRepository.findOne(my_id, {
 			relations: ['received_friendships']
 		});
 		return me.received_friendships;
 	}
 
-	async pendingSentRequests(my_id: number) {
+	async pendingSentRequests(my_id: number): Promise<FriendshipRecvUser[]> {
 		return (await this.sentRequests(my_id))
-			.filter(f => f.status === FrienshipStatus.pending)
-			.map(obj => obj.recv_user_id);
+			.filter(f => f.status === FriendshipStatus.pending)
+			.map(obj => {delete obj.req_user_id; return obj});
 	}
 
-	async pendingReceivedRequests(my_id: number) {
+	async pendingReceivedRequests(my_id: number): Promise<FriendshipReqUser[]> {
 		return (await this.recvdRequests(my_id))
-			.filter(f => f.status === FrienshipStatus.pending)
-			.map(obj => obj.req_user_id);
+			.filter(f => f.status === FriendshipStatus.pending)
+			.map(obj => {delete obj.recv_user_id; return obj});
 	}
 
-	async rejectedReceivedRequests(my_id: number) {
+	async rejectedReceivedRequests(my_id: number): Promise<FriendshipReqUser[]>  {
 		return (await this.recvdRequests(my_id))
-			.filter(f => f.status === FrienshipStatus.rejected)
-			.map(obj => obj.req_user_id);
+			.filter(f => f.status === FriendshipStatus.rejected)
+			.map(obj => {delete obj.recv_user_id; return obj});
 	}
 
-	async setFriendshipStatus(my_id: number, requester_id: number, status: FrienshipStatus) {
+	async setFriendshipStatus(my_id: number, requester_id: number, status: FriendshipStatus) {
 		const request = await this.friendsRepository.findOne({
 			recv_user_id: my_id,
 			req_user_id: requester_id
@@ -96,10 +105,10 @@ export class FriendsService {
 
 		return [].concat(
 			me.received_friendships
-				.filter(f => f.status === FrienshipStatus.accepted)
+				.filter(f => f.status === FriendshipStatus.accepted)
 				.map(obj => obj.req_user_id),
 			me.requested_friendships
-				.filter(f => f.status === FrienshipStatus.accepted)
+				.filter(f => f.status === FriendshipStatus.accepted)
 				.map(obj => obj.recv_user_id),
 		)
 	}
@@ -107,7 +116,11 @@ export class FriendsService {
 	async listFriendsUsers(my_id: number) {
 		const friends_ids = await this.listFriendsIDs(my_id);
 		const users = await this.usersRepository.findByIds(friends_ids);
-		users.forEach(user => user.statuss = this.getUserStatus(user.id));
+		users.forEach(user => {
+			user.status = this.getUserStatus(user.id);
+			user.login42 = undefined;
+			user.isTwoFactorAuthenticationEnabled = undefined;
+		});
 		return users;
 	}
 

@@ -16,13 +16,15 @@ exports.UsersService = void 0;
 const common_1 = require("@nestjs/common");
 const typeorm_1 = require("@nestjs/typeorm");
 const database_files_service_1 = require("../database-files/database-files.service");
+const stats_service_1 = require("../stats/stats.service");
 const typeorm_2 = require("typeorm");
 const user_entity_1 = require("./entities/user.entity");
 let UsersService = class UsersService {
-    constructor(usersRepository, databaseFilesService, connection) {
+    constructor(usersRepository, databaseFilesService, connection, statsService) {
         this.usersRepository = usersRepository;
         this.databaseFilesService = databaseFilesService;
         this.connection = connection;
+        this.statsService = statsService;
     }
     async createNewUser(login42) {
         let user = await this.findByLogin42(login42);
@@ -30,7 +32,8 @@ let UsersService = class UsersService {
             user = new user_entity_1.User();
             user.login42 = login42;
             user.display_name = login42;
-            await this.usersRepository.save(user);
+            const new_user = await this.usersRepository.save(user);
+            await this.statsService.newPlayer(new_user.id);
         }
         return user;
     }
@@ -104,7 +107,8 @@ UsersService = __decorate([
     __param(0, (0, typeorm_1.InjectRepository)(user_entity_1.User)),
     __metadata("design:paramtypes", [typeorm_2.Repository,
         database_files_service_1.DatabaseFilesService,
-        typeorm_2.Connection])
+        typeorm_2.Connection,
+        stats_service_1.StatsService])
 ], UsersService);
 exports.UsersService = UsersService;
 //# sourceMappingURL=users.service.js.map

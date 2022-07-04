@@ -8,8 +8,7 @@ export declare class User {
     avatarId?: number;
     isTwoFactorAuthenticationEnabled: boolean;
     twoFactorAuthenticationSecret?: string;
-    status: boolean;
-    statuss?: string;
+    status?: string;
     requested_friendships: Friendship[];
     received_friendships: Friendship[];
 }

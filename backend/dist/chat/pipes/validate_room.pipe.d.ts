@@ -5,7 +5,7 @@ export declare class ValidateRoomPipe implements PipeTransform {
     constructor(chatService: ChatService);
     transform(value: any, metadata: ArgumentMetadata): Promise<any>;
 }
-export declare class ValidateRoomPipeWS implements PipeTransform {
+export declare class ValidGroupRoomPipe implements PipeTransform {
     private chatService;
     constructor(chatService: ChatService);
     transform(value: any, metadata: ArgumentMetadata): Promise<any>;

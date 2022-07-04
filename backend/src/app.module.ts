@@ -13,6 +13,7 @@ import { ServeStaticModule } from '@nestjs/serve-static'
 import { join } from 'path';
 import { WsModule } from './ws/ws.module';
 import { PongModule } from './pong/pong.module';
+import { StatsModule } from './stats/stats.module';
 
 @Module({
 	imports: [
@@ -29,7 +30,8 @@ import { PongModule } from './pong/pong.module';
 			rootPath: join(__dirname, '..', 'client'),
 		}),
 		WsModule,
-		PongModule
+		PongModule,
+		StatsModule
 	],
 	controllers: [],
 })

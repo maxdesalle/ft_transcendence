@@ -28,11 +28,7 @@ export class User {
 	@Exclude()
 	twoFactorAuthenticationSecret?: string;
 
-	// for compability with Dszklarz's code
-	@Column({ nullable: true })
-	status: boolean
-
-	statuss?: string
+	status?: string
 
 	@OneToMany(() => Friendship, (friendship) => friendship.requesting_user)
 	requested_friendships: Friendship[]

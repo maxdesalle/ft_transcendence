@@ -7,12 +7,14 @@ import { User } from './entities/user.entity';
 import { UsersController } from './users.controller';
 import { UsersService } from './users.service';
 import { ConfigModule } from '@nestjs/config';
+import { StatsModule } from 'src/stats/stats.module';
 
 @Module({
 	imports: [
 		TypeOrmModule.forFeature([User]),
 		DatabaseFilesModule,
 		MulterModule.registerAsync(multerConfig),
+		StatsModule
 	],
 	controllers: [UsersController],
 	providers: [UsersService],

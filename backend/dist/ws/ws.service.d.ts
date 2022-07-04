@@ -16,6 +16,7 @@ export declare class WsService {
     setUserOffline(user_id: number): boolean;
     sendMsgToUser(user_id: number, data: any): void;
     sendMsgToUsersList(users: number[], data: any): void;
+    sendMsgToAll(data: any): void;
     notifyStatusChangeToFriends(user_id: number, status: string): Promise<void>;
     notifyStatusToFriendsAuto(user_id: number): Promise<void>;
 }

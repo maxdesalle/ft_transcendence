@@ -1,12 +1,14 @@
 /// <reference types="node" />
 import { DatabaseFilesService } from 'src/database-files/database-files.service';
+import { StatsService } from 'src/stats/stats.service';
 import { Connection, Repository } from 'typeorm';
 import { User } from './entities/user.entity';
 export declare class UsersService {
     private usersRepository;
     private readonly databaseFilesService;
     private connection;
-    constructor(usersRepository: Repository<User>, databaseFilesService: DatabaseFilesService, connection: Connection);
+    private statsService;
+    constructor(usersRepository: Repository<User>, databaseFilesService: DatabaseFilesService, connection: Connection, statsService: StatsService);
     createNewUser(login42: string): Promise<User>;
     turnOnTwoFactorAuthentication(userId: number): Promise<import("typeorm").UpdateResult>;
     turnOffTwoFactorAuthentication(userId: number): Promise<import("typeorm").UpdateResult>;

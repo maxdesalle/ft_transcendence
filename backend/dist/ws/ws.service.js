@@ -59,6 +59,9 @@ let WsService = WsService_1 = class WsService {
             this.sendMsgToUser(user_id, data);
         }
     }
+    sendMsgToAll(data) {
+        this.sendMsgToUsersList(this.getConnectedUsersIDs(), data);
+    }
     async notifyStatusChangeToFriends(user_id, status) {
         const friends = await this.friendsService.listFriendsIDs(user_id);
         this.sendMsgToUsersList(friends, {

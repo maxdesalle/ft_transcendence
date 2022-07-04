@@ -22,6 +22,7 @@ const serve_static_1 = require("@nestjs/serve-static");
 const path_1 = require("path");
 const ws_module_1 = require("./ws/ws.module");
 const pong_module_1 = require("./pong/pong.module");
+const stats_module_1 = require("./stats/stats.module");
 let AppModule = class AppModule {
 };
 AppModule = __decorate([
@@ -40,7 +41,8 @@ AppModule = __decorate([
                 rootPath: (0, path_1.join)(__dirname, '..', 'client'),
             }),
             ws_module_1.WsModule,
-            pong_module_1.PongModule
+            pong_module_1.PongModule,
+            stats_module_1.StatsModule
         ],
         controllers: [],
     })

@@ -1,9 +1,20 @@
-export class PostDM {
+import { IsBoolean, IsNotEmpty, IsOptional, IsPositive, IsString, NotContains } from "class-validator";
+
+export class PostDmDto {
 	user_id: number;
+
+	@IsNotEmpty()
 	message: string;
 }
 
-export class Message {
+export class Message2RoomDTO {
+	room_id: number;
+	
+	@IsNotEmpty()
+	message: string;
+}
+
+export class MessageDTO {
 	id: number;
 	user_id: number;
 	login42: string;
@@ -12,9 +23,12 @@ export class Message {
 	timestamp: Date;
 }
 
-export class Message2Room {
-	room_id: number;
-	message: string;
+export class UserIdDto {
+	user_id: number
+}
+
+export class RoomIdDto {
+	room_id: number
 }
 
 class UserRole {
@@ -26,6 +40,7 @@ export class RoomInfo {
 	room_id: number;
 	room_name: string;
 	type: string;
+	blocked?: boolean;
 	private: boolean;
 	password_protected: boolean;
 	users: UserRole[];
@@ -35,22 +50,56 @@ export class RoomInfoShort {
 	room_id: number;
 	room_name: string;
 	type: string;
+	blocked?: boolean;
 	participants: number[];
 }
 
-export class GroupConfig {
+export class GroupConfigDto {
+	@IsNotEmpty()
+	@IsString()
+	@NotContains("'")
 	name: string;
+
+	@IsBoolean()
+	@IsOptional()
 	private?: boolean;
+
+	@IsOptional()
+	@IsString()
+	@NotContains("'")
 	password?: string;
 }
 
-export class addGroupUserDTO {
+export class RoomAndUserDto {
 	room_id: number;
 	user_id: number;
 }
 
-export class addGroupUserByNameDTO {
+export class AddGroupUserByNameDTO {
 	room_id: number;
 	user_display_name: string;
 }
 
+export class BanMuteDTO {
+	room_id: number;
+	user_id: number;
+	
+	@IsPositive()
+	time_minutes: number;
+}
+
+export class RoomAndPasswordDto {
+	room_id: number;
+
+	@IsString()
+	@IsOptional()
+	@NotContains("'")
+	password: string;
+}
+
+export class SetPrivateDto {
+	room_id: number;
+
+	@IsBoolean()
+	private: boolean;
+}

@@ -10,6 +10,7 @@ exports.PongModule = void 0;
 const common_1 = require("@nestjs/common");
 const jwt_1 = require("@nestjs/jwt");
 const jwt_config_1 = require("../config/jwt.config");
+const stats_module_1 = require("../stats/stats.module");
 const users_module_1 = require("../users/users.module");
 const ws_module_1 = require("../ws/ws.module");
 const pong_gateway_1 = require("./pong.gateway");
@@ -21,7 +22,8 @@ PongModule = __decorate([
         imports: [
             jwt_1.JwtModule.registerAsync(jwt_config_1.jwtConfig),
             users_module_1.UsersModule,
-            (0, common_1.forwardRef)(() => ws_module_1.WsModule)
+            (0, common_1.forwardRef)(() => ws_module_1.WsModule),
+            stats_module_1.StatsModule
         ]
     })
 ], PongModule);

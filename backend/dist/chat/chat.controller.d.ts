@@ -1,89 +1,36 @@
 import { User } from 'src/users/entities/user.entity';
 import { WsService } from 'src/ws/ws.service';
 import { ChatService } from './chat.service';
-import { Session } from './DTO/chat-user.dto';
-import { PostDM, Message, RoomInfo, RoomInfoShort, GroupConfig, addGroupUserDTO, Message2Room, addGroupUserByNameDTO } from './DTO/chat.dto';
+import { PostDmDto, MessageDTO, RoomInfo, RoomInfoShort, GroupConfigDto, Message2RoomDTO, AddGroupUserByNameDTO, UserIdDto, BanMuteDTO, RoomIdDto, RoomAndUserDto, RoomAndPasswordDto, SetPrivateDto } from './DTO/chat.dto';
 export declare class ChatController {
     private chatService;
     private wsService;
     constructor(chatService: ChatService, wsService: WsService);
-    postDM(me: User, destUserId: number, body: PostDM): Promise<Message>;
-    postMsgToRoom(me: User, room_id: number, msg: string, _body: Message2Room): Promise<Message>;
-    getDMs(me: User, user_id: number): Promise<Message[]>;
-    blockUser(user: Session, blocked_id: number): Promise<any[]>;
-    unblockUser(user: Session, blocked_id: number): Promise<any[]>;
-    checkBlocked(user: Session): Promise<any[]>;
-    getMessagesByRoomId(user: User, room_id: number): Promise<Message[]>;
+    postDM(me: User, destUserId: number, body: PostDmDto): Promise<MessageDTO>;
+    getDMs(me: User, user_id: number): Promise<MessageDTO[]>;
+    blockUser(me: User, blocked_id: number, _body: UserIdDto): Promise<number[]>;
+    unblockUser(me: User, blocked_id: number, _body: UserIdDto): Promise<number[]>;
+    checkBlocked(user: User): Promise<number[]>;
+    getPublicRooms(): Promise<RoomInfo[]>;
+    join_group(me: User, room_id: number, password: string, _room: RoomAndPasswordDto): Promise<RoomInfo>;
+    leave(me: User, room_id: number, _room: RoomIdDto): Promise<RoomInfoShort[]>;
+    postGroupMsg(me: User, room_id: number, body: Message2RoomDTO): Promise<MessageDTO>;
+    getGroupMessages(me: User, room_id: number): Promise<MessageDTO[]>;
+    createGroup(me: User, group_config: GroupConfigDto): Promise<RoomInfoShort[]>;
+    removeGroup(me: User, room_id: number, _body: RoomIdDto): Promise<RoomInfoShort[]>;
+    addGroupUser(me: User, room_id: number, user_id: number, _body?: RoomAndUserDto): Promise<RoomInfo>;
+    addGroupUserbyName(me: User, room_id: number, user_id: number, _body: AddGroupUserByNameDTO): Promise<RoomInfo>;
+    banUser(me: User, room_id: number, user_id: number, ban_minutes: number, _body: BanMuteDTO): Promise<RoomInfo>;
+    unbanUser(me: User, room_id: number, user_id: number, _body: RoomAndUserDto): Promise<RoomInfo>;
+    mute(me: User, room_id: number, user_id: number, mute_minutes: number, _body: BanMuteDTO): Promise<RoomInfo>;
+    unmute(me: User, room_id: number, user_id: number, _body: RoomAndUserDto): Promise<RoomInfo>;
+    promote(me: User, room_id: number, user_id: number, _body: RoomAndUserDto): Promise<RoomInfo>;
+    demote(me: User, room_id: number, user_id: number, _body: RoomAndUserDto): Promise<RoomInfo>;
+    set_pswd(me: User, room_id: number, body: RoomAndPasswordDto): Promise<string>;
+    set_private(me: User, room_id: number, body: SetPrivateDto): Promise<RoomInfo>;
+    set_owner(me: User, room_id: number, user_id: number, _body: RoomAndUserDto): Promise<RoomInfo>;
     groupInfo(room_id: number): Promise<RoomInfo>;
     getConvs(user: User): Promise<RoomInfoShort[]>;
-    createGroup(me: User, group_config: GroupConfig): Promise<RoomInfoShort[]>;
-    addGroupUser(me: Session, room_id: number, user_id: number, _body?: addGroupUserDTO): Promise<RoomInfo>;
-    addGroupUserbyName(me: Session, room_id: number, user_id: number, _body: addGroupUserByNameDTO): Promise<RoomInfo>;
-    removeGroup(me: User, room_id: number): Promise<any[]>;
-    rmGroupUser(me: Session, room_id: number, user_id: number, unban_hours: number): Promise<{
-        room_id: number;
-        room_name: any;
-        type: string;
-        private: any;
-        password_protected: boolean;
-        users: any[];
-    }>;
-    mute(me: Session, room_id: number, user_id: number, unban_hours: number): Promise<{
-        room_id: number;
-        room_name: any;
-        type: string;
-        private: any;
-        password_protected: boolean;
-        users: any[];
-    }>;
-    unmute(me: Session, room_id: number, user_id: number): Promise<{
-        room_id: number;
-        room_name: any;
-        type: string;
-        private: any;
-        password_protected: boolean;
-        users: any[];
-    }>;
-    promote(me: Session, room_id: number, user_id: number): Promise<{
-        room_id: number;
-        room_name: any;
-        type: string;
-        private: any;
-        password_protected: boolean;
-        users: any[];
-    }>;
-    demote(me: Session, room_id: number, user_id: number): Promise<{
-        room_id: number;
-        room_name: any;
-        type: string;
-        private: any;
-        password_protected: boolean;
-        users: any[];
-    }>;
-    leave(me: User, room_id: number): Promise<RoomInfoShort[]>;
-    set_pswd(room_id: number, password: string): Promise<string>;
-    set_private(room_id: number, is_private: boolean): Promise<{
-        room_id: number;
-        room_name: any;
-        type: string;
-        private: any;
-        password_protected: boolean;
-        users: any[];
-    }>;
-    set_owner(me: Session, room_id: number, user_id: number): Promise<{
-        room_id: number;
-        room_name: any;
-        type: string;
-        private: any;
-        password_protected: boolean;
-        users: any[];
-    }>;
-    join_group(me: Session, room_id: number, password: string): Promise<{
-        room_id: number;
-        room_name: any;
-        type: string;
-        private: any;
-        password_protected: boolean;
-        users: any[];
-    }>;
+    postMsgToRoom(me: User, room_id: number, body: Message2RoomDTO): Promise<MessageDTO>;
+    getMessagesByRoomId(me: User, room_id: number): Promise<MessageDTO[]>;
 }

@@ -50,6 +50,7 @@ let HtmlController = class HtmlController {
     uploadAvatar() {
         return this.htmlService.getAvatarUploadForm();
     }
+    pongPlayer() { }
 };
 __decorate([
     (0, common_1.Get)(),
@@ -84,6 +85,16 @@ __decorate([
     __metadata("design:paramtypes", []),
     __metadata("design:returntype", void 0)
 ], HtmlController.prototype, "uploadAvatar", null);
+__decorate([
+    (0, common_1.Get)('player'),
+    (0, common_1.UseGuards)(jwt_guard_1.JwtGuard),
+    (0, common_1.UseFilters)(ViewAuthFilter),
+    (0, common_1.Redirect)('player.html'),
+    openapi.ApiResponse({ status: 200 }),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", []),
+    __metadata("design:returntype", void 0)
+], HtmlController.prototype, "pongPlayer", null);
 HtmlController = __decorate([
     (0, common_1.Controller)(),
     (0, swagger_1.ApiTags)('HTML pages (for testing)'),

@@ -11,6 +11,8 @@ import Settings from "./pages/Settings";
 import { TwoFactorAuth } from "./components/TwoFactorAuth";
 import Cookies from "js-cookie";
 import Admin from "./pages/Admin";
+import UserProfile from "./pages/UserProfile";
+import Pong from "./pages/Pong";
 
 function App() {
   const { status, data: user } = useGetProfile();
@@ -33,10 +35,12 @@ function App() {
           <Route path="/" element={<Home />} />
           <Route path="/login" element={<Login />} />
           <Route path="/profile" element={<Profile />} />
+          <Route path="/user_profile/:id" element={<UserProfile />} />
           <Route path="/leaderboard" element={<LeaderBoard />} />
           <Route path="/settings" element={<Settings />} />
           <Route path="/2fa" element={<TwoFactorAuth />} />
           <Route path="/admin" element={<Admin />} />
+          <Route path="/pong" element={<Pong />} />
         </Route>
       </Routes>
     </>

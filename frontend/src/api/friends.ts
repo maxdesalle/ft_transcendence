@@ -21,7 +21,7 @@ export const useAcceptFriendRequest = () => {
   return usePost(`${routes.friends}/accept_friend_request`, {
     invalidQueries: [
       `${routes.friends}/pending_received`,
-      `${routes.friends}/id`,
+      `${routes.friends}`,
     ],
   });
 };

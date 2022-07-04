@@ -9,18 +9,17 @@ var __metadata = (this && this.__metadata) || function (k, v) {
     if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.ValidateRoomPipeWS = exports.ValidateRoomPipe = void 0;
+exports.ValidGroupRoomPipe = exports.ValidateRoomPipe = void 0;
 const common_1 = require("@nestjs/common");
-const websockets_1 = require("@nestjs/websockets");
 const chat_service_1 = require("../chat.service");
 let ValidateRoomPipe = class ValidateRoomPipe {
     constructor(chatService) {
         this.chatService = chatService;
     }
     async transform(value, metadata) {
-        const rooms = await this.chatService.getRoomsList();
+        const rooms = await this.chatService.listRooms();
         if (!rooms.includes(value))
-            throw new common_1.BadRequestException("invalid room_id");
+            throw new common_1.BadRequestException("invalid room_id!");
         return value;
     }
 };
@@ -29,20 +28,22 @@ ValidateRoomPipe = __decorate([
     __metadata("design:paramtypes", [chat_service_1.ChatService])
 ], ValidateRoomPipe);
 exports.ValidateRoomPipe = ValidateRoomPipe;
-let ValidateRoomPipeWS = class ValidateRoomPipeWS {
+let ValidGroupRoomPipe = class ValidGroupRoomPipe {
     constructor(chatService) {
         this.chatService = chatService;
     }
     async transform(value, metadata) {
-        const rooms = await this.chatService.getRoomsList();
+        const rooms = await this.chatService.listRooms();
         if (!rooms.includes(value))
-            throw new websockets_1.WsException("invalid room_id");
+            throw new common_1.BadRequestException("invalid room_id");
+        if (!await this.chatService.isGroupRoom(value))
+            throw new common_1.BadRequestException("room is not a group");
         return value;
     }
 };
-ValidateRoomPipeWS = __decorate([
+ValidGroupRoomPipe = __decorate([
     (0, common_1.Injectable)(),
     __metadata("design:paramtypes", [chat_service_1.ChatService])
-], ValidateRoomPipeWS);
-exports.ValidateRoomPipeWS = ValidateRoomPipeWS;
+], ValidGroupRoomPipe);
+exports.ValidGroupRoomPipe = ValidGroupRoomPipe;
 //# sourceMappingURL=validate_room.pipe.js.map

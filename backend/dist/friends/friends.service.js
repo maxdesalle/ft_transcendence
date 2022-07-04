@@ -42,15 +42,23 @@ let FriendsService = class FriendsService {
                 recv_user_id: user_id
             }))
             throw new common_1.BadRequestException('friendship request already exists');
-        const friendship = new friendship_entity_1.Friendship();
-        friendship.requesting_user = me;
-        friendship.req_user_id = my_id;
-        friendship.receiving_user = friend;
-        friendship.recv_user_id = user_id;
-        await this.friendsRepository.save(friendship);
-        friendship.receiving_user.twoFactorAuthenticationSecret = undefined;
-        friendship.requesting_user.twoFactorAuthenticationSecret = undefined;
-        return friendship;
+        const request = new friendship_entity_1.Friendship();
+        request.requesting_user = me;
+        request.req_user_id = my_id;
+        request.receiving_user = friend;
+        request.recv_user_id = user_id;
+        await this.friendsRepository.save(request);
+        return {
+            requesting_user: {
+                id: request.requesting_user.id,
+                display_name: request.requesting_user.display_name,
+            },
+            receiving_user: {
+                id: request.receiving_user.id,
+                display_name: request.receiving_user.display_name,
+            },
+            status: friendship_entity_1.FrienshipStatus.pending,
+        };
     }
     async sentRequests(my_id) {
         const me = await this.usersRepository.findOne(my_id, {
@@ -67,17 +75,17 @@ let FriendsService = class FriendsService {
     async pendingSentRequests(my_id) {
         return (await this.sentRequests(my_id))
             .filter(f => f.status === friendship_entity_1.FrienshipStatus.pending)
-            .map(obj => obj.recv_user_id);
+            .map(obj => { delete obj.req_user_id; return obj; });
     }
     async pendingReceivedRequests(my_id) {
         return (await this.recvdRequests(my_id))
             .filter(f => f.status === friendship_entity_1.FrienshipStatus.pending)
-            .map(obj => obj.req_user_id);
+            .map(obj => { delete obj.recv_user_id; return obj; });
     }
     async rejectedReceivedRequests(my_id) {
         return (await this.recvdRequests(my_id))
             .filter(f => f.status === friendship_entity_1.FrienshipStatus.rejected)
-            .map(obj => obj.req_user_id);
+            .map(obj => { delete obj.recv_user_id; return obj; });
     }
     async setFriendshipStatus(my_id, requester_id, status) {
         const request = await this.friendsRepository.findOne({
@@ -102,7 +110,11 @@ let FriendsService = class FriendsService {
     async listFriendsUsers(my_id) {
         const friends_ids = await this.listFriendsIDs(my_id);
         const users = await this.usersRepository.findByIds(friends_ids);
-        users.forEach(user => user.statuss = this.getUserStatus(user.id));
+        users.forEach(user => {
+            user.status = this.getUserStatus(user.id);
+            user.login42 = undefined;
+            user.isTwoFactorAuthenticationEnabled = undefined;
+        });
         return users;
     }
     getUserStatus(user_id) {

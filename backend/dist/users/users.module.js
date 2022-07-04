@@ -15,6 +15,7 @@ const database_files_module_1 = require("../database-files/database-files.module
 const user_entity_1 = require("./entities/user.entity");
 const users_controller_1 = require("./users.controller");
 const users_service_1 = require("./users.service");
+const stats_module_1 = require("../stats/stats.module");
 let UsersModule = class UsersModule {
 };
 UsersModule = __decorate([
@@ -23,6 +24,7 @@ UsersModule = __decorate([
             typeorm_1.TypeOrmModule.forFeature([user_entity_1.User]),
             database_files_module_1.DatabaseFilesModule,
             platform_express_1.MulterModule.registerAsync(multer_config_1.multerConfig),
+            stats_module_1.StatsModule
         ],
         controllers: [users_controller_1.UsersController],
         providers: [users_service_1.UsersService],

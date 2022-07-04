@@ -106,8 +106,7 @@ __decorate([
 __decorate([
     (0, common_1.Get)('pending_sent'),
     (0, swagger_1.ApiOperation)({ summary: "friendship requests SENT by you that are pending of the other user's approval" }),
-    (0, swagger_1.ApiResponse)({ description: 'list of user_ids' }),
-    openapi.ApiResponse({ status: 200, type: [Number] }),
+    openapi.ApiResponse({ status: 200, type: [require("./dto/friendReq.dto").FriendshipRecvUser] }),
     __param(0, (0, user_decorator_1.Usr)()),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [Object]),
@@ -116,8 +115,7 @@ __decorate([
 __decorate([
     (0, common_1.Get)('pending_received'),
     (0, swagger_1.ApiOperation)({ summary: 'friendship requests RECEIVED by you that are pending of your approval' }),
-    (0, swagger_1.ApiResponse)({ description: 'list of user_ids' }),
-    openapi.ApiResponse({ status: 200, type: [Number] }),
+    openapi.ApiResponse({ status: 200, type: [require("./dto/friendReq.dto").FriendshipReqUser] }),
     __param(0, (0, user_decorator_1.Usr)()),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [Object]),
@@ -126,8 +124,7 @@ __decorate([
 __decorate([
     (0, common_1.Get)('rejected_received'),
     (0, swagger_1.ApiOperation)({ summary: 'friendship requests RECEIVED and rejected BY YOU' }),
-    (0, swagger_1.ApiResponse)({ description: 'list of user_ids' }),
-    openapi.ApiResponse({ status: 200, type: [Number] }),
+    openapi.ApiResponse({ status: 200, type: [require("./dto/friendReq.dto").FriendshipReqUser] }),
     __param(0, (0, user_decorator_1.Usr)()),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [Object]),
