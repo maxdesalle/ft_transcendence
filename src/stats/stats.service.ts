@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { MatchDTO } from './dto/match.dto';
+import { LadderDto, LadderRankDto, MatchDTO, MatchResultDto, PlayerStatsDto } from './dto/match.dto';
 import { Match } from './entities/match.entity';
 import { Points } from './entities/points.entity';
 
@@ -26,7 +26,7 @@ export class StatsService {
 		this.pointsRepository.save(player);
 	}
 
-	async ladder() {
+	async ladder(): Promise<LadderDto[]> {
 		const ladder = await this.pointsRepository.find({
 			order: {points: 'DESC'},
 			relations: ['user_id']
@@ -52,7 +52,7 @@ export class StatsService {
 		return rank + 1;
 	}
 
-	async ladderRank(user_id: number) {
+	async ladderRank(user_id: number): Promise<LadderRankDto> {
 		const ladder = await this.ladder();
 		const player = ladder.find((value) => value.user_id === user_id);
 		return {
@@ -123,7 +123,7 @@ export class StatsService {
 		return res;
 	}
 
-	async getMatchesByPlayer(user_id: number) {
+	async getMatchesByPlayer(user_id: number): Promise<MatchDTO[]> {
 		const matches = await this.matchRepository.find({
 			where: [{ player1: user_id}, { player2: user_id}],
 			relations: ['player1', 'player2'],
@@ -134,7 +134,7 @@ export class StatsService {
 		return res;
 	}
 
-	async getMatchResultsByPlayer(user_id: number) {
+	async getMatchResultsByPlayer(user_id: number): Promise<MatchResultDto[]> {
 		const matches = await this.getMatchesByPlayer(user_id);
 		const results = matches.map((match) => {
 			const is_p1 = match.p1.user_id === user_id;
@@ -151,7 +151,7 @@ export class StatsService {
 		return results;
 	}
 
-	async playerStats(user_id: number) {
+	async playerStats(user_id: number): Promise<PlayerStatsDto> {
 		const results = await this.getMatchResultsByPlayer(user_id);
 		const matches_played = results.length;
 		const wins = results.reduce((prev, curr) => 
