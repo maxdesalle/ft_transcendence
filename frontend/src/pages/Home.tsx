@@ -1,20 +1,38 @@
-import { Grid, Typography } from "@mui/material";
-import { useGetProfile } from "../api/auth";
-import Chat from "../components/Chat";
+import { Component, createSignal } from "solid-js";
+import usePopper from "solid-popper";
+import Modal from "../components/Modal";
 
-function Home() {
-  const { data } = useGetProfile();
+const Home: Component = () => {
+  const [isOpen, setIsOpen] = createSignal(false);
+  const [anchor, setAnchor] = createSignal<any>();
+  const [popper, setPopper] = createSignal<any>();
+
+  usePopper(anchor, popper, {
+    placement: "top-start",
+  });
 
   return (
-    <Grid container height="100%" direction="column">
-      <Grid item>
-        <Typography variant="h1">{data && data.login42}</Typography>
-      </Grid>
-      {/* <Grid item> */}
-      {/*   <Chat /> */}
-      {/* </Grid> */}
-    </Grid>
+    <>
+      <h1>Home</h1>
+      <button
+        ref={setAnchor}
+        onClick={() => setIsOpen(true)}
+        class="btn-primary"
+      >
+        Open
+      </button>
+      <div ref={setPopper}>
+        <Modal isOpen={isOpen()} toggleModal={setIsOpen}>
+          <p class="text-black">
+            Lorem ipsum dolor sit amet consectetur adipisicing elit. Ipsa vitae
+            nihil inventore architecto soluta, totam sunt, doloremque numquam
+            dignissimos molestias quos iure assumenda. Amet aspernatur excepturi
+            rem, cum dignissimos autem?
+          </p>
+        </Modal>
+      </div>
+    </>
   );
-}
+};
 
 export default Home;

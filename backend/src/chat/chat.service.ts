@@ -84,7 +84,9 @@ export class ChatService {
 			let room_row = room_query.rows[i];
 			let room_id = room_row.id;
 			let part_q = await this.pool.query(`
-				SELECT user_id FROM participants
+				SELECT id, login42, display_name, "avatarId"
+				FROM participants
+				JOIN public.user ON user_id = public.user.id
 				WHERE room_id = ${room_row.id}`
 			);
 			const type = room_row.owner ? 'group':'DM'
@@ -96,10 +98,14 @@ export class ChatService {
 				room_name: room_row.name,
 				type,
 				blocked,
-				participants: []
+				participants: [],
+				last_msg: null
 			}
 			for (let n = 0; n < part_q.rowCount; n++) //get all participants of a given conversation
-				conv.participants.push(part_q.rows[n].user_id);
+				conv.participants.push(part_q.rows[n]);
+			const last_msg = await this.getMessagesByRoomId(room_row.id);
+			if (last_msg.length)
+				conv.last_msg = last_msg[0];
 			conversations.push(conv);
 		}
 		return conversations;

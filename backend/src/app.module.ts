@@ -14,6 +14,7 @@ import { join } from 'path';
 import { WsModule } from './ws/ws.module';
 import { PongModule } from './pong/pong.module';
 import { StatsModule } from './stats/stats.module';
+import { SummaryModule } from './summary/summary.module';
 
 @Module({
 	imports: [
@@ -31,7 +32,8 @@ import { StatsModule } from './stats/stats.module';
 		}),
 		WsModule,
 		PongModule,
-		StatsModule
+		StatsModule,
+		SummaryModule
 	],
 	controllers: [],
 })

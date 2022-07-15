@@ -28,7 +28,7 @@ let MockAuthController = class MockAuthController {
         const user = await this.usersService.createNewUser(login42);
         const jwtToken = this.jwtService.sign({
             id: user.id,
-            login42: user.login42,
+            login42: user.login42
         });
         res.cookie('jwt_token', jwtToken);
         return `Logged in as ${user.login42} (user_id ${user.id})`;

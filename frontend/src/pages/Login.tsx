@@ -1,102 +1,59 @@
-import Button from "@mui/material/Button";
-import { useNavigate } from "react-router-dom";
-import { useEffect, useState } from "react";
-import { useGetProfile, useMockLogin, useTwoFactorAuth } from "../api/auth";
-import { Paper, Stack, TextField, Typography } from "@mui/material";
+import { useNavigate } from "solid-app-router";
+import { Component, createRenderEffect, createSignal } from "solid-js";
+import { loginFromMockApi } from "../api/mock";
 import { routes } from "../api/utils";
 
-function Login() {
-  const { mutate } = useTwoFactorAuth();
-  const [code, setCode] = useState("");
-  const [login42, setLogin42] = useState("");
-  const { mutate: mockMutate, status } = useMockLogin();
-  const [isTwoFa, setIsTwoFa] = useState(false);
+function model(el: any, accessor: any) {
+  const [s, set] = accessor();
+  el.addEventListener("input", (e: any) => set(e.currentTarget.value));
+  createRenderEffect(() => (el.value = s()));
+}
+
+const Login: Component = () => {
+  const [username, setUsername] = createSignal<string>("");
   const navigate = useNavigate();
-  const { isSuccess: loggedin } = useGetProfile();
 
-  const login = () => {
-    window.location.href = routes.login42;
+  const onLogin = () => {
+    if (!username().length) return;
+    loginFromMockApi(username());
+    setUsername("");
+    navigate("/");
   };
-
-  const confirmCode = () => {
-    if (!code) return;
-    mutate(
-      { twoFactorAuthenticationCode: code },
-      {
-        onSuccess: () => navigate("/"),
-      }
-    );
-  };
-
-  const onMockLogin = () => {
-    if (!login42) return;
-    mockMutate(
-      { login42 },
-      {
-        onSuccess: (res) => {
-          setIsTwoFa(res.data.twoFa);
-        },
-      }
-    );
-  };
-
-  useEffect(() => {
-    if (status == "success" || loggedin) {
-      navigate("/");
-    }
-  }, [status, loggedin]);
 
   return (
-    <Stack
-      sx={{
-        width: "100%",
-        height: "100%",
-        padding: "15px",
-        alignItems: "center",
-        justifyContent: "center",
-      }}
-    >
-      <Paper sx={{ height: "100%", padding: "15px", maxHeight: "400px" }}>
-        <Stack spacing={3} pb={3}>
-          <TextField
-            label="Username"
-            variant="standard"
-            onChange={(e) => setLogin42(e.target.value)}
+    <div class="flex flex-col items-center h-1/2">
+      <div class="max-w-md">
+        <form class="flex flex-col border-2 p-2 mt-16 h-full">
+          <label class="text-center" for="username">
+            Username
+          </label>
+          <input
+            autocomplete="off"
+            //@ts-ignore
+            use:model={[username, setUsername]}
+            name="username"
+            placeholder="username"
+            class="p-1 border-b border-blue-600 focus:border-blue-800 focus:outline-none"
+            value={username()}
+            type="text"
+            id="username"
           />
-          <Button
-            onClick={() => onMockLogin()}
-            variant="contained"
-            color="secondary"
+          <button
+            onClick={onLogin}
+            class="bg-red-600 border text-white p-1 mt-1 rounded-md"
           >
-            Login using the Mock api
-          </Button>
-          <Button onClick={login} variant="contained">
-            Login using 42
-          </Button>
-        </Stack>
-        {isTwoFa ? (
-          <Stack spacing={3}>
-            <Typography
-              component="label"
-              textAlign="center"
-              htmlFor="2fauthcode"
-            >
-              Enter 2fa code to login
-            </Typography>
-            <input
-              type="text"
-              id="2fauthcode"
-              onChange={(e) => setCode(e.target.value)}
-            />
-
-            <Button onClick={() => confirmCode()} variant="contained">
-              Confirm
-            </Button>
-          </Stack>
-        ) : null}
-      </Paper>
-    </Stack>
+            Login using Mock api
+          </button>
+        </form>
+        <button
+          onClick={() => (window.location.href = routes.login42)}
+          class="bg-blue-600 border text-white p-1 mt-1 rounded-md"
+        >
+          Login using 42
+        </button>
+      </div>
+    </div>
   );
-}
+};
 
 export default Login;

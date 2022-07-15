@@ -2,6 +2,9 @@
 /dist
 /node_modules
 
+_nest_app
+_nest_app/dist
+
 # Logs
 logs
 *.log

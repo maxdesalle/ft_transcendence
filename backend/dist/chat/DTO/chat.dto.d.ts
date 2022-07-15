@@ -1,3 +1,4 @@
+import { User } from "src/users/entities/user.entity";
 export declare class PostDmDto {
     user_id: number;
     message: string;
@@ -38,7 +39,8 @@ export declare class RoomInfoShort {
     room_name: string;
     type: string;
     blocked?: boolean;
-    participants: number[];
+    participants: User[];
+    last_msg: MessageDTO;
 }
 export declare class GroupConfigDto {
     name: string;

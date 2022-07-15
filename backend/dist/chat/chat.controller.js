@@ -33,7 +33,7 @@ let ChatController = class ChatController {
         const message = await this.chatService.postDM(me, destUserId, body.message);
         this.wsService.sendMsgToUsersList([me.id, destUserId], {
             event: 'chat_dm',
-            message
+            message,
         });
         return message;
     }
@@ -64,7 +64,7 @@ let ChatController = class ChatController {
     }
     async postGroupMsg(me, room_id, body) {
         const message = await this.chatService.postGroupMsg(me, room_id, body.message);
-        this.wsService.sendMsgToUsersList(await this.chatService.listRoomParticipants(room_id), { event: 'chat_room_msg', message });
+        this.wsService.sendMsgToUsersList(await this.chatService.listRoomParticipants(room_id), { event: 'chat_room_msg', message: message });
         return message;
     }
     async getGroupMessages(me, room_id) {
@@ -74,7 +74,7 @@ let ChatController = class ChatController {
         const room_id = await this.chatService.create_group(me, group_config);
         this.wsService.sendMsgToUser(me.id, {
             event: 'chat_new_group',
-            room_id
+            room_id,
         });
         return this.chatService.get_convs(me);
     }
@@ -86,12 +86,12 @@ let ChatController = class ChatController {
         await this.chatService.addGroupUser(me, room_id, user_id);
         this.wsService.sendMsgToUser(user_id, {
             event: 'chat_new_group',
-            room_id
+            room_id,
         });
         this.wsService.sendMsgToUsersList(await this.chatService.listRoomParticipants(room_id), {
             event: 'chat_new_user_in_group',
             room_id,
-            user_id
+            user_id,
         });
         return this.chatService.roomInfo(room_id);
     }
@@ -437,8 +437,10 @@ __decorate([
 __decorate([
     (0, common_1.Post)('message_to_room'),
     (0, swagger_1.ApiTags)('chat - compatibility'),
-    (0, swagger_1.ApiOperation)({ summary: `Route for compability with previous versions.
-		Prefer POST /dm or /group message` }),
+    (0, swagger_1.ApiOperation)({
+        summary: `Route for compability with previous versions.
+		Prefer POST /dm or /group message`,
+    }),
     openapi.ApiResponse({ status: 201, type: require("./DTO/chat.dto").MessageDTO }),
     __param(0, (0, user_decorator_1.Usr)()),
     __param(1, (0, common_1.Body)('room_id', common_1.ParseIntPipe, validate_room_pipe_1.ValidateRoomPipe)),
@@ -450,8 +452,10 @@ __decorate([
 __decorate([
     (0, common_1.Get)('room_messages/:room_id'),
     (0, swagger_1.ApiTags)('chat - compatibility'),
-    (0, swagger_1.ApiOperation)({ summary: `Route for compability with previous versions.
-		Prefer GET /dm or /group messages` }),
+    (0, swagger_1.ApiOperation)({
+        summary: `Route for compability with previous versions.
+		Prefer GET /dm or /group messages`,
+    }),
     openapi.ApiResponse({ status: 200, type: [require("./DTO/chat.dto").MessageDTO] }),
     __param(0, (0, user_decorator_1.Usr)()),
     __param(1, (0, common_1.Param)('room_id', common_1.ParseIntPipe, validate_room_pipe_1.ValidateRoomPipe)),
@@ -462,8 +466,7 @@ __decorate([
 ChatController = __decorate([
     (0, common_1.Controller)('chat'),
     (0, common_1.UseGuards)(jwt_guard_1.JwtGuard),
-    __metadata("design:paramtypes", [chat_service_1.ChatService,
-        ws_service_1.WsService])
+    __metadata("design:paramtypes", [chat_service_1.ChatService, ws_service_1.WsService])
 ], ChatController);
 exports.ChatController = ChatController;
 //# sourceMappingURL=chat.controller.js.map

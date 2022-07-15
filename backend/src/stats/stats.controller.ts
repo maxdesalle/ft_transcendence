@@ -44,7 +44,7 @@ export class StatsController {
 	}
 
 	@Get('ladder_rank/:user_id')
-	ladderRang(
+	ladderRank(
 		@Param('user_id', ParseIntPipe) user_id: number
 	) {
 		return this.statsService.ladderRank(user_id);

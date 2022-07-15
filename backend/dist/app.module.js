@@ -23,6 +23,7 @@ const path_1 = require("path");
 const ws_module_1 = require("./ws/ws.module");
 const pong_module_1 = require("./pong/pong.module");
 const stats_module_1 = require("./stats/stats.module");
+const summary_module_1 = require("./summary/summary.module");
 let AppModule = class AppModule {
 };
 AppModule = __decorate([
@@ -42,7 +43,8 @@ AppModule = __decorate([
             }),
             ws_module_1.WsModule,
             pong_module_1.PongModule,
-            stats_module_1.StatsModule
+            stats_module_1.StatsModule,
+            summary_module_1.SummaryModule
         ],
         controllers: [],
     })

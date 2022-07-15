@@ -1,39 +1,71 @@
-import { Message, RoomInfoShort } from '../types/chat.interface';
-import { useFetch, useFetchById, usePost } from '../utils/reactQuery';
-import { routes } from './utils';
+import { createResource } from "solid-js";
+import { Message, RoomInfo, RoomInfoShort } from "../types/chat.interface";
+import { api } from "../utils/api";
+import { routes } from "./utils";
 
-export const useCreateRoom = () => {
-  return usePost(routes.createGroup, { invalidQueries: [routes.getRooms] });
+type CreateRoomType = {
+  name: string;
+  private?: boolean;
+  password?: string;
 };
 
-export const useGetRooms = () => {
-  const context = useFetch<RoomInfoShort[]>(routes.getRooms);
+export const createRoomResource = () => {
+  const [data, { mutate, refetch }] = createResource(getRooms);
   return {
-    ...context,
-    rooms: context.data,
+    rooms: data,
+    mutate,
+    refetch,
   };
 };
 
-export const useAddUserToRoom = () => {
-  return usePost(routes.addUserToRoom, {});
+const createRoom = async (data: CreateRoomType) => {
+  const res = await api.post<RoomInfoShort[]>(routes.createGroup, data);
+  return res;
 };
 
-export const useGetMessagesByRoomId = (id: number | undefined) => {
-  const context = useFetchById<Message[]>(`${routes.roomMessages}`, id);
-  return {
-    ...context,
-    messages: context.data,
-  };
+const getRooms = async () => {
+  const res = await api.get<RoomInfoShort[]>(routes.getRooms);
+  return res.data;
 };
 
-export const useGetFriendMessages = (id: number | undefined) => {
-  const context = useFetchById<Message[]>(`${routes.chat}/dm`, id);
-  return {
-    ...context,
-    friendmessages: context.data,
-  };
+const addUserToRoom = async (data: { room_id: number; user_id: number }) => {
+  return await api.post(routes.addUserToRoom, data);
 };
 
-export const usePostMsgToRoom = () => {
-  return usePost(routes.sendMessageToRoom, {});
+const getMessagesByRoomId = async (id: number) => {
+  const res = await api.get<Message[]>(`${routes.roomMessages}/${id}`);
+  return res.data;
+};
+
+const getFriendMessages = async (id: number) => {
+  const res = await api.get(`${routes.chat}/dm/${id}`);
+  return res.data;
+};
+
+const postMessageToRoom = async (data: {
+  room_id: number;
+  message: string;
+}) => {
+  return await api.post<Message[]>(routes.sendMessageToRoom, data);
+};
+
+const sendDm = async (data: { friend_id: number; message: string }) => {
+  return await api.post(routes.sendDm, data);
+};
+
+export const addUserToRoomByName = async (data: {
+  room_id: number;
+  user_display_name: string;
+}) => {
+  return await api.post<RoomInfo>(routes.addUserToRoomByName, data);
+};
+
+export const chatApi = {
+  createRoom,
+  getRooms,
+  addUserToRoom,
+  getMessagesByRoomId,
+  getFriendMessages,
+  postMessageToRoom,
+  sendDm,
 };

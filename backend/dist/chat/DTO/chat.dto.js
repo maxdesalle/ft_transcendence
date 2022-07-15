@@ -63,7 +63,7 @@ class RoomInfo {
 exports.RoomInfo = RoomInfo;
 class RoomInfoShort {
     static _OPENAPI_METADATA_FACTORY() {
-        return { room_id: { required: true, type: () => Number }, room_name: { required: true, type: () => String }, type: { required: true, type: () => String }, blocked: { required: false, type: () => Boolean }, participants: { required: true, type: () => [Number] } };
+        return { room_id: { required: true, type: () => Number }, room_name: { required: true, type: () => String }, type: { required: true, type: () => String }, blocked: { required: false, type: () => Boolean }, participants: { required: true, type: () => [require("../../users/entities/user.entity").User] }, last_msg: { required: true, type: () => require("./chat.dto").MessageDTO } };
     }
 }
 exports.RoomInfoShort = RoomInfoShort;

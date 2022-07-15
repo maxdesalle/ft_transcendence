@@ -25,11 +25,14 @@ const users_service_1 = require("../users/users.service");
 const user_decorator_1 = require("../users/decorators/user.decorator");
 const swagger_1 = require("@nestjs/swagger");
 const login2FA_dto_1 = require("./dto/login2FA.dto");
+const config_1 = require("@nestjs/config");
+const user_entity_1 = require("../users/entities/user.entity");
 async function pipeQrCodeStream(stream, otpauthUrl) {
     return (0, qrcode_1.toFileStream)(stream, otpauthUrl);
 }
 let AuthController = class AuthController {
-    constructor(authService, jwtService, usersService) {
+    constructor(configService, authService, jwtService, usersService) {
+        this.configService = configService;
         this.authService = authService;
         this.jwtService = jwtService;
         this.usersService = usersService;
@@ -41,17 +44,21 @@ let AuthController = class AuthController {
             login42: user.login42,
         });
         res.cookie('jwt_token', jwtToken);
-        return res.redirect('http://localhost:8000');
+        if (user.isTwoFactorAuthenticationEnabled) {
+            return res.redirect(`${this.configService.get('FRONTEND_URL')}/2fa`);
+        }
+        return res.redirect(this.configService.get('FRONTEND_URL'));
     }
     async activateTwoFactorAuthentication(user, res) {
         const { otpauthUrl } = await this.authService.generateTwoFactorAuthenticationSecret(user);
-        return pipeQrCodeStream(res, otpauthUrl);
+        return res.send(JSON.stringify({ otpauthUrl: otpauthUrl }));
     }
     async deactivateTwoFactorAuthentication(user, res) {
         await this.usersService.turnOffTwoFactorAuthentication(user.id);
-        return res.redirect('/login/');
+        return res.redirect(`${this.configService.get('FRONTEND_URL')}/login`);
     }
     twoFactorAuthentication(user, { twoFactorAuthenticationCode }, res) {
+        console.log(twoFactorAuthenticationCode);
         const isTwoFactorAuthenticationCodeValid = this.authService.check2FACodeValidity(twoFactorAuthenticationCode, user);
         if (!isTwoFactorAuthenticationCodeValid) {
             throw new common_1.UnauthorizedException('Invalid 2FA code');
@@ -63,11 +70,11 @@ let AuthController = class AuthController {
         });
         res.clearCookie('jwt_token');
         res.cookie('jwt_token', jwtToken);
-        return res.redirect('/');
+        return { success: true };
     }
     getLogoutPage(res) {
         res.clearCookie('jwt_token');
-        return res.redirect('/login/');
+        return res.redirect(`${this.configService.get('FRONTEND_URL')}/login`);
     }
 };
 __decorate([
@@ -85,13 +92,13 @@ __decorate([
     __param(0, (0, user_decorator_1.Usr)()),
     __param(1, (0, common_1.Res)({ passthrough: true })),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [Object, Object]),
+    __metadata("design:paramtypes", [user_entity_1.User, Object]),
     __metadata("design:returntype", void 0)
 ], AuthController.prototype, "getUserLoggedIn", null);
 __decorate([
     (0, common_1.Get)('/settings/activate-2fa'),
     (0, common_1.UseGuards)(jwt_guard_1.JwtGuard),
-    openapi.ApiResponse({ status: 200, type: Object }),
+    openapi.ApiResponse({ status: 200 }),
     __param(0, (0, user_decorator_1.Usr)()),
     __param(1, (0, common_1.Res)()),
     __metadata("design:type", Function),
@@ -136,7 +143,8 @@ __decorate([
 AuthController = __decorate([
     (0, common_1.Controller)(),
     (0, swagger_1.ApiTags)('auth'),
-    __metadata("design:paramtypes", [auth_service_1.AuthService,
+    __metadata("design:paramtypes", [config_1.ConfigService,
+        auth_service_1.AuthService,
         jwt_1.JwtService,
         users_service_1.UsersService])
 ], AuthController);

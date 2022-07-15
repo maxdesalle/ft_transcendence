@@ -25,7 +25,9 @@ const common_1 = require("@nestjs/common");
 const stats_service_1 = require("../stats/stats.service");
 const pong_guard_1 = require("./guards/pong.guard");
 const defaultVals = defaultVals_1.default_values.df;
+;
 const viewerSockets = [];
+;
 const sockets = [];
 exports.connected_users = new Map();
 const invitations = new Map();
@@ -41,13 +43,12 @@ let PongGateway = class PongGateway {
     handleConnection(ws, req) {
         let user;
         try {
-            console.log('Before', req.headers.cookie);
             const token = (0, cookie_1.parse)(req.headers.cookie)['jwt_token'];
-            console.log('Token: ', token);
             user = this.jwtService.verify(token);
         }
         catch (error) {
-            console.log('Authentication failed: ', error);
+            ws.close(1008, 'Bad credentials');
+            console.log('Authentication failed');
             return;
         }
         exports.connected_users.set(ws, user.id);
@@ -73,9 +74,8 @@ let PongGateway = class PongGateway {
     async invitePlayer(client, data) {
         const user_id = exports.connected_users.get(client);
         const invited_user_id = +data;
-        if (!invited_user_id ||
-            invited_user_id === user_id ||
-            !(await this.usersService.findById(invited_user_id))) {
+        if (!invited_user_id || invited_user_id === user_id
+            || !await this.usersService.findById(invited_user_id)) {
             console.log('invalid invited_user_id');
             return;
         }
@@ -83,7 +83,7 @@ let PongGateway = class PongGateway {
         console.log(`User ${user_id} is waiting for User ${invited_user_id}`);
         this.wsService.sendMsgToUser(invited_user_id, {
             event: 'pong: invitation',
-            user_id,
+            user_id
         });
     }
     acceptInvitation(client, data) {
@@ -124,7 +124,7 @@ let PongGateway = class PongGateway {
                 this.statsService.insertMatch(p1, p2, playerScores.p1Score, playerScores.p2Score);
                 this.wsService.sendMsgToAll({
                     event: `ladder_change`,
-                    ladder: await this.statsService.ladder(),
+                    ladder: await this.statsService.ladder()
                 });
             }
         });
@@ -196,7 +196,7 @@ PongViewerGateway = __decorate([
 ], PongViewerGateway);
 exports.PongViewerGateway = PongViewerGateway;
 function removeGameSession(ws) {
-    const i = sockets.findIndex((s) => s.p1Socket === ws || s.p2Socket === ws);
+    const i = sockets.findIndex((s) => (s.p1Socket === ws || s.p2Socket === ws));
     if (i === -1)
         return;
     if (sockets[i].p1Socket === ws) {
@@ -223,8 +223,8 @@ function removeGameSession(ws) {
 async function linkPlayers(id) {
     const gameSockets = sockets.find((s) => id === s.id);
     console.log(`linking players for session ${id}`);
-    gameSockets.p1Socket.on('message', (data) => (gameSockets.p1Ob = JSON.parse(String(data))));
-    gameSockets.p2Socket.on('message', (data) => (gameSockets.p2Ob = JSON.parse(String(data))));
+    gameSockets.p1Socket.on('message', (data) => gameSockets.p1Ob = JSON.parse(String(data)));
+    gameSockets.p2Socket.on('message', (data) => gameSockets.p2Ob = JSON.parse(String(data)));
     gameSockets.p1Socket.send(JSON.stringify(Object.assign(Object.assign({}, defaultVals), { playerNumber: 1 })));
     gameSockets.p2Socket.send(JSON.stringify(Object.assign(Object.assign({}, defaultVals), { playerNumber: 2 })));
     return await startGame(id);
@@ -234,7 +234,7 @@ async function startGame(id) {
     const playerScores = { p1Score: 0, p2Score: 0 };
     const gameSockets = sockets.find((s) => id === s.id);
     const minUpdateTime = 20;
-    const delay = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+    const delay = (ms) => new Promise(resolve => setTimeout(resolve, ms));
     let deltaTime = 0.1;
     let ob = {};
     while (1) {
@@ -260,7 +260,7 @@ async function startGame(id) {
             break;
         const execTime = performance.now() - beginTime;
         await delay(minUpdateTime > execTime ? minUpdateTime - execTime : 0);
-        deltaTime = (performance.now() - beginTime) / 1000;
+        deltaTime = (performance.now() - beginTime) / 1000.;
     }
     console.log(`deleting session ${id}`);
     (0, computeValues_1.deleteGameSession)(gameSockets.id);
@@ -269,12 +269,12 @@ async function startGame(id) {
             s.id = -1;
             s.ws.send(JSON.stringify(Object.assign(Object.assign({}, ob), { gameFinished: true })));
         }
+        ;
     });
     return playerScores;
 }
 function generateSessionId() {
-    const id = sockets.reduce((prev, cur) => (prev.id < cur.id ? cur : prev), { id: 0 })
-        .id + 1;
+    const id = (sockets.reduce((prev, cur) => prev.id < cur.id ? cur : prev, { id: 0 })).id + 1;
     return id;
 }
 function getSocketFromUser(user_id) {
@@ -295,8 +295,8 @@ function startSession(p1Socket, p2Socket) {
         p1Socket,
         p2Socket,
         p1Ob: {},
-        p2Ob: {},
+        p2Ob: {}
     });
-    return id;
+    return (id);
 }
 //# sourceMappingURL=pong.gateway.js.map

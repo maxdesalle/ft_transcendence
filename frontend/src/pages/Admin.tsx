@@ -1,31 +1,13 @@
-import { Box } from "@mui/material";
-import AddFriend from "../components/AddFriend";
-import AddUserToRoom from "../components/AddUserToRoom";
-import CreateRoom from "../components/CreateRoom";
-import FriendList from "../components/FriendList";
+import { Component } from "solid-js";
+import CreateRoom from "../components/admin/createRoom";
 
-const Admin = () => {
+const Admin: Component = () => {
   return (
-    <Box
-      sx={{
-        display: "flex",
-        paddingTop: 5,
-        height: "100%",
-      }}
-    >
-      <Box sx={{ minWidth: 250, padding: 2 }}>
+    <div class="text-white pt-5 grid grid-cols-3">
+      <div>
         <CreateRoom />
-      </Box>
-      <Box sx={{ minWidth: 250, padding: 2 }}>
-        <AddUserToRoom />
-      </Box>
-      <Box sx={{ minWidth: 250, padding: 2 }}>
-        <AddFriend />
-      </Box>
-      <Box sx={{ minWidth: 250, padding: 2 }}>
-        <FriendList />
-      </Box>
-    </Box>
+      </div>
+    </div>
   );
 };
 

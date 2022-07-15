@@ -1,22 +1,14 @@
 import {
-  Query,
   Controller,
   Post,
-  Req,
   Body,
   Res,
   Get,
   HttpCode,
   UseGuards,
   UnauthorizedException,
-  UseFilters,
-  ExceptionFilter,
-  Catch,
-  ArgumentsHost,
-  HttpException,
-  StreamableFile,
 } from '@nestjs/common';
-import { Response, Request } from 'express';
+import { Response } from 'express';
 import { IntraGuard } from './guards/intra.guard';
 import { JwtGuard } from './guards/jwt.guard';
 import { JwtTwoFactorAuthenticationGuard } from './guards/tfa.guard';
@@ -25,8 +17,10 @@ import { AuthService } from './auth.service';
 import { toFileStream } from 'qrcode';
 import { UsersService } from '../users/users.service';
 import { Usr } from '../users/decorators/user.decorator';
-import { ApiHeader, ApiOperation, ApiTags } from '@nestjs/swagger';
+import { ApiHeader, ApiTags } from '@nestjs/swagger';
 import { Login2faDTO } from './dto/login2FA.dto';
+import { ConfigService } from '@nestjs/config';
+import { User } from 'src/users/entities/user.entity';
 
 async function pipeQrCodeStream(stream: Response, otpauthUrl: string) {
   return toFileStream(stream, otpauthUrl);
@@ -36,6 +30,7 @@ async function pipeQrCodeStream(stream: Response, otpauthUrl: string) {
 @ApiTags('auth')
 export class AuthController {
   constructor(
+    private configService: ConfigService,
     private readonly authService: AuthService,
     private jwtService: JwtService,
     private usersService: UsersService,
@@ -47,13 +42,21 @@ export class AuthController {
 
   @Get('login/42/return')
   @UseGuards(IntraGuard)
-  getUserLoggedIn(@Usr() user, @Res({ passthrough: true }) res: Response) {
+  getUserLoggedIn(
+    @Usr() user: User,
+    @Res({ passthrough: true }) res: Response,
+  ) {
     const jwtToken = this.jwtService.sign({
       id: user.id,
       login42: user.login42,
     });
     res.cookie('jwt_token', jwtToken);
-    return res.redirect('http://localhost:8000');
+    if (user.isTwoFactorAuthenticationEnabled) {
+      return res.redirect(
+        `${this.configService.get<string>('FRONTEND_URL')}/2fa`,
+      );
+    }
+    return res.redirect(this.configService.get<string>('FRONTEND_URL'));
   }
 
   @Get('/settings/activate-2fa')
@@ -62,7 +65,7 @@ export class AuthController {
     const { otpauthUrl } =
       await this.authService.generateTwoFactorAuthenticationSecret(user);
 
-    return pipeQrCodeStream(res, otpauthUrl);
+    return res.send(JSON.stringify({ otpauthUrl: otpauthUrl }));
   }
 
   @Get('/settings/deactivate-2fa')
@@ -70,7 +73,9 @@ export class AuthController {
   async deactivateTwoFactorAuthentication(@Usr() user, @Res() res: Response) {
     await this.usersService.turnOffTwoFactorAuthentication(user.id);
 
-    return res.redirect('/login/');
+    return res.redirect(
+      `${this.configService.get<string>('FRONTEND_URL')}/login`,
+    );
   }
 
   @Post('/login/two-factor-authentication/')
@@ -85,6 +90,7 @@ export class AuthController {
     @Body() { twoFactorAuthenticationCode }: Login2faDTO,
     @Res({ passthrough: true }) res: Response,
   ) {
+    console.log(twoFactorAuthenticationCode);
     const isTwoFactorAuthenticationCodeValid =
       this.authService.check2FACodeValidity(twoFactorAuthenticationCode, user);
 
@@ -101,13 +107,15 @@ export class AuthController {
     res.clearCookie('jwt_token');
     res.cookie('jwt_token', jwtToken);
 
-    return res.redirect('/');
+    return { success: true };
   }
 
   @Get('logout')
   @UseGuards(JwtGuard)
   getLogoutPage(@Res({ passthrough: true }) res: Response) {
     res.clearCookie('jwt_token');
-    return res.redirect('/login/');
+    return res.redirect(
+      `${this.configService.get<string>('FRONTEND_URL')}/login`,
+    );
   }
 }

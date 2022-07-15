@@ -1,7 +1,7 @@
 export const urls = {
-  frontendUrl: 'http://localhost:8000',
-  backendUrl: 'http://localhost:3000',
-  wsUrl: 'ws://localhost:3000',
+  frontendUrl: "http://localhost:8000",
+  backendUrl: "http://localhost:3000",
+  wsUrl: "ws://localhost:3000",
 };
 
 export const routes = {
@@ -17,4 +17,5 @@ export const routes = {
   friends: `${urls.backendUrl}/friends`,
   sendDm: `${urls.backendUrl}/chat/dm`,
   chat: `${urls.backendUrl}/chat`,
+  addUserToRoomByName: `${urls.backendUrl}/chat/add_group_user_by_name`,
 };
