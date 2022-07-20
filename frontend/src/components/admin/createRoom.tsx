@@ -1,9 +1,4 @@
-import {
-  Component,
-  createEffect,
-  createRenderEffect,
-  createSignal,
-} from 'solid-js';
+import { Component, createRenderEffect, createSignal } from 'solid-js';
 import { chatApi } from '../../api/chat';
 import { useStore } from '../../store';
 
@@ -17,7 +12,7 @@ const CreateRoom: Component<{ ref?: any }> = () => {
   const [roomName, setRoomName] = createSignal('');
   const [password, setPassword] = createSignal('');
   const [isPrivate, setIsPrivate] = createSignal(false);
-  const [state, { updateRooms }] = useStore();
+  const [_, { updateRooms }] = useStore();
 
   const onCreateRoom = () => {
     if (!roomName().length) return;
@@ -34,24 +29,20 @@ const CreateRoom: Component<{ ref?: any }> = () => {
       <div>
         <input
           autocomplete="off"
-          //@ts-ignore
-          use:model={[roomName, setRoomName]}
           type="text"
           class="bg-white px-4 py-2 rounded border-b focus:outline-none border-b-blue-800 focus:text-blue-600"
-          name="room_id"
-          id="room_id"
+          name="room_name"
+          id="room_name"
           placeholder="Enter name"
         />
       </div>
       <div class="mt-2">
         <input
           autocomplete="off"
-          //@ts-ignore
-          use:model={[password, setPassword]}
           type="text"
           class="bg-white px-4 py-2 rounded border-b focus:outline-none border-b-blue-800 focus:text-blue-600"
-          name="room_id"
-          id="room_id"
+          name="room_password"
+          id="room_password"
           placeholder="Enter password"
         />
       </div>
@@ -59,14 +50,10 @@ const CreateRoom: Component<{ ref?: any }> = () => {
         <label class="pr-2 pl-1">Private?</label>
         <input
           autocomplete="off"
-          aria-disabled
-          //@ts-ignore
-          use:model={[isPrivate, setIsPrivate]}
           type="radio"
           class="bg-white px-4 py-2 rounded border-b focus:outline-none border-b-blue-800 focus:text-blue-600"
-          name="room_id"
-          id="room_id"
-          placeholder="Enter name"
+          name="is_private"
+          id="is_private"
         />
       </div>
       <div class="mt-2">

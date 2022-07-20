@@ -1,21 +1,21 @@
-import { Link, useNavigate } from "solid-app-router";
-import { Component, createEffect, createSignal, For, Show } from "solid-js";
-import logo from "../assets/logo.png";
-import { BiSearchAlt2 } from "solid-icons/bi";
-import UserCard from "./UserCard";
-import HeaderProfileMenu from "./HeaderProfileMenu";
-import Modal from "./Modal";
-import Avatar from "./Avatar";
-import { useStore } from "../store/index";
+import { Link, useNavigate } from 'solid-app-router';
+import { Component, createEffect, createSignal, For, Show } from 'solid-js';
+import logo from '../assets/logo.png';
+import { BiSearchAlt2 } from 'solid-icons/bi';
+import UserCard from './UserCard';
+import HeaderProfileMenu from './HeaderProfileMenu';
+import Modal from './Modal';
+import Avatar from './Avatar';
+import { useStore } from '../store/index';
+import SearchUserCard from './SearchUserCard';
 
-const LINKS = ["pong", "viewer", "chat", "admin"];
+const LINKS = ['pong', 'viewer', 'chat', 'admin'];
 
 const Header: Component = () => {
-  const [keyword, setKeyword] = createSignal<string>("");
-  const [state] = useStore();
+  const [keyword, setKeyword] = createSignal<string>('');
+  const [state, { sendFriendReq }] = useStore();
 
   const [isOpen, setIsOpen] = createSignal(false);
-  const navigate = useNavigate();
   let ref: any;
 
   createEffect(() => {});
@@ -38,8 +38,8 @@ const Header: Component = () => {
           <For each={LINKS}>
             {(link) => (
               <li class="text-white first-letter:capitalize">
-                {" "}
-                <Link href={`/${link}`}>{link}</Link>{" "}
+                {' '}
+                <Link href={`/${link}`}>{link}</Link>{' '}
               </li>
             )}
           </For>
@@ -62,22 +62,22 @@ const Header: Component = () => {
           <div class="absolute top-0 z-10 ml-16">
             <For
               each={state.users
-                ?.slice(0, 4)
+                ?.slice()
                 ?.filter((user) =>
                   user.login42
                     .toLocaleLowerCase()
-                    .includes(keyword().toLocaleLowerCase())
+                    .includes(keyword().toLocaleLowerCase()),
                 )}
             >
               {(user) => (
-                <div ref={ref} class="flex flex-col">
-                  <UserCard
+                <div ref={ref} class="w-60">
+                  <SearchUserCard
                     onClick={() => {
-                      setKeyword("");
-                      navigate(`/profile/${user.id}`);
+                      if (sendFriendReq) {
+                        sendFriendReq(user.id);
+                      }
                     }}
                     user={user}
-                    bgColor="bg-blue-700"
                   />
                 </div>
               )}

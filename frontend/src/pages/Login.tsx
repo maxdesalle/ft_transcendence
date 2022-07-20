@@ -1,29 +1,29 @@
-import { useNavigate } from "solid-app-router";
-import { Component, createRenderEffect, createSignal } from "solid-js";
-import { loginFromMockApi } from "../api/mock";
-import { routes } from "../api/utils";
+import { useNavigate } from 'solid-app-router';
+import { Component, createRenderEffect, createSignal } from 'solid-js';
+import { loginFromMockApi } from '../api/mock';
+import { routes } from '../api/utils';
 
 function model(el: any, accessor: any) {
   const [s, set] = accessor();
-  el.addEventListener("input", (e: any) => set(e.currentTarget.value));
+  el.addEventListener('input', (e: any) => set(e.currentTarget.value));
   createRenderEffect(() => (el.value = s()));
 }
 
 const Login: Component = () => {
-  const [username, setUsername] = createSignal<string>("");
+  const [username, setUsername] = createSignal<string>('');
   const navigate = useNavigate();
 
   const onLogin = () => {
     if (!username().length) return;
     loginFromMockApi(username());
-    setUsername("");
-    navigate("/");
+    setUsername('');
+    navigate('/');
   };
 
   return (
     <div class="flex flex-col items-center h-1/2">
       <div class="max-w-md">
-        <form class="flex flex-col border-2 p-2 mt-16 h-full">
+        <div class="flex flex-col border-2 p-2 mt-16 h-full">
           <label class="text-center" for="username">
             Username
           </label>
@@ -44,7 +44,7 @@ const Login: Component = () => {
           >
             Login using Mock api
           </button>
-        </form>
+        </div>
         <button
           onClick={() => (window.location.href = routes.login42)}
           class="bg-blue-600 border text-white p-1 mt-1 rounded-md"

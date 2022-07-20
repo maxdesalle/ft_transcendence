@@ -55,7 +55,7 @@ let AuthController = class AuthController {
     }
     async deactivateTwoFactorAuthentication(user, res) {
         await this.usersService.turnOffTwoFactorAuthentication(user.id);
-        return res.redirect(`${this.configService.get('FRONTEND_URL')}/login`);
+        return res.send({ user });
     }
     twoFactorAuthentication(user, { twoFactorAuthenticationCode }, res) {
         console.log(twoFactorAuthenticationCode);

@@ -5,34 +5,37 @@ import {
   createSignal,
   onMount,
   Show,
-} from "solid-js";
-import { Route, Routes, useNavigate } from "solid-app-router";
-import Chat from "./pages/Chat";
-import Pong from "./pages/Pong";
-import Admin from "./pages/Admin";
-import Viewer from "./pages/Viewer";
-import Header from "./components/Header";
-import Home from "./pages/Home";
-import { routes } from "./api/utils";
-import Profile from "./pages/Profile";
-import Login from "./pages/Login";
-import { api } from "./utils/api";
-import { User } from "./types/user.interface";
-import { useStore } from "./store/index";
-import EditProfile from "./pages/EditProfile";
-import TwoFactorAuth from "./pages/TwoFactorAuth";
+} from 'solid-js';
+import { Route, Routes, useNavigate } from 'solid-app-router';
+import Chat from './pages/Chat';
+import Pong from './pages/Pong';
+import Admin from './pages/Admin';
+import Viewer from './pages/Viewer';
+import Header from './components/Header';
+import Home from './pages/Home';
+import Profile from './pages/Profile';
+import Login from './pages/Login';
+import { useStore } from './store/index';
+import EditProfile from './pages/EditProfile';
+import TwoFactorAuth from './pages/TwoFactorAuth';
+import { unwrap } from 'solid-js/store';
 
 const App: Component = () => {
-  const [state] = useStore();
+  const [state, { loadPendingFriendReq }] = useStore();
   const [appLoaded, setAppLaoded] = createSignal(false);
 
   const navigate = useNavigate();
 
   if (state.token) setAppLaoded(true);
+  onMount(() => {
+    if (loadPendingFriendReq) {
+      loadPendingFriendReq();
+    }
+  });
 
   createEffect(() => {
     if (!state.token) {
-      navigate("/login");
+      navigate('/login');
     }
   });
 

@@ -25,6 +25,7 @@ const AddUserToRoom: Component<{ currentRoom: RoomInfoShort }> = (props) => {
         autocomplete="off"
         name="username"
         id="username"
+        value={username()}
         class="focus:outline-none border-b-2 text-gray-900 border-blue-500 rounded-md p-1"
         placeholder="Enter username"
       />

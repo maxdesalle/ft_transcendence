@@ -1,7 +1,6 @@
-import { Accessor } from "solid-js";
-import { User } from "../types/user.interface";
-import { api } from "../utils/api";
-import { routes } from "./utils";
+import { User } from '../types/user.interface';
+import { api } from '../utils/api';
+import { routes } from './utils';
 
 export const fetchUsers = async () => {
   const res = await api.get<User[]>(routes.users);

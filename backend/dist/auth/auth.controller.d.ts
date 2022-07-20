@@ -14,7 +14,7 @@ export declare class AuthController {
     getUserLogin(): void;
     getUserLoggedIn(user: User, res: Response): void;
     activateTwoFactorAuthentication(user: any, res: Response): Promise<Response<any, Record<string, any>>>;
-    deactivateTwoFactorAuthentication(user: any, res: Response): Promise<void>;
+    deactivateTwoFactorAuthentication(user: any, res: Response): Promise<Response<any, Record<string, any>>>;
     twoFactorAuthentication(user: any, { twoFactorAuthenticationCode }: Login2faDTO, res: Response): {
         success: boolean;
     };

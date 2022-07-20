@@ -1,13 +1,14 @@
 import Cookies from 'js-cookie';
-import { createResource } from 'solid-js';
-import { SetStoreFunction } from 'solid-js/store';
-import { Status, StoreState } from '.';
+import { batch, createResource } from 'solid-js';
+import { produce, SetStoreFunction, Store, unwrap } from 'solid-js/store';
+import { StoreState } from '.';
 import { addUserToRoomByName, chatApi } from '../api/chat';
 import { routes, urls } from '../api/utils';
 import { Message, RoomInfoShort } from '../types/chat.interface';
 import { User } from '../types/user.interface';
 import { api } from '../utils/api';
 import QRCode from 'qrcode';
+import { fetchUsers } from '../api/user';
 
 export const createUsers = (
   actions: Object,
@@ -17,8 +18,7 @@ export const createUsers = (
   //TODO: add status
   const [users] = createResource(async () => {
     try {
-      const res = await api.get<User[]>(routes.users);
-      return res.data;
+      return await fetchUsers();
     } catch (error) {}
   });
   return users;
@@ -32,7 +32,7 @@ export const createCurrentUser = (
   const [user, { mutate }] = createResource(async () => {
     try {
       const res = await api.get<User>(routes.currentUser);
-      setState('currentUser', 'status', () => 'success' as Status);
+      setState('currentUser', 'status', 'success');
       return res.data;
     } catch (e) {
       setState('currentUser', 'error', () => e);
@@ -56,13 +56,24 @@ export const createCurrentUser = (
         'display_name',
         () => res.data.display_name,
       );
+
+      const index = state.users?.findIndex(
+        (user) => user.id == state.currentUser.userData?.id,
+      );
+      if (index) {
+        setState('users', index, 'display_name', res.data.display_name);
+      }
     },
+
+    //2fa
     async activate2fa() {
       try {
         const res = await api.get<{ otpauthUrl: string }>(routes.activate2fa);
         QRCode.toDataURL(res.data.otpauthUrl, function (err, url) {
-          setState('currentUser', 'twoFaQrCode', () => url);
-          setState('currentUser', 'error', err);
+          batch(() => {
+            setState('currentUser', 'twoFaQrCode', url);
+            setState('currentUser', 'error', err);
+          });
         });
       } catch (e) {
         setState('currentUser', 'error', e);
@@ -76,14 +87,72 @@ export const createCurrentUser = (
             twoFactorAuthenticationCode: code,
           },
         );
-        setState('currentUser', 'twoFaConfirmed', res.data.success);
-        setState('currentUser', 'status', 'success');
+        batch(() => {
+          setState('currentUser', 'twoFaConfirmed', res.data.success);
+          setState('currentUser', 'status', 'success');
+        });
       } catch (e) {
-        setState('currentUser', 'error', e);
+        batch(() => {
+          setState('currentUser', 'error', e);
+          setState('currentUser', 'status', 'failed');
+        });
+      }
+    },
+    async deactivate2fa() {
+      try {
+        //TODO: change status management looks wrong
+        const res = await api.get(routes.deactivate2fa);
+        console.log(res);
+        batch(() => {
+          setState('token', undefined);
+          setState(
+            'currentUser',
+            'userData',
+            'isTwoFactorAuthenticationEnabled',
+            false,
+          );
+          setState('currentUser', 'status', 'success');
+        });
+      } catch (e) {
         setState('currentUser', 'status', 'failed');
       }
     },
+
+    //friends
+
+    async sendFriendReq(user_id: number) {
+      try {
+        const res = await api.post(routes.sendFriendReq, { user_id });
+        console.log(res.data);
+      } catch (e) {}
+    },
+
+    async loadPendingFriendReq() {
+      try {
+        const res = await api.get<{ req_user_id: number; status: number }[]>(
+          routes.receivedFriendReq,
+        );
+        const pendingFriendReq: { user: User; status: number }[] = [];
+        res.data.map((elem) => {
+          const pendingUser = state.users?.find(
+            (user) => user.id == elem.req_user_id,
+          );
+          if (pendingUser) {
+            pendingFriendReq.push({ user: pendingUser, status: elem.status });
+          }
+        });
+        setState('currentUser', 'pendingFriendReq', [...pendingFriendReq]);
+      } catch (e) {}
+    },
+
+    async acceptFriendReq(user_id: number) {
+      try {
+        const res = await api.post(routes.acceptFriendReq, { user_id });
+        console.log(res.data);
+      } catch (e) {}
+    },
   });
+
   return user;
 };
 
@@ -161,4 +230,16 @@ export const createMessageById = (
     },
   });
   return messages;
+};
+
+export const createFriends = (
+  actions: Object,
+  state: StoreState,
+  setState: SetStoreFunction<StoreState>,
+) => {
+  const [friends] = createResource(async () => {
+    const res = await api.get<User[]>(routes.friends);
+    return res.data;
+  });
+  return friends;
 };

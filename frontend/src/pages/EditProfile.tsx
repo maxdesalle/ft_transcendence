@@ -1,16 +1,16 @@
-import { Component, createEffect, createSignal } from "solid-js";
-import Modal from "../components/Modal";
-import { useStore } from "../store";
+import { Component, createEffect, createSignal } from 'solid-js';
+import Modal from '../components/Modal';
+import { useStore } from '../store';
 
 const EditProfile: Component = () => {
-  const [newName, setNewName] = createSignal("");
+  const [newName, setNewName] = createSignal('');
   const [isOpen, setIsOpen] = createSignal(false);
-  const [state, { changeUsername, activate2fa }] = useStore();
+  const [state, { changeUsername, activate2fa, deactivate2fa }] = useStore();
 
   const onChangeName = () => {
     if (newName() && changeUsername) {
       changeUsername(newName());
-      setNewName("");
+      setNewName('');
     }
   };
 
@@ -19,6 +19,12 @@ const EditProfile: Component = () => {
       activate2fa();
     }
     setIsOpen(true);
+  };
+
+  const onDeactivate2fa = () => {
+    if (deactivate2fa) {
+      deactivate2fa();
+    }
   };
 
   return (
@@ -43,6 +49,9 @@ const EditProfile: Component = () => {
         <Modal isOpen={isOpen()} toggleModal={setIsOpen}>
           <img src={state.currentUser.twoFaQrCode} alt="qr code" />
         </Modal>
+        <button class="btn-primary" onClick={onDeactivate2fa}>
+          Deactivate 2fa
+        </button>
       </div>
     </div>
   );

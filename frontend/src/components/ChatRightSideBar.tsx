@@ -1,5 +1,5 @@
 import { useNavigate } from 'solid-app-router';
-import { Component, createSignal, For } from 'solid-js';
+import { Component, createSignal, For, Show, useTransition } from 'solid-js';
 import { RoomInfoShort } from '../types/chat.interface';
 import { User } from '../types/user.interface';
 import UserCard from './UserCard';
@@ -7,20 +7,26 @@ import UserCard from './UserCard';
 import { AiOutlinePlusCircle } from 'solid-icons/ai';
 import Modal from './Modal';
 import AddUserToRoom from './admin/AddUserToRoom';
-const ChatRightSideBar: Component<{
-  user: User;
-  currentRoom: RoomInfoShort;
-}> = (props) => {
+import { useStore } from '../store';
+const ChatRightSideBar: Component<{}> = () => {
   const navigate = useNavigate();
   const [isOpen, setIsOpen] = createSignal(false);
+  const [state] = useStore();
+  const [pending, start] = useTransition();
   return (
     <>
       <div>
-        <h4 class="text-center p-2 text-white bg-gray-700">Admin</h4>
-        <UserCard user={props.user} />
+        <h4 class="text-center p-2 text-white bg-skin-menu-background">
+          Admin
+        </h4>
+        <Show when={state.currentUser.userData}>
+          <UserCard user={state.currentUser.userData!} />
+        </Show>
       </div>
-      <div class="h-full bg-gray-500">
-        <h4 class="text-center p-2 bg-gray-700 text-white">Members</h4>
+      <div class="h-full bg-skin-menu-background">
+        <h4 class="text-center p-2 bg-skin-menu-background text-white">
+          Members
+        </h4>
 
         <div class="flex items-center p-2 pl-6">
           <button onClick={() => setIsOpen(!isOpen())}>
@@ -29,25 +35,26 @@ const ChatRightSideBar: Component<{
           <h4 class="pl-4">Add member</h4>
           <Modal isOpen={isOpen()} toggleModal={setIsOpen}>
             <div class="p-2 bg-skin-header-background absolute right-3 border rounded-md shadow-md">
-              <AddUserToRoom currentRoom={props.currentRoom} />
+              <AddUserToRoom currentRoom={state.chat.currentRoom!} />
             </div>
           </Modal>
         </div>
-        <For
-          each={props.currentRoom.participants!.filter(
-            (user) => user.id !== props.user.id,
-          )}
-        >
-          {(user) => (
-            <div class="p7 border-2 shadow-md">
-              <UserCard
-                bgColor="bg-indigo-500"
-                onClick={() => navigate(`/profile/${user.id}`)}
-                user={user}
-              />
-            </div>
-          )}
-        </For>
+        <Show when={state.chat.currentRoom}>
+          <For
+            each={state.chat.currentRoom!.participants!.filter(
+              (user) => user.id !== state.currentUser.userData?.id,
+            )}
+          >
+            {(user) => (
+              <div class="shadow-md">
+                <UserCard
+                  onClick={() => navigate(`/profile/${user.id}`)}
+                  user={user}
+                />
+              </div>
+            )}
+          </For>
+        </Show>
       </div>
     </>
   );
