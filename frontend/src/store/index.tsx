@@ -5,6 +5,7 @@ import { User } from '../types/user.interface';
 import { createStore, produce } from 'solid-js/store';
 import {
   createCurrentUser,
+  createFriendMsg,
   createFriends,
   createMessageById,
   createRooms,
@@ -15,7 +16,7 @@ const StoreContext = createContext<any>();
 
 export interface ActionsType {
   loadMessages?: (id: number | undefined) => void;
-  mutate?: (message: Message) => void;
+  mutateRoomMsgs?: (message: Message) => void;
   updateRooms?: (rooms: RoomInfoShort[]) => RoomInfoShort[] | undefined;
   loadRooms?: (reload: boolean) => void;
   getRoomById: (id: number) => RoomInfoShort | undefined;
@@ -33,9 +34,17 @@ export interface ActionsType {
   sendFriendReq?: (user_id: number) => void;
   acceptFriendReq?: (user_id: number) => void;
   loadPendingFriendReq?: () => void;
+  changeTab: (tab: TAB) => void;
+  loadFriendMessages?: (id: number | undefined) => void;
+  mutateFriendMsgs?: (msg: Message) => void;
 }
 
 export type Status = 'idle' | 'loading' | 'success' | 'failed';
+
+export enum TAB {
+  ROOMS,
+  FRIENDS,
+}
 
 export interface StoreState {
   token: string | undefined;
@@ -45,17 +54,23 @@ export interface StoreState {
     currentRoom: RoomInfoShort | undefined;
     error?: any;
     roomId: number | undefined;
+    friendId: number | undefined;
     readonly rooms: RoomInfoShort[] | undefined;
-    readonly messages: Message[] | undefined;
+    readonly roomMsgs: Message[] | undefined;
+    readonly friendMsgs: Message[] | undefined;
   };
   currentUser: {
     status: Status;
     readonly userData: User | undefined;
-    readonly friends: User[] | undefined;
-    readonly pendingFriendReq: { user: User; status: number }[] | undefined;
+    readonly friends: User[];
+    readonly pendingFriendReq: { user: User; status: number }[];
     error?: any;
     twoFaQrCode: string;
     twoFaConfirmed: boolean;
+  };
+  chatUi: {
+    //whitch tab is currently selected
+    tab: TAB;
   };
   readonly users: User[] | undefined;
 }
@@ -63,10 +78,10 @@ export interface StoreState {
 export function StoreProvider(props: any) {
   let users: Resource<User[] | undefined>,
     rooms: Resource<RoomInfoShort[] | undefined>,
-    friends: Resource<User[] | undefined>,
-    pendingFriendReq: Resource<{ user_id: number; status: number }>,
+    friends: Resource<User[] | []>,
     currentUser: Resource<User | undefined>,
-    messages: Resource<Message[] | undefined>;
+    roomMsg: Resource<Message[] | undefined>,
+    friendMsg: Resource<Message[] | undefined>;
 
   const [state, setState] = createStore<StoreState>({
     token: Cookies.get('jwt_token'),
@@ -75,13 +90,19 @@ export function StoreProvider(props: any) {
       get rooms() {
         return rooms();
       },
-      get messages() {
-        return messages();
+      get roomMsgs() {
+        return roomMsg();
+      },
+      get friendMsgs() {
+        return friendMsg();
       },
       roomId: undefined,
       currentRoom: undefined,
+      friendId: undefined,
     },
-
+    chatUi: {
+      tab: TAB.ROOMS,
+    },
     currentUser: {
       twoFaConfirmed: false,
       status: 'idle',
@@ -92,7 +113,7 @@ export function StoreProvider(props: any) {
       get friends() {
         return friends();
       },
-      pendingFriendReq: undefined,
+      pendingFriendReq: [],
       // get pendingFriendReq() {
       //   return pendingFriendReq();
       // },
@@ -119,13 +140,21 @@ export function StoreProvider(props: any) {
         }),
       );
     },
+    changeTab(tab: TAB) {
+      setState(
+        produce((s) => {
+          s.chatUi.tab = tab;
+        }),
+      );
+    },
   };
   const store: [StoreState, ActionsType] = [state, actions];
   users = createUsers(actions, state, setState);
   currentUser = createCurrentUser(actions, state, setState);
   rooms = createRooms(actions, state, setState);
-  messages = createMessageById(actions, state, setState);
+  roomMsg = createMessageById(actions, state, setState);
   friends = createFriends(actions, state, setState);
+  friendMsg = createFriendMsg(actions, state, setState);
   return (
     <StoreContext.Provider value={store}>
       {props.children}

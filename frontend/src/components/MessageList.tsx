@@ -1,11 +1,14 @@
 import Scrollbars from 'solid-custom-scrollbars';
 import { Component, For, Show } from 'solid-js';
+import { useStore } from '../store';
 import { Message } from '../types/chat.interface';
 import MessageCard from './MessageCard';
 
 const MessageList: Component<{ messages?: Message[]; id?: number }> = (
   props,
 ) => {
+  const [state, { loadFriendMessages }] = useStore();
+
   return (
     <Show when={props.messages}>
       <Scrollbars class="flex flex-col overflow-y-scroll h-82">

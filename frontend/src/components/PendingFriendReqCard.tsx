@@ -14,7 +14,7 @@ const PendingFriendReqCard: Component = () => {
       <For each={state.currentUser.pendingFriendReq}>
         {(data) => (
           <div class="flex">
-            <h1>{data.user.display_name}</h1>
+            <h1 class="text-white">{data.user.display_name}</h1>
             <button
               onClick={() => onAcceptFriendReq(data.user.id)}
               class="btn-primary"

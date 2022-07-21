@@ -1,7 +1,7 @@
-import { createResource } from "solid-js";
-import { Message, RoomInfo, RoomInfoShort } from "../types/chat.interface";
-import { api } from "../utils/api";
-import { routes } from "./utils";
+import { createResource } from 'solid-js';
+import { Message, RoomInfo, RoomInfoShort } from '../types/chat.interface';
+import { api } from '../utils/api';
+import { routes } from './utils';
 
 type CreateRoomType = {
   name: string;
@@ -38,7 +38,7 @@ const getMessagesByRoomId = async (id: number) => {
 };
 
 const getFriendMessages = async (id: number) => {
-  const res = await api.get(`${routes.chat}/dm/${id}`);
+  const res = await api.get<Message[]>(`${routes.chat}/dm/${id}`);
   return res.data;
 };
 
@@ -49,7 +49,7 @@ const postMessageToRoom = async (data: {
   return await api.post<Message[]>(routes.sendMessageToRoom, data);
 };
 
-const sendDm = async (data: { friend_id: number; message: string }) => {
+const sendDm = async (data: { user_id: number; message: string }) => {
   return await api.post(routes.sendDm, data);
 };
 

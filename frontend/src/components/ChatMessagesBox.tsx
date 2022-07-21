@@ -4,46 +4,80 @@ import {
   Component,
   createEffect,
   createSignal,
+  onCleanup,
   onMount,
   Show,
-  Suspense,
 } from 'solid-js';
-import { Message, RoomInfoShort } from '../types/chat.interface';
-import { User } from '../types/user.interface';
 import Avatar from './Avatar';
 import MessageList from './MessageList';
-import Scrollbars from 'solid-custom-scrollbars';
 import { useStore } from '../store';
-import PendingFriendReqCard from './PendingFriendReqCard';
+import ChatForm from './ChatForm';
+import { urls } from '../api/utils';
+import { Message } from '../types/chat.interface';
 
-const ChatMessagesBox: Component<{}> = () => {
-  const [state] = useStore();
+//TODO: put input here and add a function as prop
+const ChatMessagesBox: Component<{
+  onSendMessage: (message: string) => void;
+  messages: Message[];
+}> = (props) => {
+  const [state, { loadMessages, mutateRoomMsgs: mutate, mutateFriendMsgs }] =
+    useStore();
+
+  const [message, setMessage] = createSignal('');
+  let ws: WebSocket;
+
+  onMount(() => {
+    ws = new WebSocket(urls.wsUrl);
+    ws.addEventListener('message', (e) => {
+      const res = JSON.parse(e.data);
+      if (res.event === 'chat_room_msg') {
+        if (mutate) {
+          mutate(res.message as Message);
+        }
+      } else if (res.event == 'chat_dm') {
+        console.log('dm: ', res.message);
+        if (mutateFriendMsgs) {
+          mutateFriendMsgs(res.message as Message);
+        }
+      }
+    });
+  });
+
+  createEffect(() => {
+    console.log(state.chat.currentRoom);
+    if (loadMessages && state.chat.currentRoom) {
+      loadMessages(state.chat.currentRoom.room_id);
+    }
+  });
+
+  onCleanup(() => {
+    ws.close();
+  });
 
   return (
-    <Show
-      when={state.chat.currentRoom && state.currentUser.userData}
-      fallback={<PendingFriendReqCard />}
-    >
-      <div class="flex p-2 items-center shadow- border-b border-b-header-menu">
-        <Avatar />
-        <p>{state.chat.currentRoom!.room_name}</p>
-      </div>
-      <Suspense>
-        <Show when={state.chat.messages}>
-          <MessageList
-            messages={state.chat
-              .messages!.slice()
-              .sort((a, b) =>
-                compareAsc(
-                  parseISO(a.timestamp.toString()),
-                  parseISO(b.timestamp.toString()),
-                ),
-              )}
-            id={state.currentUser.userData?.id}
-          />
-        </Show>
-      </Suspense>
-    </Show>
+    <>
+      <Show when={props.messages} fallback={<p>No new messages</p>}>
+        <MessageList
+          messages={props.messages
+            .slice()
+            .sort((a, b) =>
+              compareAsc(
+                parseISO(a.timestamp.toString()),
+                parseISO(b.timestamp.toString()),
+              ),
+            )}
+          id={state.currentUser.userData?.id}
+        />
+        <ChatForm
+          message={message()}
+          setMessage={setMessage}
+          onSendMessage={(msg) => {
+            props.onSendMessage(msg);
+            setMessage('');
+          }}
+        />
+      </Show>
+    </>
   );
 };
 

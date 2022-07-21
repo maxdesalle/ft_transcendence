@@ -1,4 +1,4 @@
-import { FrienshipStatus } from "../entities/friendship.entity";
+import { FrienshipStatus } from '../entities/friendship.entity';
 export declare class friendRequestDto {
     user_id: number;
 }

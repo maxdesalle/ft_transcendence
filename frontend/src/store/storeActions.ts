@@ -9,6 +9,7 @@ import { User } from '../types/user.interface';
 import { api } from '../utils/api';
 import QRCode from 'qrcode';
 import { fetchUsers } from '../api/user';
+import { friendReqEventDto } from '../types/friendship.interface';
 
 export const createUsers = (
   actions: Object,
@@ -147,8 +148,19 @@ export const createCurrentUser = (
 
     async acceptFriendReq(user_id: number) {
       try {
-        const res = await api.post(routes.acceptFriendReq, { user_id });
-        console.log(res.data);
+        const res = await api.post<friendReqEventDto>(routes.acceptFriendReq, {
+          user_id,
+        });
+        //when the update is successfull we filter out the accepted one from pending req
+        const id = res.data.friend_request.req_user_id;
+        const newFriend = state.users?.find((e) => e.id === id);
+        setState('currentUser', 'pendingFriendReq', (s) => [
+          ...s.filter((e) => e.user.id != id),
+        ]);
+        console.log('new friend: ', newFriend);
+        if (newFriend) {
+          setState('currentUser', 'friends', (e) => [...e, newFriend]);
+        }
       } catch (e) {}
     },
   });
@@ -161,15 +173,18 @@ export const createRooms = (
   state: StoreState,
   setState: SetStoreFunction<StoreState>,
 ) => {
-  const [rooms, { mutate, refetch }] = createResource(async () => {
-    try {
-      const res = await api.get<RoomInfoShort[]>(routes.getRooms);
-      setState('chat', 'status', 'success');
-      return res.data;
-    } catch (e) {
-      setState('chat', 'error', e);
-    }
-  });
+  const [rooms, { mutate, refetch }] = createResource(
+    async () => {
+      try {
+        const res = await api.get<RoomInfoShort[]>(routes.getRooms);
+        setState('chat', 'status', 'success');
+        return res.data;
+      } catch (e) {
+        setState('chat', 'error', e);
+      }
+    },
+    { initialValue: [] },
+  );
 
   Object.assign(actions, {
     updateRooms(rooms: RoomInfoShort[]) {
@@ -221,7 +236,7 @@ export const createMessageById = (
 
   Object.assign(actions, {
     mutate(data: Message) {
-      mutate([...state.chat.messages!, data]);
+      mutate([...state.chat.roomMsgs!, data]);
     },
 
     loadMessages(id: number | undefined) {
@@ -237,9 +252,37 @@ export const createFriends = (
   state: StoreState,
   setState: SetStoreFunction<StoreState>,
 ) => {
-  const [friends] = createResource(async () => {
-    const res = await api.get<User[]>(routes.friends);
-    return res.data;
-  });
+  const [friends] = createResource(
+    async () => {
+      const res = await api.get<User[]>(routes.friends);
+      return res.data;
+    },
+    { initialValue: [] },
+  );
   return friends;
+};
+
+export const createFriendMsg = (
+  actions: Object,
+  state: StoreState,
+  setState: SetStoreFunction<StoreState>,
+) => {
+  const [friendMsgs, { mutate }] = createResource(
+    () => state.chat.friendId,
+    chatApi.getFriendMessages,
+    { initialValue: [] },
+  );
+
+  Object.assign(actions, {
+    loadFriendMessages(friendId: number) {
+      if (!friendId) return;
+      setState('chat', 'friendId', friendId);
+    },
+
+    mutateFriendMsgs(msg: Message) {
+      mutate([...friendMsgs(), msg]);
+    },
+  });
+
+  return friendMsgs;
 };
