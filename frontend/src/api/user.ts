@@ -11,3 +11,7 @@ export const fetchUserById = async (id: number) => {
   const res = await api.get<User>(`${routes.users}/${id}`);
   return res.data;
 };
+
+export const changeAvatar = async (data:any) => {
+  return await api.post(`${routes.users}/avatar`, data)
+}

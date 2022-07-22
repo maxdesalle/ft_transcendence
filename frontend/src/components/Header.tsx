@@ -8,6 +8,7 @@ import Modal from './Modal';
 import Avatar from './Avatar';
 import { useStore } from '../store/index';
 import SearchUserCard from './SearchUserCard';
+import { urls } from '../api/utils';
 
 const LINKS = ['pong', 'viewer', 'chat', 'admin'];
 
@@ -46,7 +47,7 @@ const Header: Component = () => {
         </ul>
         <div class="relative">
           <button onClick={() => setIsOpen(!isOpen())}>
-            <Avatar />
+            <Avatar imgUrl={`${urls.backendUrl}/database-files/${state.currentUser.userData?.avatarId}`} />
           </button>
           <Modal isOpen={isOpen()} toggleModal={setIsOpen}>
             <Show when={state.currentUser.userData}>

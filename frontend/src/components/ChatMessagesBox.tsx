@@ -7,12 +7,12 @@ import {
   onMount,
   Show,
 } from 'solid-js';
-import Avatar from './Avatar';
 import MessageList from './MessageList';
 import { useStore } from '../store';
 import ChatForm from './ChatForm';
 import { urls } from '../api/utils';
 import { Message } from '../types/chat.interface';
+import PendingFriendReqCard from './PendingFriendReqCard';
 
 //TODO: put input here and add a function as prop
 const ChatMessagesBox: Component<{
@@ -29,7 +29,6 @@ const ChatMessagesBox: Component<{
     ws = new WebSocket(urls.wsUrl);
     ws.addEventListener('message', ({ data }) => {
       const res = JSON.parse(data);
-      console.log('current event: ', res.event);
       if (res.event === 'chat_room_msg') {
         if (mutateRoomMsgs) {
           mutateRoomMsgs(res.message as Message);
@@ -54,7 +53,7 @@ const ChatMessagesBox: Component<{
 
   return (
     <>
-      <Show when={props.messages}>
+      <Show when={state.chatUi.showMessages} fallback={<PendingFriendReqCard />}>
         <MessageList
           messages={props.messages
             .slice()

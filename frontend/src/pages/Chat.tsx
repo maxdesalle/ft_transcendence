@@ -30,7 +30,7 @@ const Chat: Component = () => {
   };
 
   return (
-    <div class="grid grid-cols-6 h-90">
+    <div class="grid grid-cols-6 h-full">
         <div class="flex flex-col col-span-1 border-x-header-menu border-x">
           <Scrollbars class="bg-red-600">
             <ChatSideBar />

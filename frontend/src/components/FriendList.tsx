@@ -1,4 +1,5 @@
 import { Component, createEffect, createSignal, For, Show } from 'solid-js';
+import { urls } from '../api/utils';
 import { useStore } from '../store';
 import AddFriend from './AddFriend';
 import Avatar from './Avatar';
@@ -6,7 +7,7 @@ import Search from './Search';
 
 const FriendList: Component = () => {
   const [keyword, setKeyword] = createSignal('');
-  const [state, { loadFriendMessages }] = useStore();
+  const [state, { loadFriendMessages, toggleShowMessages }] = useStore();
 
   return (
     <div>
@@ -24,11 +25,14 @@ const FriendList: Component = () => {
               onClick={() => {
                 if (loadFriendMessages) {
                   loadFriendMessages(friend.id);
+                  if (!state.chatUi.showMessages) {
+                    toggleShowMessages();
+                  }
                 }
               }}
               class="flex p-1 border shadow-md border-slate-800"
             >
-              <Avatar />
+              <Avatar imgUrl={`${urls.backendUrl}/database-files/${friend.avatarId}`} />
               <h1 class="px-4">{friend.display_name}</h1>
             </div>
           )}

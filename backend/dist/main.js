@@ -10,7 +10,7 @@ async function bootstrap() {
     const app = await core_1.NestFactory.create(app_module_1.AppModule);
     app.enableCors({
         origin: true,
-        credentials: true,
+        credentials: true
     });
     app.use(cookieParser());
     app.useWebSocketAdapter(new platform_ws_1.WsAdapter(app));

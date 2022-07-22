@@ -8,7 +8,7 @@ import CreateRoom from './admin/createRoom';
 const ChatSideBar: Component = () => {
   const [keyword, setKeyword] = createSignal('');
 
-  const [state, { setCurrentRoom, changeTab }] = useStore();
+  const [state, { setCurrentRoom, changeTab, toggleShowMessages }] = useStore();
 
   return (
     <>
@@ -35,7 +35,7 @@ const ChatSideBar: Component = () => {
           >
             <CreateRoom />
           </Search>
-          <div class="row-span-4 px-2 bg-skin-menu-background">
+          <div class="row-span-4 px-2">
             <Show when={state.chat.rooms}>
               <For
                 each={state.chat.rooms!.filter(
@@ -50,6 +50,9 @@ const ChatSideBar: Component = () => {
                   <div
                     onClick={() => {
                       setCurrentRoom(room);
+                      if (!state.chatUi.showMessages) {
+                        toggleShowMessages();
+                      }
                     }}
                     class="flex p-2 items-center"
                   >

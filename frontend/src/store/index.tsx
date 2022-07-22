@@ -38,6 +38,7 @@ export interface ActionsType {
   loadFriendMessages?: (id: number | undefined) => void;
   mutateFriendMsgs?: (msg: Message) => void;
   toggleShowMessages: () => void;
+  updateAvatarId: () => void;
 }
 
 export type Status = 'idle' | 'loading' | 'success' | 'failed';
@@ -156,6 +157,9 @@ export function StoreProvider(props: any) {
           s.chatUi.showMessages = !s.chatUi.showMessages;
         })
       )
+    },
+    updateAvatarId() {
+      setState('currentUser', 'userData', 'avatarId', (id) => id + 1);
     }
   };
   const store: [StoreState, ActionsType] = [state, actions];
