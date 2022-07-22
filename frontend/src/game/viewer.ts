@@ -12,8 +12,10 @@ const httpServerPort = 3000;
 const socketServerPath = "pong_viewer";
 let socketErrObject: any = undefined;
 let ws: any; // webSocket
-const canvasWidth = 1000;
-const canvasHeight = 800;
+let heightOffset: number = 88; // bar and play button heaight
+let canvasWidth: number = Math.min(window.innerHeight - heightOffset, window.innerWidth);
+let canvasHeight: number = canvasWidth;
+let widthOffset: number = (window.innerWidth - canvasWidth) / 2;
 let gameStarted = false;
 let gameFinished = false;
 let sessionIdsArray: any = []; // list of available game session (top of the screen)
@@ -96,7 +98,7 @@ export function initViewerSocket() {
       playScore = true;
     if (
       (df.ballSpeedX !== 0 || df.ballSpeedY !== 0) &&
-      (ballSpeedTmp[0] !== df.ballSpeedX || ballSpeedTmp[1] !== df.ballSpeedY)
+        (ballSpeedTmp[0] !== df.ballSpeedX || ballSpeedTmp[1] !== df.ballSpeedY)
     )
       playImpact = true;
   });
@@ -315,8 +317,8 @@ export const viewerSketch = (p5: p5Type) => {
     input.value(""); // empty box
     if (
       idText === "" ||
-      isNaN(idText) ||
-      !sessionIdsArray.includes(p5.int(idText))
+        isNaN(idText) ||
+        !sessionIdsArray.includes(p5.int(idText))
     ) {
       console.log(`${idText} is an invalid id`);
       document.querySelector("input")!.placeholder = "invalid id";
@@ -396,8 +398,11 @@ export const viewerSketch = (p5: p5Type) => {
   // creates and sets sliders to slider array
   function initSliders() {
     sliders.forEach((s) =>
-      s.setP5Slider(p5.createSlider(s.s1, s.s2, s.s3, s.s4))
-    );
+      s.setP5Slider(
+        p5.createSlider(s.s1, s.s2, s.s3, s.s4),
+        widthOffset,
+        heightOffset
+      ));
   }
 
   // called each frame. calls drawcell on every sliders and gets their values
@@ -418,8 +423,34 @@ export const viewerSketch = (p5: p5Type) => {
   }
   /* === */
 
+  // function that adapts the screen to its current size
+  function handleWindowResize() {
+    const newCanvasWidth = Math.min(window.innerHeight - heightOffset, window.innerWidth);
+    const newCanvasHeight = newCanvasWidth;
+    const newWidthOffset = (window.innerWidth - newCanvasWidth) / 2;
+    const newHeightOffset = 88;
+    sliders.forEach((s) => {
+      s.x = (s.x / canvasWidth * newCanvasWidth);
+      s.y = (s.y / canvasHeight * newCanvasHeight);
+      s.width = (s.width / canvasWidth * newCanvasWidth);
+      s.height = (s.height / canvasHeight * newCanvasHeight);
+      s.p5Slider.position(
+        s.x + newWidthOffset + (s.width * 0.1) / 2,
+        s.y + newHeightOffset + s.height / 2
+      );
+      s.p5Slider.size(s.width * 0.9, s.height / 2);
+    })
+    p5.resizeCanvas(newCanvasWidth, newCanvasHeight);
+    p5.background(0);
+    canvasWidth = newCanvasWidth;
+    canvasHeight = newCanvasHeight;
+    widthOffset = newWidthOffset;
+    heightOffset = newHeightOffset;
+  }
+
   /* === p5.js main functions === */
   p5.preload = () => {
+    //loading sound
     impactSound = p5.loadSound(soundImpact);
     scoreSound = p5.loadSound(soundScore);
   };
@@ -445,6 +476,7 @@ export const viewerSketch = (p5: p5Type) => {
 
   p5.draw = () => {
     p5.background(0);
+    handleWindowResize()
     if (handleSocketError()) return; //check if we are connected to server
     drawAndGetSliderValues();
     getAndDisplayIds();
