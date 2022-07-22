@@ -29,6 +29,7 @@ const ChatMessagesBox: Component<{
   onMount(() => {
     ws = new WebSocket(urls.wsUrl);
     ws.addEventListener('message', (e) => {
+      console.log("data", e.data);
       const res = JSON.parse(e.data);
       if (res.event === 'chat_room_msg') {
         if (mutate) {

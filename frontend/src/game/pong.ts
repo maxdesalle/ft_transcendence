@@ -14,8 +14,8 @@ let isDisconnected = false;
 let socketErrObject: any = undefined; // if not undefined, socket returned an error
 let ws: any; // webSocket
 let playerNumber = 0; // 0 if not set yet, otherwise 1 or 2
-const canvasWidth = 1000;
-const canvasHeight = 800;
+const canvasWidth = 100;
+const canvasHeight = 80;
 let sessionId = -1; // current game session id (will be sent by server)
 
 //game variables (the server will send the correct values to df before the game starts)
