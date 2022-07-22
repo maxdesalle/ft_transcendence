@@ -37,6 +37,7 @@ export interface ActionsType {
   changeTab: (tab: TAB) => void;
   loadFriendMessages?: (id: number | undefined) => void;
   mutateFriendMsgs?: (msg: Message) => void;
+  toggleShowMessages: () => void;
 }
 
 export type Status = 'idle' | 'loading' | 'success' | 'failed';
@@ -69,6 +70,7 @@ export interface StoreState {
     twoFaConfirmed: boolean;
   };
   chatUi: {
+    showMessages: boolean;
     //whitch tab is currently selected
     tab: TAB;
   };
@@ -102,6 +104,7 @@ export function StoreProvider(props: any) {
     },
     chatUi: {
       tab: TAB.ROOMS,
+      showMessages: false,
     },
     currentUser: {
       twoFaConfirmed: false,
@@ -147,6 +150,13 @@ export function StoreProvider(props: any) {
         }),
       );
     },
+    toggleShowMessages() {
+      setState(
+        produce(s => {
+          s.chatUi.showMessages = !s.chatUi.showMessages;
+        })
+      )
+    }
   };
   const store: [StoreState, ActionsType] = [state, actions];
   users = createUsers(actions, state, setState);

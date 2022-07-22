@@ -1,5 +1,4 @@
 import { compareAsc, parseISO } from 'date-fns';
-import { IoSend } from 'solid-icons/io';
 import {
   Component,
   createEffect,
@@ -20,7 +19,7 @@ const ChatMessagesBox: Component<{
   onSendMessage: (message: string) => void;
   messages: Message[];
 }> = (props) => {
-  const [state, { loadMessages, mutateRoomMsgs: mutate, mutateFriendMsgs }] =
+  const [state, { loadMessages, mutateRoomMsgs: mutateRoomMsgs, mutateFriendMsgs }] =
     useStore();
 
   const [message, setMessage] = createSignal('');
@@ -28,14 +27,14 @@ const ChatMessagesBox: Component<{
 
   onMount(() => {
     ws = new WebSocket(urls.wsUrl);
-    ws.addEventListener('message', (e) => {
-      const res = JSON.parse(e.data);
+    ws.addEventListener('message', ({ data }) => {
+      const res = JSON.parse(data);
+      console.log('current event: ', res.event);
       if (res.event === 'chat_room_msg') {
-        if (mutate) {
-          mutate(res.message as Message);
+        if (mutateRoomMsgs) {
+          mutateRoomMsgs(res.message as Message);
         }
       } else if (res.event == 'chat_dm') {
-        console.log('dm: ', res.message);
         if (mutateFriendMsgs) {
           mutateFriendMsgs(res.message as Message);
         }
@@ -44,7 +43,6 @@ const ChatMessagesBox: Component<{
   });
 
   createEffect(() => {
-    console.log(state.chat.currentRoom);
     if (loadMessages && state.chat.currentRoom) {
       loadMessages(state.chat.currentRoom.room_id);
     }
@@ -56,7 +54,7 @@ const ChatMessagesBox: Component<{
 
   return (
     <>
-      <Show when={props.messages} fallback={<p>No new messages</p>}>
+      <Show when={props.messages}>
         <MessageList
           messages={props.messages
             .slice()
