@@ -444,6 +444,10 @@ export const viewerSketch = (p5: p5Type) => {
     //updating input box
     input.position(newWidthOffset, newCanvasHeight / 20 + newHeightOffset);
     input.size(newCanvasWidth / 7, newCanvasHeight / 25);
+    //updating submit button box
+    button.position(input.x + input.width, input.y);
+    button.size(input.width / 1.5, input.height);
+
 
     p5.resizeCanvas(newCanvasWidth, newCanvasHeight);
     p5.background(0);
@@ -473,6 +477,8 @@ export const viewerSketch = (p5: p5Type) => {
     button.position(input.x + input.width, input.y);
     button.mousePressed(handleSubmit);
     button.size(input.width / 1.5, input.height);
+    button.style('color', 'white');
+    button.style('background-color', '#555555');
     // sliders
     initSliders();
     p5.fill(255);
