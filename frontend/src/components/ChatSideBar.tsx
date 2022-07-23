@@ -56,7 +56,7 @@ const ChatSideBar: Component = () => {
                     }}
                     class="flex p-2 items-center"
                   >
-                    <HiSolidUserGroup size={24} />
+                    <HiSolidUserGroup color="#2564eb" size={24} />
                     <div class="pl-2 text-white hover:text-slate-400 transition-all">
                       <p class="font-bold first-letter:capitalize">
                         {room.room_name}

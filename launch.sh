@@ -4,11 +4,15 @@ set -x
 set -e
 
 cd frontend
-npm i
+if [! -d "node_modules" ]; then
+  npm install
+fi
 npm run dev & P=$!
 
 cd ../backend
-npm i --force
+if [! -d "node_modules" ]; then
+  npm install
+fi
 docker-compose up -d
 npm run start:dev
 

@@ -1,0 +1,9 @@
+# [x] block and unblock
+
+## [] test it
+
+### setup the api for / block and unblock friend
+
+## [] add a modal with block if not (for unblock ????)
+
+## [] for room it's a modal for muting/promoting/banning (if banned goes to banner users tab if muted still appears on the list but he cant send messages)

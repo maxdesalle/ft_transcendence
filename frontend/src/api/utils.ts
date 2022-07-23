@@ -24,4 +24,6 @@ export const routes = {
   sendDm: `${urls.backendUrl}/chat/dm`,
   chat: `${urls.backendUrl}/chat`,
   addUserToRoomByName: `${urls.backendUrl}/chat/add_group_user_by_name`,
+  blockUser: `${urls.backendUrl}/chat/block`,
+  unblockUser: `${urls.backendUrl}/chat/unblock`,
 };

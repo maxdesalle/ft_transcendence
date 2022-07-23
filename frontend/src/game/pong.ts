@@ -1,21 +1,19 @@
-import p5Type from "p5";
-import { Slider } from "./slider";
-import "../utils/p5soundfix";
-import soundScore from "../assets/client_music_score.mp3";
-import soundImpact from "../assets/client_music_impact.mp3";
-import "p5/lib/addons/p5.sound";
+import p5Type from 'p5';
+import { Slider } from './slider';
+import '../utils/p5soundfix';
+import soundScore from '../assets/client_music_score.mp3';
+import soundImpact from '../assets/client_music_impact.mp3';
+import 'p5/lib/addons/p5.sound';
 
-const socketServerIP = "localhost";
+const socketServerIP = 'localhost';
 const socketServerPort = 3000;
-const httpServerIP = "localhost";
-const httpServerPort = 3000;
-const socketServerPath = "pong";
+const socketServerPath = 'pong';
 let isDisconnected = false;
 let socketErrObject: any = undefined; // if not undefined, socket returned an error
 let ws: any; // webSocket
 let playerNumber = 0; // 0 if not set yet, otherwise 1 or 2
-const canvasWidth = 100;
-const canvasHeight = 80;
+const canvasWidth = 1000;
+const canvasHeight = 800;
 let sessionId = -1; // current game session id (will be sent by server)
 
 //game variables (the server will send the correct values to df before the game starts)
@@ -69,21 +67,21 @@ export function initSocket(): WebSocket {
   const serverAddress = `ws://${socketServerIP}:${socketServerPort}/${socketServerPath}`;
   ws = new WebSocket(serverAddress);
 
-  ws.addEventListener("open", (e: any) => {
+  ws.addEventListener('open', (e: any) => {
     console.log(`connected to ${serverAddress}`);
     console.log(e);
   });
-  ws.addEventListener("close", (e: any) => {
+  ws.addEventListener('close', (e: any) => {
     isDisconnected = true;
     playerNumber = 0;
-    console.log("connection closed", e);
+    console.log('connection closed', e);
   });
-  ws.addEventListener("error", (e: any) => {
+  ws.addEventListener('error', (e: any) => {
     socketErrObject = e;
     console.error(`socket error:${e}`);
   });
   // set all the game variables
-  ws.addEventListener("message", ({ data }: { data: any }) => {
+  ws.addEventListener('message', ({ data }: { data: any }) => {
     const dataOB = JSON.parse(String(data));
     sessionId = dataOB.id ?? sessionId;
     if (playerNumber === 1)
@@ -118,7 +116,7 @@ export const sketch = (p5: p5Type) => {
   let sliders = [
     new Slider(
       p5,
-      "volume",
+      'volume',
       2 * (canvasWidth / 7),
       (canvasHeight / 5) * 3,
       canvasWidth / 7,
@@ -127,11 +125,11 @@ export const sketch = (p5: p5Type) => {
       1,
       1,
       0,
-      false
+      false,
     ),
     new Slider(
       p5,
-      "color",
+      'color',
       4 * (canvasWidth / 7),
       (canvasHeight / 5) * 3,
       canvasWidth / 7,
@@ -140,11 +138,11 @@ export const sketch = (p5: p5Type) => {
       6,
       colorIndex,
       1,
-      false
+      false,
     ),
     new Slider(
       p5,
-      "power ups",
+      'power ups',
       3 * (canvasWidth / 7),
       (canvasHeight / 5) * 1,
       canvasWidth / 7,
@@ -153,7 +151,7 @@ export const sketch = (p5: p5Type) => {
       1,
       0,
       1,
-      true
+      true,
     ),
   ];
 
@@ -165,7 +163,7 @@ export const sketch = (p5: p5Type) => {
     const col = p5.color(
       colors[colorIndex].r,
       colors[colorIndex].g,
-      colors[colorIndex].b
+      colors[colorIndex].b,
     );
     p5.fill(col);
     p5.text(`Player ${df.playerWon} won!`, canvasWidth / 2, canvasHeight / 2);
@@ -181,7 +179,7 @@ export const sketch = (p5: p5Type) => {
     const col = p5.color(
       colors[colorIndex].r,
       colors[colorIndex].g,
-      colors[colorIndex].b
+      colors[colorIndex].b,
     );
     if (socketErrObject) {
       sliders.forEach((s) => s.p5Slider.remove());
@@ -190,7 +188,7 @@ export const sketch = (p5: p5Type) => {
       p5.text(
         `socket error: ${socketErrObject}`,
         canvasWidth / 4,
-        canvasHeight / 4
+        canvasHeight / 4,
       );
       return true;
     }
@@ -199,9 +197,9 @@ export const sketch = (p5: p5Type) => {
       p5.textAlign(p5.CENTER, p5.CENTER);
       p5.fill(col);
       p5.text(
-        "the other player has been disconnected",
+        'the other player has been disconnected',
         canvasWidth / 2,
-        canvasHeight / 2
+        canvasHeight / 2,
       );
       return true;
     }
@@ -209,9 +207,9 @@ export const sketch = (p5: p5Type) => {
       p5.textAlign(p5.CENTER, p5.CENTER);
       p5.fill(col);
       p5.text(
-        "waiting for the other player...",
+        'waiting for the other player...',
         canvasWidth / 2,
-        canvasHeight / 2
+        canvasHeight / 2,
       );
       return true;
     }
@@ -223,7 +221,7 @@ export const sketch = (p5: p5Type) => {
     const col = p5.color(
       colors[colorIndex].r,
       colors[colorIndex].g,
-      colors[colorIndex].b
+      colors[colorIndex].b,
     );
     p5.fill(col);
     const x = (0.5 - df.middleLineThickness / 2) * canvasWidth;
@@ -233,7 +231,7 @@ export const sketch = (p5: p5Type) => {
         x,
         y,
         df.middleLineThickness * canvasWidth,
-        df.middleLineLength * canvasHeight
+        df.middleLineLength * canvasHeight,
       );
     }
   }
@@ -243,7 +241,7 @@ export const sketch = (p5: p5Type) => {
     const col = p5.color(
       colors[colorIndex].r,
       colors[colorIndex].g,
-      colors[colorIndex].b
+      colors[colorIndex].b,
     );
     p5.fill(col);
     let elTime = (Date.now() - df.sendTime) / 1000;
@@ -258,7 +256,7 @@ export const sketch = (p5: p5Type) => {
       xPos * canvasWidth,
       yPos * canvasHeight,
       df.racketThickness * canvasWidth,
-      df.racketLength * canvasHeight
+      df.racketLength * canvasHeight,
     );
   }
 
@@ -267,7 +265,7 @@ export const sketch = (p5: p5Type) => {
     const col = p5.color(
       colors[colorIndex].r,
       colors[colorIndex].g,
-      colors[colorIndex].b
+      colors[colorIndex].b,
     );
     p5.fill(col);
     let elTime = (Date.now() - df.sendTime) / 1000;
@@ -282,7 +280,7 @@ export const sketch = (p5: p5Type) => {
       xPos * canvasWidth,
       yPos * canvasHeight,
       df.racketThickness * canvasWidth,
-      df.racketLength * canvasHeight
+      df.racketLength * canvasHeight,
     );
   }
 
@@ -290,7 +288,7 @@ export const sketch = (p5: p5Type) => {
     const col = p5.color(
       colors[colorIndex].r,
       colors[colorIndex].g,
-      colors[colorIndex].b
+      colors[colorIndex].b,
     );
     p5.fill(col);
     const elTime = (Date.now() - df.sendTime) / 1000;
@@ -301,7 +299,7 @@ export const sketch = (p5: p5Type) => {
       xPos,
       yPos,
       df.ballRad * 2 * canvasWidth,
-      df.ballRad * 2 * canvasHeight
+      df.ballRad * 2 * canvasHeight,
     );
   }
 
@@ -309,7 +307,7 @@ export const sketch = (p5: p5Type) => {
     const col = p5.color(
       colors[colorIndex].r,
       colors[colorIndex].g,
-      colors[colorIndex].b
+      colors[colorIndex].b,
     );
     p5.fill(col);
     p5.textStyle(p5.BOLD);
@@ -318,20 +316,20 @@ export const sketch = (p5: p5Type) => {
     p5.text(
       `${df.p1Score}   ${df.p2Score}`,
       canvasWidth / 2,
-      canvasHeight * 0.1
+      canvasHeight * 0.1,
     );
   }
 
   function drawPowerUps() {
     powerUpsMap.forEach((yAndType, x) => {
       switch (yAndType.type) {
-        case "wall":
+        case 'wall':
           p5.fill(255);
           break;
-        case "upSpeed":
+        case 'upSpeed':
           p5.fill(255, 0, 0);
           break;
-        case "downSpeed":
+        case 'downSpeed':
           p5.fill(0, 255, 0);
           break;
       }
@@ -339,7 +337,7 @@ export const sketch = (p5: p5Type) => {
         x * canvasWidth,
         yAndType.y * canvasHeight,
         df.powerUpsSize * canvasWidth,
-        df.powerUpsSize * canvasHeight
+        df.powerUpsSize * canvasHeight,
       );
     });
   }
@@ -376,7 +374,7 @@ export const sketch = (p5: p5Type) => {
           p1Press: df.p1Press,
           sendTime: sendTimeStamp,
           p1Y: df.p1Y,
-        })
+        }),
       );
     } else if (playerNumber == 2 && pPressTmp !== df.p2Press) {
       sendTimeStamp = Date.now();
@@ -385,13 +383,13 @@ export const sketch = (p5: p5Type) => {
           p2Press: df.p2Press,
           sendTime: sendTimeStamp,
           p2Y: df.p2Y,
-        })
+        }),
       );
     }
   }
   function initSliders() {
     sliders.forEach((s) =>
-      s.setP5Slider(p5.createSlider(s.s1, s.s2, s.s3, s.s4))
+      s.setP5Slider(p5.createSlider(s.s1, s.s2, s.s3, s.s4)),
     );
   }
 
@@ -408,7 +406,7 @@ export const sketch = (p5: p5Type) => {
       p5.text(
         `waiting for player ${-playerNumber + 3}`,
         canvasWidth / 2,
-        canvasHeight / 2
+        canvasHeight / 2,
       );
       return true;
     }
@@ -419,10 +417,10 @@ export const sketch = (p5: p5Type) => {
     });
     sliders.forEach((s) => {
       switch (s.text) {
-        case "color":
+        case 'color':
           colorIndex = s.p5Slider.value();
           break;
-        case "volume":
+        case 'volume':
           //   const volumeLevel = s.p5Slider.value();
           //   impactSound.setVolume(volumeLevel);
           //   scoreSound.setVolume(volumeLevel);
@@ -433,23 +431,23 @@ export const sketch = (p5: p5Type) => {
     p5.fill(100);
     p5.textSize(canvasHeight / 25);
     p5.textAlign(p5.CENTER, p5.TOP);
-    p5.text("local settings", canvasWidth / 2, canvasHeight / 2);
+    p5.text('local settings', canvasWidth / 2, canvasHeight / 2);
     if (playerNumber == 1)
-      p5.text("global settings", canvasWidth / 2, canvasHeight * 0.01);
+      p5.text('global settings', canvasWidth / 2, canvasHeight * 0.01);
     else
       p5.text(
-        "player 1 chooses\nthe global settings",
+        'player 1 chooses\nthe global settings',
         canvasWidth / 2,
-        canvasHeight * 0.2
+        canvasHeight * 0.2,
       );
     sliders.forEach((s) => s.p5Slider.show());
     sliders.forEach((s) => {
       switch (s.text) {
-        case "color":
+        case 'color':
           s.drawCell(
             colors[colorIndex].r,
             colors[colorIndex].g,
-            colors[colorIndex].b
+            colors[colorIndex].b,
           );
           break;
         default:
@@ -461,7 +459,7 @@ export const sketch = (p5: p5Type) => {
     p5.textStyle(p5.NORMAL);
     p5.textSize(canvasHeight / 20);
     p5.textAlign(p5.CENTER, p5.BOTTOM);
-    p5.text("press enter to continue", canvasWidth / 2, canvasHeight * 0.9);
+    p5.text('press enter to continue', canvasWidth / 2, canvasHeight * 0.9);
     if (p5.keyIsPressed && p5.keyIsDown(p5.ENTER)) {
       isReady = true;
       sliders.forEach((s) => s.p5Slider.remove());
@@ -475,7 +473,7 @@ export const sketch = (p5: p5Type) => {
         ws.send(
           JSON.stringify({
             p2Ready: true,
-          })
+          }),
         );
     }
     return true;

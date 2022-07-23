@@ -57,7 +57,7 @@ export declare class ChatService {
     is_banned(user_id: number, room_id: number): Promise<boolean>;
     is_room_participant(user_id: number, room_id: number): Promise<boolean>;
     is_blocked(my_id: number, other_user_id: number): Promise<boolean>;
-    get_role(id: number, room_id: number): Promise<0 | 1 | -1 | 2>;
+    get_role(id: number, room_id: number): Promise<0 | 1 | 2 | -1>;
     isBlockedDMroom(room_id: number): Promise<boolean>;
     groupNameExists(group_name: string): Promise<boolean>;
     isDmRoom(room_id: number): Promise<boolean>;

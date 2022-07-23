@@ -19,7 +19,6 @@ const Header: Component = () => {
   const [isOpen, setIsOpen] = createSignal(false);
   let ref: any;
 
-  createEffect(() => {});
   return (
     <>
       <header class="flex items-center relative z-20 bg-skin-header-background p-2 px-6 justify-between">
@@ -47,7 +46,9 @@ const Header: Component = () => {
         </ul>
         <div class="relative">
           <button onClick={() => setIsOpen(!isOpen())}>
-            <Avatar imgUrl={`${urls.backendUrl}/database-files/${state.currentUser.userData?.avatarId}`} />
+            <Avatar
+              imgUrl={`${urls.backendUrl}/database-files/${state.currentUser.userData?.avatarId}`}
+            />
           </button>
           <Modal isOpen={isOpen()} toggleModal={setIsOpen}>
             <Show when={state.currentUser.userData}>
@@ -63,7 +64,7 @@ const Header: Component = () => {
           <div class="absolute top-0 z-10 ml-16">
             <For
               each={state.users
-                ?.slice()
+                ?.slice(0, 7)
                 ?.filter((user) =>
                   user.login42
                     .toLocaleLowerCase()

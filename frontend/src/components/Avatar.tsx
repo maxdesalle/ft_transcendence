@@ -1,15 +1,16 @@
-import { Component, Show } from "solid-js";
-import { useStore } from "../store";
+import { Component, Show } from 'solid-js';
+import { useStore } from '../store';
+import defaultAvatar from '../../../backend/images/avatardefault.png';
 
 const Avatar: Component<{ imgUrl?: string }> = (props) => {
   const [state] = useStore();
   return (
     <>
       <Show when={state.currentUser.userData?.avatarId}>
-        <div class="relative w-8 h-8 bg-gray-100 rounded-full dark:bg-gray-600">
+        <div class="relative w-8 h-8 bg-blue-400 rounded-full dark:bg-gray-600">
           <img
-            class="w-8 h-8 bg-gray-100 rounded-full text-gray-400"
-            src={props.imgUrl}
+            class="w-8 h-8 bg-blue-400 rounded-full"
+            src={props.imgUrl ? props.imgUrl : defaultAvatar}
           />
           <path
             fill-rule="evenodd"

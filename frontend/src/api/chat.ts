@@ -60,6 +60,14 @@ export const addUserToRoomByName = async (data: {
   return await api.post<RoomInfo>(routes.addUserToRoomByName, data);
 };
 
+export const blockUser = async (data: { user_id: number }) => {
+  return await api.post(routes.blockUser, data);
+};
+
+export const unblockUser = async (data: { user_id: number }) => {
+  return await api.post(routes.unblockUser, data);
+};
+
 export const chatApi = {
   createRoom,
   getRooms,
