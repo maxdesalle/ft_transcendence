@@ -502,7 +502,7 @@ export const sketch = (p5: p5Type) => {
     const newCanvasWidth = Math.min(window.innerHeight - heightOffset, window.innerWidth);
     const newCanvasHeight = newCanvasWidth;
     const newWidthOffset = (window.innerWidth - newCanvasWidth) / 2;
-    const newHeightOffset = 88;
+    const newHeightOffset = heightOffset;
     sliders.forEach((s) => {
       s.x = (s.x / canvasWidth * newCanvasWidth);
       s.y = (s.y / canvasHeight * newCanvasHeight);

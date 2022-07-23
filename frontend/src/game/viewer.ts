@@ -12,7 +12,7 @@ const httpServerPort = 3000;
 const socketServerPath = "pong_viewer";
 let socketErrObject: any = undefined;
 let ws: any; // webSocket
-let heightOffset: number = 88; // bar and play button heaight
+let heightOffset: number = 54; // bar button height
 let canvasWidth: number = Math.min(window.innerHeight - heightOffset, window.innerWidth);
 let canvasHeight: number = canvasWidth;
 let widthOffset: number = (window.innerWidth - canvasWidth) / 2;
@@ -113,7 +113,7 @@ export const viewerSketch = (p5: p5Type) => {
       3 * (canvasWidth / 7),
       canvasHeight / 20,
       canvasWidth / 7,
-      canvasHeight / 15,
+      canvasHeight / 10,
       0,
       1,
       1,
@@ -126,7 +126,7 @@ export const viewerSketch = (p5: p5Type) => {
       5 * (canvasWidth / 7),
       canvasHeight / 20,
       canvasWidth / 7,
-      canvasHeight / 15,
+      canvasHeight / 10,
       0,
       6,
       colorIndex,
@@ -428,7 +428,7 @@ export const viewerSketch = (p5: p5Type) => {
     const newCanvasWidth = Math.min(window.innerHeight - heightOffset, window.innerWidth);
     const newCanvasHeight = newCanvasWidth;
     const newWidthOffset = (window.innerWidth - newCanvasWidth) / 2;
-    const newHeightOffset = 88;
+    const newHeightOffset = heightOffset;
     sliders.forEach((s) => {
       s.x = (s.x / canvasWidth * newCanvasWidth);
       s.y = (s.y / canvasHeight * newCanvasHeight);
@@ -436,10 +436,15 @@ export const viewerSketch = (p5: p5Type) => {
       s.height = (s.height / canvasHeight * newCanvasHeight);
       s.p5Slider.position(
         s.x + newWidthOffset + (s.width * 0.1) / 2,
-        s.y + newHeightOffset + s.height / 2
+        s.y + newHeightOffset + s.height / 1.5
       );
       s.p5Slider.size(s.width * 0.9, s.height / 2);
-    })
+    });
+
+    //updating input box
+    input.position(newWidthOffset, newCanvasHeight / 20 + newHeightOffset);
+    input.size(newCanvasWidth / 7, newCanvasHeight / 25);
+
     p5.resizeCanvas(newCanvasWidth, newCanvasHeight);
     p5.background(0);
     canvasWidth = newCanvasWidth;
@@ -460,7 +465,7 @@ export const viewerSketch = (p5: p5Type) => {
     p5.noStroke();
     // create input box
     input = p5.createInput();
-    input.position(0, canvasHeight / 20);
+    input.position(widthOffset, canvasHeight / 20 + heightOffset);
     input.size(canvasWidth / 7, canvasHeight / 25);
     document.querySelector("input")!.placeholder = "enter id";
     // create submit button
