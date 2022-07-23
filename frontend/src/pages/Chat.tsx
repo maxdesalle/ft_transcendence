@@ -1,4 +1,4 @@
-import { Component, Match, Suspense, Switch } from 'solid-js';
+import { Component, Match, Show, Suspense, Switch } from 'solid-js';
 import ChatSideBar from '../components/ChatSideBar';
 import ChatMessagesBox from '../components/ChatMessagesBox';
 import ChatRightSideBar from '../components/ChatRightSideBar';
@@ -30,8 +30,7 @@ const Chat: Component = () => {
   };
 
   return (
-    <div class="grid grid-cols-6 h-90">
-      <Suspense>
+    <div class="grid grid-cols-6 h-full">
         <div class="flex flex-col col-span-1 border-x-header-menu border-x">
           <Scrollbars class="bg-red-600">
             <ChatSideBar />
@@ -56,7 +55,6 @@ const Chat: Component = () => {
         <div class="flex relative flex-col border-x shadow-md border-x-header-menu col-span-1">
           <ChatRightSideBar />
         </div>
-      </Suspense>
     </div>
   );
 };

@@ -101,7 +101,7 @@ __decorate([
     (0, swagger_1.ApiConsumes)('multipart/form-data'),
     (0, swagger_1.ApiBody)({
         description: 'avatar image file',
-        type: fileUpload_dto_1.fileUploadDto,
+        type: fileUpload_dto_1.fileUploadDto
     }),
     (0, common_1.UseInterceptors)((0, platform_express_1.FileInterceptor)('file')),
     openapi.ApiResponse({ status: 201, type: String }),

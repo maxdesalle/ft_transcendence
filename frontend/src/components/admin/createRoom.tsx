@@ -2,12 +2,6 @@ import { Component, createRenderEffect, createSignal } from 'solid-js';
 import { chatApi } from '../../api/chat';
 import { useStore } from '../../store';
 
-function model(el: any, accessor: any) {
-  const [s, set] = accessor();
-  el.addEventListener('input', (e: any) => set(e.currentTarget.value));
-  createRenderEffect(() => (el.value = s()));
-}
-
 const CreateRoom: Component<{ ref?: any }> = () => {
   const [roomName, setRoomName] = createSignal('');
   const [password, setPassword] = createSignal('');
@@ -15,6 +9,7 @@ const CreateRoom: Component<{ ref?: any }> = () => {
   const [_, { updateRooms }] = useStore();
 
   const onCreateRoom = () => {
+    console.log("creating group: ", roomName());
     if (!roomName().length) return;
     chatApi.createRoom({ name: roomName() }).then((res) => {
       if (updateRooms) {
@@ -28,6 +23,7 @@ const CreateRoom: Component<{ ref?: any }> = () => {
     <div class="flex flex-col">
       <div>
         <input
+          onInput={(e) => setRoomName(e.currentTarget.value)}
           autocomplete="off"
           type="text"
           class="bg-white px-4 py-2 rounded border-b focus:outline-none border-b-blue-800 focus:text-blue-600"
@@ -61,7 +57,7 @@ const CreateRoom: Component<{ ref?: any }> = () => {
           onClick={onCreateRoom}
           class="px-6 py-2 text-sm text-blue-100 transition-colors duration-300 bg-blue-600 rounded-full shadow-xl hover:bg-blue-900 shadow-blue-400/30"
         >
-          Create room
+          Create Room
         </button>
       </div>
     </div>

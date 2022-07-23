@@ -235,7 +235,7 @@ export const createMessageById = (
   );
 
   Object.assign(actions, {
-    mutate(data: Message) {
+    mutateRoomMsgs(data: Message) {
       mutate([...state.chat.roomMsgs!, data]);
     },
 

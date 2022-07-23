@@ -1,7 +1,5 @@
 import { useNavigate } from 'solid-app-router';
 import { Component, createSignal, For, Show, useTransition } from 'solid-js';
-import { RoomInfoShort } from '../types/chat.interface';
-import { User } from '../types/user.interface';
 import UserCard from './UserCard';
 
 import { AiOutlinePlusCircle } from 'solid-icons/ai';
@@ -15,19 +13,18 @@ const ChatRightSideBar: Component<{}> = () => {
   const [pending, start] = useTransition();
   return (
     <>
-      <div>
-        <h4 class="text-center p-2 text-white bg-skin-menu-background">
+      <div class='text-white'>
+        <h4 class="text-center p-2 bg-skin-menu-background">
           Admin
         </h4>
         <Show when={state.currentUser.userData}>
           <UserCard user={state.currentUser.userData!} />
         </Show>
       </div>
-      <div class="h-full bg-skin-menu-background">
-        <h4 class="text-center p-2 bg-skin-menu-background text-white">
+      <div class="h-full text-white">
+        <h4 class="text-center p-2 bg-skin-menu-background">
           Members
         </h4>
-
         <div class="flex items-center p-2 pl-6">
           <button onClick={() => setIsOpen(!isOpen())}>
             <AiOutlinePlusCircle class="block" size={26} />

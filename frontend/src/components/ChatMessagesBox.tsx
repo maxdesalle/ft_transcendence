@@ -1,5 +1,4 @@
 import { compareAsc, parseISO } from 'date-fns';
-import { IoSend } from 'solid-icons/io';
 import {
   Component,
   createEffect,
@@ -8,19 +7,19 @@ import {
   onMount,
   Show,
 } from 'solid-js';
-import Avatar from './Avatar';
 import MessageList from './MessageList';
 import { useStore } from '../store';
 import ChatForm from './ChatForm';
 import { urls } from '../api/utils';
 import { Message } from '../types/chat.interface';
+import PendingFriendReqCard from './PendingFriendReqCard';
 
 //TODO: put input here and add a function as prop
 const ChatMessagesBox: Component<{
   onSendMessage: (message: string) => void;
   messages: Message[];
 }> = (props) => {
-  const [state, { loadMessages, mutateRoomMsgs: mutate, mutateFriendMsgs }] =
+  const [state, { loadMessages, mutateRoomMsgs: mutateRoomMsgs, mutateFriendMsgs }] =
     useStore();
 
   const [message, setMessage] = createSignal('');
@@ -28,15 +27,13 @@ const ChatMessagesBox: Component<{
 
   onMount(() => {
     ws = new WebSocket(urls.wsUrl);
-    ws.addEventListener('message', (e) => {
-      console.log("data", e.data);
-      const res = JSON.parse(e.data);
+    ws.addEventListener('message', ({ data }) => {
+      const res = JSON.parse(data);
       if (res.event === 'chat_room_msg') {
-        if (mutate) {
-          mutate(res.message as Message);
+        if (mutateRoomMsgs) {
+          mutateRoomMsgs(res.message as Message);
         }
       } else if (res.event == 'chat_dm') {
-        console.log('dm: ', res.message);
         if (mutateFriendMsgs) {
           mutateFriendMsgs(res.message as Message);
         }
@@ -45,7 +42,6 @@ const ChatMessagesBox: Component<{
   });
 
   createEffect(() => {
-    console.log(state.chat.currentRoom);
     if (loadMessages && state.chat.currentRoom) {
       loadMessages(state.chat.currentRoom.room_id);
     }
@@ -57,7 +53,7 @@ const ChatMessagesBox: Component<{
 
   return (
     <>
-      <Show when={props.messages} fallback={<p>No new messages</p>}>
+      <Show when={state.chatUi.showMessages} fallback={<PendingFriendReqCard />}>
         <MessageList
           messages={props.messages
             .slice()

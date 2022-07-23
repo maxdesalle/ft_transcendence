@@ -45,6 +45,7 @@ let AuthController = class AuthController {
         });
         res.cookie('jwt_token', jwtToken);
         if (user.isTwoFactorAuthenticationEnabled) {
+            console.log("2fa activated");
             return res.redirect(`${this.configService.get('FRONTEND_URL')}/2fa`);
         }
         return res.redirect(this.configService.get('FRONTEND_URL'));
@@ -58,7 +59,6 @@ let AuthController = class AuthController {
         return res.send({ user });
     }
     twoFactorAuthentication(user, { twoFactorAuthenticationCode }, res) {
-        console.log(twoFactorAuthenticationCode);
         const isTwoFactorAuthenticationCodeValid = this.authService.check2FACodeValidity(twoFactorAuthenticationCode, user);
         if (!isTwoFactorAuthenticationCodeValid) {
             throw new common_1.UnauthorizedException('Invalid 2FA code');

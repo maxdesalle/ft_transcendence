@@ -4,7 +4,7 @@ module.exports = {
   theme: {
     extend: {
       height: {
-        90: "94vh",
+        90: "96vh",
         82: "83vh",
       },
       textColor: {
