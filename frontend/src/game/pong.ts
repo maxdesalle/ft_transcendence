@@ -14,8 +14,10 @@ let isDisconnected = false;
 let socketErrObject: any = undefined; // if not undefined, socket returned an error
 let ws: any; // webSocket
 let playerNumber = 0; // 0 if not set yet, otherwise 1 or 2
-const canvasWidth = 100;
-const canvasHeight = 80;
+let heightOffset: number = 88; // bar and play button heaight
+let canvasWidth: number = Math.min(window.innerHeight - heightOffset, window.innerWidth);
+let canvasHeight: number = canvasWidth;
+let widthOffset: number = (window.innerWidth - canvasWidth) / 2;
 let sessionId = -1; // current game session id (will be sent by server)
 
 //game variables (the server will send the correct values to df before the game starts)
@@ -99,14 +101,14 @@ export function initSocket(): WebSocket {
       if (key == `p${playerNumber}Press`) continue;
       df[key] = dataOB[key] ?? df[key];
     }
+    // to avoid playing sounds when default vals are sent
     if (dataOB.playerNumber !== undefined)
-      // to avoid playing sounds when default vals are sent
       return;
     if (scoreTmp[0] !== df.p1Score || scoreTmp[1] !== df.p2Score)
       playScore = true;
     if (
       (df.ballSpeedX !== 0 || df.ballSpeedY !== 0) &&
-      (ballSpeedTmp[0] !== df.ballSpeedX || ballSpeedTmp[1] !== df.ballSpeedY)
+        (ballSpeedTmp[0] !== df.ballSpeedX || ballSpeedTmp[1] !== df.ballSpeedY)
     )
       playImpact = true;
   });
@@ -391,8 +393,11 @@ export const sketch = (p5: p5Type) => {
   }
   function initSliders() {
     sliders.forEach((s) =>
-      s.setP5Slider(p5.createSlider(s.s1, s.s2, s.s3, s.s4))
-    );
+      s.setP5Slider(
+        p5.createSlider(s.s1, s.s2, s.s3, s.s4),
+        widthOffset,
+        heightOffset
+      ));
   }
 
   function handleSettings() {
@@ -423,9 +428,9 @@ export const sketch = (p5: p5Type) => {
           colorIndex = s.p5Slider.value();
           break;
         case "volume":
-          //   const volumeLevel = s.p5Slider.value();
-          //   impactSound.setVolume(volumeLevel);
-          //   scoreSound.setVolume(volumeLevel);
+          const volumeLevel = s.p5Slider.value();
+          impactSound.setVolume(volumeLevel);
+          scoreSound.setVolume(volumeLevel);
           break;
       }
     });
@@ -492,7 +497,33 @@ export const sketch = (p5: p5Type) => {
     }
   }
 
+  // function that adapts the screen to its current size
+  function handleWindowResize() {
+    const newCanvasWidth = Math.min(window.innerHeight - heightOffset, window.innerWidth);
+    const newCanvasHeight = newCanvasWidth;
+    const newWidthOffset = (window.innerWidth - newCanvasWidth) / 2;
+    const newHeightOffset = heightOffset;
+    sliders.forEach((s) => {
+      s.x = (s.x / canvasWidth * newCanvasWidth);
+      s.y = (s.y / canvasHeight * newCanvasHeight);
+      s.width = (s.width / canvasWidth * newCanvasWidth);
+      s.height = (s.height / canvasHeight * newCanvasHeight);
+      s.p5Slider.position(
+        s.x + newWidthOffset + (s.width * 0.1) / 2,
+        s.y + newHeightOffset + s.height / 2
+      );
+      s.p5Slider.size(s.width * 0.9, s.height / 2);
+    })
+    p5.resizeCanvas(newCanvasWidth, newCanvasHeight);
+    p5.background(0);
+    canvasWidth = newCanvasWidth;
+    canvasHeight = newCanvasHeight;
+    widthOffset = newWidthOffset;
+    heightOffset = newHeightOffset;
+  }
+
   p5.preload = () => {
+    //loading sound
     impactSound = p5.loadSound(soundImpact);
     scoreSound = p5.loadSound(soundScore);
   };
@@ -505,7 +536,8 @@ export const sketch = (p5: p5Type) => {
 
   p5.draw = () => {
     p5.background(0);
-    //if (handleClientNotConnected()) return; //check if we are connected to server
+    handleWindowResize()
+    if (handleClientNotConnected()) return; //check if we are connected to server
     drawSessionId();
     if (handleSettings()) return;
     if (handlePlayerWon()) return;

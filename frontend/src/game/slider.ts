@@ -42,19 +42,19 @@ export class Slider {
     this.isGlobal = isGlobal;
     this.a = a;
   }
+
   // call this function to set a p5.js slider to this slider object
-  setP5Slider(p5Slider: any) {
+  setP5Slider(p5Slider: any, widthOffset: number, heightOffset: number) {
     this.p5Slider = p5Slider;
     this.p5Slider.position(
-      this.x + (this.width * 0.1) / 2,
-      this.y + this.height / 2
+      this.x + widthOffset + (this.width * 0.1) / 2,
+      this.y + heightOffset + this.height / 2
     );
     this.p5Slider.size(this.width * 0.9, this.height / 2);
     this.p5Slider.hide();
   }
 
   // changes cell opacity to a (0-255)
-
   setOpacity(a: any) {
     this.a = a;
     if (this.p5Slider !== undefined)
@@ -63,8 +63,8 @@ export class Slider {
   // draws surrounding cell of slider (with the text)
   drawCell(r?: any, g?: any, b?: any) {
     let p5 = this._p5;
+    // === if nothing is passed
     if (r === undefined && g === undefined && b === undefined)
-      // === if nothing is passed
       r = g = b = 255;
     r = r === undefined ? 0 : r;
     g = g === undefined ? 0 : g;
