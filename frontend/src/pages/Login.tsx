@@ -21,7 +21,7 @@ const Login: Component = () => {
   };
 
   return (
-    <div class="flex flex-col items-center h-1/2">
+    <div class="flex flex-col items-center h-screen">
       <div class="max-w-md">
         <div class="flex flex-col border-2 p-2 mt-16 h-full">
           <label class="text-center" for="username">

@@ -1,15 +1,14 @@
-import { Link, useNavigate } from 'solid-app-router';
-import { Component, createEffect, createSignal, For, Show } from 'solid-js';
+import { Link } from 'solid-app-router';
+import { Component, createSignal, For, Show } from 'solid-js';
 import logo from '../assets/logo.png';
 import { BiSearchAlt2 } from 'solid-icons/bi';
-import UserCard from './UserCard';
 import HeaderProfileMenu from './HeaderProfileMenu';
 import Modal from './Modal';
 import Avatar from './Avatar';
 import { useStore } from '../store/index';
 import SearchUserCard from './SearchUserCard';
-import { urls } from '../api/utils';
-
+import { generateImageUrl } from '../utils/helpers';
+import defaultAvatar from '../../../backend/images/avatardefault.png';
 const LINKS = ['pong', 'viewer', 'chat', 'admin'];
 
 const Header: Component = () => {
@@ -21,7 +20,7 @@ const Header: Component = () => {
 
   return (
     <>
-      <header class="flex items-center relative z-20 bg-skin-header-background p-2 px-6 justify-between">
+      <header class="flex items-center relative z-20 bg-skin-header-background py-1 px-6 justify-between">
         <div class="flex items-center">
           <img class="w-9 rounded-xl mr-2 h-8" src={logo} alt="logo" />
           <span class="flex items-center rounded-md bg-inherit text-slate-300 h-8 border shadow-md p-1 border-header-menu">
@@ -47,7 +46,11 @@ const Header: Component = () => {
         <div class="relative">
           <button onClick={() => setIsOpen(!isOpen())}>
             <Avatar
-              imgUrl={`${urls.backendUrl}/database-files/${state.currentUser.userData?.avatarId}`}
+              imgUrl={
+                state.currentUser.userData?.avatarId
+                  ? `${generateImageUrl(state.currentUser.userData.avatarId)}`
+                  : defaultAvatar
+              }
             />
           </button>
           <Modal isOpen={isOpen()} toggleModal={setIsOpen}>
@@ -64,9 +67,9 @@ const Header: Component = () => {
           <div class="absolute top-0 z-10 ml-16">
             <For
               each={state.users
-                ?.slice(0, 7)
+                ?.slice()
                 ?.filter((user) =>
-                  user.login42
+                  user.display_name
                     .toLocaleLowerCase()
                     .includes(keyword().toLocaleLowerCase()),
                 )}

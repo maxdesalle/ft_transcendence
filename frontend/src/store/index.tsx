@@ -39,6 +39,7 @@ export interface ActionsType {
   mutateFriendMsgs?: (msg: Message) => void;
   toggleShowMessages: () => void;
   updateAvatarId: () => void;
+  loadApp: () => void;
 }
 
 export type Status = 'idle' | 'loading' | 'success' | 'failed';
@@ -118,11 +119,6 @@ export function StoreProvider(props: any) {
         return friends();
       },
       pendingFriendReq: [],
-      // get pendingFriendReq() {
-      //   return pendingFriendReq();
-      // },
-      // add friends, match history, etc ...
-
       //actions: change name, update avatar
     },
     get users() {
@@ -153,14 +149,22 @@ export function StoreProvider(props: any) {
     },
     toggleShowMessages() {
       setState(
-        produce(s => {
+        produce((s) => {
           s.chatUi.showMessages = !s.chatUi.showMessages;
-        })
-      )
+        }),
+      );
     },
     updateAvatarId() {
       setState('currentUser', 'userData', 'avatarId', (id) => id + 1);
-    }
+    },
+    loadApp() {
+      users = createUsers(actions, state, setState);
+      currentUser = createCurrentUser(actions, state, setState);
+      rooms = createRooms(actions, state, setState);
+      roomMsg = createMessageById(actions, state, setState);
+      friends = createFriends(actions, state, setState);
+      friendMsg = createFriendMsg(actions, state, setState);
+    },
   };
   const store: [StoreState, ActionsType] = [state, actions];
   users = createUsers(actions, state, setState);

@@ -11,7 +11,6 @@ const ChatRightSideBar: Component<{}> = () => {
   const navigate = useNavigate();
   const [isOpen, setIsOpen] = createSignal(false);
   const [state] = useStore();
-  const [pending, start] = useTransition();
   return (
     <>
       <div class="text-white">

@@ -31,30 +31,29 @@ const Chat: Component = () => {
 
   return (
     <div class="grid grid-cols-6 h-full">
-        <div class="flex flex-col col-span-1 border-x-header-menu border-x">
-          <Scrollbars class="bg-red-600">
-            <ChatSideBar />
-          </Scrollbars>
-        </div>
-        <div class="col-span-4 flex flex-col pl-1 pr-1 ">
-          <Switch>
-            <Match when={state.chatUi.tab === TAB.ROOMS}>
-              <ChatMessagesBox
-                messages={state.chat.roomMsgs!}
-                onSendMessage={onSendMessageToRoom}
-              />
-            </Match>
-            <Match when={state.chatUi.tab === TAB.FRIENDS}>
-              <ChatMessagesBox
-                messages={state.chat.friendMsgs!}
-                onSendMessage={onSendMessageToFriend}
-              />
-            </Match>
-          </Switch>
-        </div>
-        <div class="flex relative flex-col border-x shadow-md border-x-header-menu col-span-1">
-          <ChatRightSideBar />
-        </div>
+      <div class="flex flex-col col-span-1 border-x-header-menu border-x">
+        <ChatSideBar />
+      </div>
+      <div class="col-span-4 flex flex-col pl-1 pr-1 ">
+        <Switch>
+          <Match when={state.chatUi.tab === TAB.ROOMS}>
+            <ChatMessagesBox
+              messages={state.chat.roomMsgs!}
+              onSendMessage={onSendMessageToRoom}
+            />
+          </Match>
+          <Match when={state.chatUi.tab === TAB.FRIENDS}>
+            <ChatMessagesBox
+              messages={state.chat.friendMsgs!}
+              onSendMessage={onSendMessageToFriend}
+            />
+          </Match>
+        </Switch>
+      </div>
+      {/* TODO: adapt when it's on the friend tab or room tab */}
+      <div class="flex relative flex-col border-x shadow-md border-x-header-menu col-span-1">
+        <ChatRightSideBar />
+      </div>
     </div>
   );
 };

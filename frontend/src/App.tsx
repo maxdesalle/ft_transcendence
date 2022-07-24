@@ -18,33 +18,31 @@ import Login from './pages/Login';
 import { useStore } from './store/index';
 import EditProfile from './pages/EditProfile';
 import TwoFactorAuth from './pages/TwoFactorAuth';
-import { unwrap } from 'solid-js/store';
 
 const App: Component = () => {
   const [state, { loadPendingFriendReq }] = useStore();
-  const [appLoaded, setAppLaoded] = createSignal(false);
-
   const navigate = useNavigate();
 
-  if (state.token) setAppLaoded(true);
   onMount(() => {
+    // loadApp();
     if (loadPendingFriendReq) {
       loadPendingFriendReq();
     }
   });
 
   createEffect(() => {
+    console.log('current user: ', state.currentUser.userData);
     if (!state.token) {
       navigate('/login');
     }
   });
 
   return (
-    <div>
+    <>
       <Show when={state.token}>
         <Header />
       </Show>
-      <div class="container h-90">
+      <div class="container h-90 bg-skin-page">
         <Routes>
           <Route path="/" element={<Home />} />
           <Route path="/chat" element={<Chat />} />
@@ -57,7 +55,7 @@ const App: Component = () => {
           <Route path="/2fa" element={<TwoFactorAuth />} />
         </Routes>
       </div>
-    </div>
+    </>
   );
 };
 

@@ -19,8 +19,10 @@ const ChatMessagesBox: Component<{
   onSendMessage: (message: string) => void;
   messages: Message[];
 }> = (props) => {
-  const [state, { loadMessages, mutateRoomMsgs: mutateRoomMsgs, mutateFriendMsgs }] =
-    useStore();
+  const [
+    state,
+    { loadMessages, mutateRoomMsgs: mutateRoomMsgs, mutateFriendMsgs },
+  ] = useStore();
 
   const [message, setMessage] = createSignal('');
   let ws: WebSocket;
@@ -29,6 +31,7 @@ const ChatMessagesBox: Component<{
     ws = new WebSocket(urls.wsUrl);
     ws.addEventListener('message', ({ data }) => {
       const res = JSON.parse(data);
+      console.log(data);
       if (res.event === 'chat_room_msg') {
         if (mutateRoomMsgs) {
           mutateRoomMsgs(res.message as Message);
@@ -53,7 +56,10 @@ const ChatMessagesBox: Component<{
 
   return (
     <>
-      <Show when={state.chatUi.showMessages} fallback={<PendingFriendReqCard />}>
+      <Show
+        when={state.chatUi.showMessages}
+        fallback={<PendingFriendReqCard />}
+      >
         <MessageList
           messages={props.messages
             .slice()

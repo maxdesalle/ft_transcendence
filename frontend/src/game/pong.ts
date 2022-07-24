@@ -74,7 +74,6 @@ export function initSocket(): WebSocket {
 
   ws.addEventListener('open', (e: any) => {
     console.log(`connected to ${serverAddress}`);
-    console.log(e);
   });
   ws.addEventListener('close', (e: any) => {
     isDisconnected = true;
@@ -87,6 +86,7 @@ export function initSocket(): WebSocket {
   });
   // set all the game variables
   ws.addEventListener('message', ({ data }: { data: any }) => {
+    console.log(data);
     const dataOB = JSON.parse(String(data));
     sessionId = dataOB.id ?? sessionId;
     if (playerNumber === 1)

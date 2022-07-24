@@ -145,24 +145,6 @@ export const createCurrentUser = (
         setState('currentUser', 'pendingFriendReq', [...pendingFriendReq]);
       } catch (e) {}
     },
-
-    async acceptFriendReq(user_id: number) {
-      try {
-        const res = await api.post<friendReqEventDto>(routes.acceptFriendReq, {
-          user_id,
-        });
-        //when the update is successfull we filter out the accepted one from pending req
-        const id = res.data.friend_request.req_user_id;
-        const newFriend = state.users?.find((e) => e.id === id);
-        setState('currentUser', 'pendingFriendReq', (s) => [
-          ...s.filter((e) => e.user.id != id),
-        ]);
-        console.log('new friend: ', newFriend);
-        if (newFriend) {
-          setState('currentUser', 'friends', (e) => [...e, newFriend]);
-        }
-      } catch (e) {}
-    },
   });
 
   return user;
@@ -252,13 +234,32 @@ export const createFriends = (
   state: StoreState,
   setState: SetStoreFunction<StoreState>,
 ) => {
-  const [friends] = createResource(
+  const [friends, { mutate }] = createResource(
     async () => {
       const res = await api.get<User[]>(routes.friends);
       return res.data;
     },
     { initialValue: [] },
   );
+
+  Object.assign(actions, {
+    async acceptFriendReq(user_id: number) {
+      try {
+        const res = await api.post<friendReqEventDto>(routes.acceptFriendReq, {
+          user_id,
+        });
+        //when the update is successfull we filter out the accepted one from pending req
+        const id = res.data.friend_request.req_user_id;
+        const newFriend = state.users?.find((e) => e.id === id);
+        setState('currentUser', 'pendingFriendReq', (s) => [
+          ...s.filter((e) => e.user.id != id),
+        ]);
+        if (newFriend) {
+          mutate([...friends(), newFriend]);
+        }
+      } catch (e) {}
+    },
+  });
   return friends;
 };
 
