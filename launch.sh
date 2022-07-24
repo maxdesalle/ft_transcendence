@@ -22,6 +22,7 @@ if [ ! -d "node_modules" ]; then
 	npm install
 fi
 docker-compose up -d
+npm run prebuild # To avoid the "Cannot find stats.service module' error.
 npm run start:dev
 
 kill $P
