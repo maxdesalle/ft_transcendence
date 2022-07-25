@@ -44,19 +44,4 @@ export class WsGateway implements OnGatewayConnection, OnGatewayDisconnect{
 			this.wsService.notifyStatusChangeToFriends(user_id, 'offline');
 		}
 	}
-
-	// @SubscribeMessage('message')
-	// handleMessage(client: WebSocket, payload: string){
-	// 	console.log(`Message received`);
-	// 	console.log(payload);
-	// 	const pl = {
-	// 		event: 'party',
-	// 		what: 'pool party',
-	// 		where: 'pool'
-	// 	}
-	// 	client.send(JSON.stringify(pl));
-
-		// return 'Got your message!';
-	// }
-
 }

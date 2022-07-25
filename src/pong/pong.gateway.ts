@@ -30,7 +30,7 @@ interface playerScoresInterface {
 };
 const sockets: gameSocketsInterface[] = []; // array that will contain session objects
 
-// keeps track of who is connected to '/pong/ gateway (socket - user_id pairs)
+// keeps track of who is connected to /pong/ gateway (socket - user_id pairs)
 export const connected_users = new Map<WebSocket, number>();
 // pending invitations to play (inviting user_id - invited user_id pairs )
 const invitations = new Map<number, number>();
@@ -335,8 +335,4 @@ function startSession(p1Socket: WebSocket, p2Socket: WebSocket) {
     });
     return (id);
 }
-
-
-
-
 

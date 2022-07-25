@@ -1,5 +1,4 @@
 import { BadRequestException, ForbiddenException, Injectable } from '@nestjs/common';
-import { identity } from 'rxjs';
 import { User } from 'src/users/entities/user.entity';
 import { UsersService } from 'src/users/users.service';
 import { Connection, EntityManager } from 'typeorm';
