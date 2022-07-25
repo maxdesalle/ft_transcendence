@@ -1,12 +1,12 @@
 import { useNavigate } from 'solid-app-router';
-import { Component, createSignal, For, Show, useTransition } from 'solid-js';
+import { Component, createSignal, For, Show } from 'solid-js';
 import UserCard from './UserCard';
-
 import { AiOutlinePlusCircle } from 'solid-icons/ai';
 import Modal from './Modal';
 import AddUserToRoom from './admin/AddUserToRoom';
 import { useStore } from '../store';
 import Avatar from './Avatar';
+
 const ChatRightSideBar: Component<{}> = () => {
   const navigate = useNavigate();
   const [isOpen, setIsOpen] = createSignal(false);

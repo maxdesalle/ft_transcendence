@@ -19,39 +19,14 @@ const ChatMessagesBox: Component<{
   onSendMessage: (message: string) => void;
   messages: Message[];
 }> = (props) => {
-  const [
-    state,
-    { loadMessages, mutateRoomMsgs: mutateRoomMsgs, mutateFriendMsgs },
-  ] = useStore();
+  const [state, { loadMessages }] = useStore();
 
   const [message, setMessage] = createSignal('');
-  let ws: WebSocket;
-
-  onMount(() => {
-    ws = new WebSocket(urls.wsUrl);
-    ws.addEventListener('message', ({ data }) => {
-      const res = JSON.parse(data);
-      console.log(data);
-      if (res.event === 'chat_room_msg') {
-        if (mutateRoomMsgs) {
-          mutateRoomMsgs(res.message as Message);
-        }
-      } else if (res.event == 'chat_dm') {
-        if (mutateFriendMsgs) {
-          mutateFriendMsgs(res.message as Message);
-        }
-      }
-    });
-  });
 
   createEffect(() => {
     if (loadMessages && state.chat.currentRoom) {
       loadMessages(state.chat.currentRoom.room_id);
     }
-  });
-
-  onCleanup(() => {
-    ws.close();
   });
 
   return (

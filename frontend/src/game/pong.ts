@@ -4,6 +4,8 @@ import '../utils/p5soundfix';
 import soundScore from '../assets/client_music_score.mp3';
 import soundImpact from '../assets/client_music_impact.mp3';
 import 'p5/lib/addons/p5.sound';
+import { useStore } from '../store';
+import { createEffect } from 'solid-js';
 
 const socketServerIP = 'localhost';
 const socketServerPort = 3000;
@@ -73,21 +75,20 @@ export function initSocket(): WebSocket {
   ws = new WebSocket(serverAddress);
 
   ws.addEventListener('open', (e: any) => {
-    console.log(`connected to ${serverAddress}`);
+    // console.log(`connected to ${serverAddress}`);
   });
   ws.addEventListener('close', (e: any) => {
     isDisconnected = true;
     playerNumber = 0;
-    console.log('connection closed', e);
   });
   ws.addEventListener('error', (e: any) => {
     socketErrObject = e;
     console.error(`socket error:${e}`);
   });
   // set all the game variables
-  ws.addEventListener('message', ({ data }: { data: any }) => {
-    console.log(data);
-    const dataOB = JSON.parse(String(data));
+  ws.addEventListener('message', (e: any) => {
+    console.log(e);
+    const dataOB = JSON.parse(String(e.data));
     sessionId = dataOB.id ?? sessionId;
     if (playerNumber === 1)
       isOtherPlayerReady = dataOB.p2Ready ?? isOtherPlayerReady;
@@ -116,6 +117,7 @@ export function initSocket(): WebSocket {
 }
 
 export const sketch = (p5: p5Type) => {
+  const [state] = useStore();
   p5.disableFriendlyErrors = true;
   let sliders = [
     new Slider(
@@ -207,7 +209,7 @@ export const sketch = (p5: p5Type) => {
       );
       return true;
     }
-    if (playerNumber === 0) {
+    if (state.pong.inMatchMaking) {
       p5.textAlign(p5.CENTER, p5.CENTER);
       p5.fill(col);
       p5.text(
@@ -215,6 +217,8 @@ export const sketch = (p5: p5Type) => {
         canvasWidth / 2,
         canvasHeight / 2,
       );
+    }
+    if (playerNumber === 0) {
       return true;
     }
     return false;

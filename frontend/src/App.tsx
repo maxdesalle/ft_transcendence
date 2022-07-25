@@ -3,6 +3,7 @@ import {
   createEffect,
   createResource,
   createSignal,
+  onCleanup,
   onMount,
   Show,
 } from 'solid-js';
@@ -18,23 +19,48 @@ import Login from './pages/Login';
 import { useStore } from './store/index';
 import EditProfile from './pages/EditProfile';
 import TwoFactorAuth from './pages/TwoFactorAuth';
+import { Message } from './types/chat.interface';
 
 const App: Component = () => {
-  const [state, { loadPendingFriendReq }] = useStore();
+  const [state, { loadPendingFriendReq, mutateFriendMsgs, mutateRoomMsgs }] =
+    useStore();
   const navigate = useNavigate();
 
   onMount(() => {
-    // loadApp();
+    state.ws.addEventListener('message', (e) => {
+      console.log('message', e);
+      let res;
+      res = JSON.parse(e.data);
+      if (res.event === 'chat_room_msg') {
+        if (mutateRoomMsgs) {
+          mutateRoomMsgs(res.message as Message);
+        }
+      } else if (res.event == 'chat_dm') {
+        if (mutateFriendMsgs) {
+          mutateFriendMsgs(res.message as Message);
+        }
+      }
+    });
+    state.ws.addEventListener('open', (e) => {
+      console.log('conection open: ', e);
+    });
+    state.ws.addEventListener('close', (e) => {
+      console.log('closed', e);
+    });
     if (loadPendingFriendReq) {
       loadPendingFriendReq();
     }
   });
 
   createEffect(() => {
-    console.log('current user: ', state.currentUser.userData);
     if (!state.token) {
       navigate('/login');
     }
+  });
+
+  onCleanup(() => {
+    state.ws.close();
+    console.log('cleaning up');
   });
 
   return (

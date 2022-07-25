@@ -11,6 +11,7 @@ import {
   createRooms,
   createUsers,
 } from './storeActions';
+import { urls } from '../api/utils';
 
 const StoreContext = createContext<any>();
 
@@ -40,6 +41,7 @@ export interface ActionsType {
   toggleShowMessages: () => void;
   updateAvatarId: () => void;
   loadApp: () => void;
+  toggleMatchMaking: (val: boolean) => void;
 }
 
 export type Status = 'idle' | 'loading' | 'success' | 'failed';
@@ -52,6 +54,7 @@ export enum TAB {
 export interface StoreState {
   token: string | undefined;
   error?: any;
+  ws: WebSocket;
   chat: {
     status: Status;
     currentRoom: RoomInfoShort | undefined;
@@ -76,6 +79,9 @@ export interface StoreState {
     //whitch tab is currently selected
     tab: TAB;
   };
+  pong: {
+    inMatchMaking: boolean;
+  };
   readonly users: User[] | undefined;
 }
 
@@ -89,6 +95,10 @@ export function StoreProvider(props: any) {
 
   const [state, setState] = createStore<StoreState>({
     token: Cookies.get('jwt_token'),
+    ws: new WebSocket(urls.wsUrl),
+    pong: {
+      inMatchMaking: false,
+    },
     chat: {
       status: 'idle',
       get rooms() {
@@ -164,6 +174,9 @@ export function StoreProvider(props: any) {
       roomMsg = createMessageById(actions, state, setState);
       friends = createFriends(actions, state, setState);
       friendMsg = createFriendMsg(actions, state, setState);
+    },
+    toggleMatchMaking(val: boolean) {
+      setState('pong', 'inMatchMaking', val);
     },
   };
   const store: [StoreState, ActionsType] = [state, actions];
