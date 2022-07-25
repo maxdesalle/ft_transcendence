@@ -137,6 +137,12 @@ export class PongGateway implements OnGatewayConnection, OnGatewayDisconnect {
             // client.close(1000, 'inviting user is no longer available');
             return;
         }
+        // notify inviting user
+        this.wsService.sendMsgToUser(inviting_user_id, {
+            event: 'pong: invitation_accepted',
+            user_id
+        });
+
         // start game
         this.matchPlayers(inviting_user_socket, client);
     }
