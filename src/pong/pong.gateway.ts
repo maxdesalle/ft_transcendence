@@ -72,6 +72,8 @@ export class PongGateway implements OnGatewayConnection, OnGatewayDisconnect {
         connected_users.delete(client);
         clearInviteWait(user_id);
         removeGameSession(client);
+        if (user_id)
+            console.log(`User ${user_id} disconnected`)
     }
 
     @SubscribeMessage('play')
@@ -137,6 +139,14 @@ export class PongGateway implements OnGatewayConnection, OnGatewayDisconnect {
         }
         // start game
         this.matchPlayers(inviting_user_socket, client);
+    }
+
+    @SubscribeMessage('cancel')
+    @UseGuards(PongGuard)
+    clear(client: WebSocket, data: string) {
+        const user_id = connected_users.get(client);
+        clearInviteWait(user_id);
+        console.log(`User ${user_id} cleared as waiting player or inviting player`);
     }
 
    // TODO: refuse invitation ? withdraw invitation?
