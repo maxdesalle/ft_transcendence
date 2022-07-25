@@ -106,6 +106,15 @@ Wanna watch you VS you? `127.0.0.1:3000/viewer.html`. Check the top of the scree
       data: <user_id> (from the user that invited you)
     }));
 ```
+
+* cancel 'invite' and 'play' actions
+```
+    ws.send(JSON.stringify({
+      event: 'cancel'
+    }));
+```
+
+
 Check out client/player.html "script" part at the bottom
 
 ## Chat
@@ -201,6 +210,30 @@ socket.addEventListener('message', function(event) {
 ```
 
 ## Notifications via Websocket schemas/examples
+
+### Upon connection
+connection/authentication success
+```
+{
+    "event": "ws_auth_success"
+}
+```
+
+connection/authentication fail: invalid/absent JWT
+```
+{
+    "event": "ws_auth_fail",
+    "reason": "no valid JWT"
+}
+```
+
+connection/authentication fail: duplicate connection attempt
+```
+{
+    "event": "ws_auth_fail",
+    "reason": "already connected"
+}
+```
 
 ### Chat
 Direct Message
@@ -326,10 +359,19 @@ one of your friends started a match
 
 
 ### Pong
+
 someone invited you to play pong
 ```
 {
     "event": "pong: invitation",
+    "user_id": 3
+}
+```
+
+someone accepted your invitation to play
+```
+{
+    "event": "pong: invitation_accepted",
     "user_id": 3
 }
 ```
