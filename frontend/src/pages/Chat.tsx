@@ -31,7 +31,7 @@ const Chat: Component = () => {
 
   return (
     <div class="grid grid-cols-6 h-full">
-      <div class="flex flex-col col-span-1 border-x-header-menu border-x">
+      <div class="flex row-span-4 flex-col col-span-1 border-x-header-menu border-x">
         <ChatSideBar />
       </div>
       <div class="col-span-4 flex flex-col pl-1 pr-1 ">
@@ -51,7 +51,7 @@ const Chat: Component = () => {
         </Switch>
       </div>
       {/* TODO: adapt when it's on the friend tab or room tab */}
-      <div class="flex relative flex-col border-x shadow-md border-x-header-menu col-span-1">
+      <div class="flex relative row-span-4 flex-col border-x shadow-md border-x-header-menu col-span-1">
         <Switch>
           <Match when={state.chatUi.tab === TAB.ROOMS}>
             <ChatRightSideBar />

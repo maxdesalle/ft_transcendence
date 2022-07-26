@@ -8,6 +8,7 @@ const PendingFriendReqCard: Component = () => {
     if (acceptFriendReq && refetchFriends) {
       acceptFriendReq(id);
       refetchFriends();
+      console.log('refecting friends');
     }
   };
   return (

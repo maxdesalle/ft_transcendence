@@ -1,7 +1,7 @@
 import Cookies from 'js-cookie';
 import { createContext, Resource, useContext } from 'solid-js';
 import { Message, RoomInfo } from '../types/chat.interface';
-import { User } from '../types/user.interface';
+import { Friend, User } from '../types/user.interface';
 import { createStore, produce } from 'solid-js/store';
 import {
   createCurrentUser,
@@ -46,7 +46,9 @@ export interface ActionsType {
   updateAvatarId: () => void;
   loadApp: () => void;
   toggleMatchMaking: (val: boolean) => void;
-  refetchFriends?: () => void;
+  refetchFriends?: () => Promise<Friend[]>;
+  addPendingFriendReq: (pendigUser: { user: User; status: number }) => void;
+  updateFriendList: (user: Friend) => void;
 }
 
 export type Status = 'idle' | 'loading' | 'success' | 'failed';
@@ -73,7 +75,7 @@ export interface StoreState {
   currentUser: {
     status: Status;
     readonly userData: User | undefined;
-    readonly friends: User[];
+    readonly friends: Friend[];
     readonly pendingFriendReq: { user: User; status: number }[];
     error?: any;
     twoFaQrCode: string;
@@ -96,7 +98,7 @@ export interface StoreState {
 export function StoreProvider(props: any) {
   let users: Resource<User[] | undefined>,
     rooms: Resource<RoomInfo[] | undefined>,
-    friends: Resource<User[] | []>,
+    friends: Resource<Friend[] | []>,
     currentUser: Resource<User | undefined>,
     roomMsg: Resource<Message[] | undefined>,
     friendMsg: Resource<Message[] | undefined>,
@@ -192,8 +194,14 @@ export function StoreProvider(props: any) {
       friends = createFriends(actions, state, setState);
       friendMsg = createFriendMsg(actions, state, setState);
     },
-    toggleMatchMaking(val: boolean) {
+    toggleMatchMaking(val) {
       setState('pong', 'inMatchMaking', val);
+    },
+    addPendingFriendReq(pendigUser) {
+      setState('currentUser', 'pendingFriendReq', (e) => [...e, pendigUser]);
+    },
+    updateFriendList(friend) {
+      setState('currentUser', 'friends', (e) => [...e, friend]);
     },
   };
   const store: [StoreState, ActionsType] = [state, actions];

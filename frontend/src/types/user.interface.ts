@@ -6,6 +6,13 @@ export interface User {
   isTwoFactorAuthenticationEnabled: boolean;
 }
 
+export interface Friend {
+  id: number;
+  display_name: string;
+  avatarId: number;
+  status: 'online' | 'offline' | 'ingame';
+}
+
 export interface RoomUser extends User {
   role?: string;
   muted?: string;

@@ -23,13 +23,32 @@ import { Message, WsNotificationEvent } from './types/chat.interface';
 import LeaderBoard from './pages/LeaderBoard';
 
 const App: Component = () => {
-  const [state, { loadPendingFriendReq, mutateFriendMsgs, mutateRoomMsgs }] =
-    useStore();
+  const [
+    state,
+    {
+      loadPendingFriendReq,
+      mutateFriendMsgs,
+      mutateRoomMsgs,
+      addPendingFriendReq,
+      refetchFriends,
+    },
+  ] = useStore();
   const navigate = useNavigate();
 
   onMount(() => {
     state.ws.addEventListener('message', (e) => {
-      let res: { event: WsNotificationEvent; message?: any };
+      let res: {
+        event: WsNotificationEvent;
+        message?: Message;
+        user_id?: number;
+        friend_request?: {
+          req_user_id?: number;
+          recv_user_id?: number;
+          receiving_user?: { id: number };
+          requesting_user?: { id: number };
+          status: number;
+        };
+      };
       res = JSON.parse(e.data);
       switch (res.event) {
         case 'chat_room_msg':
@@ -43,7 +62,37 @@ const App: Component = () => {
           }
           break;
         case 'friends: new_request':
-          console.log('Friend req: ', res);
+          // if it's a fresh user might not find him in users and also might be null
+          const pendigUser = state.users?.find(
+            (user) => user.id == res.friend_request?.requesting_user?.id,
+          );
+          if (pendigUser) {
+            addPendingFriendReq({
+              user: pendigUser,
+              status: res.friend_request!.status,
+            });
+          }
+          break;
+        case 'friends: request_accepted':
+          console.log(res);
+          if (refetchFriends) refetchFriends();
+          break;
+        case 'friends: request_rejected':
+          console.log(res);
+          break;
+        case 'status: friend_offline':
+          console.log(res);
+          break;
+        case 'status: friend_online':
+          const friend = state.currentUser.friends.find(
+            (friend) => friend.id === res.user_id,
+          );
+          if (friend) {
+            console.log('friend online: ', friend);
+          }
+          break;
+        case 'status: friend_online':
+          console.log(res);
           break;
         default:
           console.log('default: ', res);

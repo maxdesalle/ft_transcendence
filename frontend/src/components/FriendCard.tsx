@@ -1,5 +1,5 @@
 import { Component, createEffect, createSignal } from 'solid-js';
-import { User } from '../types/user.interface';
+import { Friend, User } from '../types/user.interface';
 import { generateImageUrl } from '../utils/helpers';
 import Avatar from './Avatar';
 import defaultAvatar from '../../../backend/images/avatardefault.png';
@@ -7,7 +7,7 @@ import { AiOutlineMore } from 'solid-icons/ai';
 import Modal from './Modal';
 import { blockUser } from '../api/chat';
 
-export const FriendCard: Component<{ friend: User; onClick?: () => void }> = (
+export const FriendCard: Component<{ friend: Friend; onClick?: () => void }> = (
   props,
 ) => {
   const [isOpen, setIsOpen] = createSignal(false);

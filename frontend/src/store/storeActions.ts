@@ -5,7 +5,7 @@ import { StoreState } from '.';
 import { addUserToRoomByName, chatApi, ChatPostBody } from '../api/chat';
 import { routes, urls } from '../api/utils';
 import { Message, RoomInfo } from '../types/chat.interface';
-import { User } from '../types/user.interface';
+import { Friend, User } from '../types/user.interface';
 import { api } from '../utils/api';
 import QRCode from 'qrcode';
 import { fetchUsers } from '../api/user';
@@ -18,10 +18,16 @@ export const createUsers = (
   setState: SetStoreFunction<StoreState>,
 ) => {
   //TODO: add status
-  const [users] = createResource(async () => {
+  const [users, { refetch }] = createResource(async () => {
     try {
       return await fetchUsers();
     } catch (error) {}
+  });
+
+  Object.assign(actions, {
+    refetchUsers() {
+      return refetch();
+    },
   });
   return users;
 };
@@ -126,6 +132,17 @@ export const createCurrentUser = (
         const res = await api.post(routes.sendFriendReq, { user_id });
         console.log(res.data);
       } catch (e) {}
+    },
+
+    async acceptFriendReq(user_id: number) {
+      try {
+        await api.post<friendReqEventDto>(routes.acceptFriendReq, {
+          user_id,
+        });
+        // await this.loadPendingFriendReq();
+      } catch (e) {
+        //TODO: server error
+      }
     },
 
     async loadPendingFriendReq() {
@@ -260,30 +277,13 @@ export const createFriends = (
 ) => {
   const [friends, { mutate, refetch }] = createResource(
     async () => {
-      const res = await api.get<User[]>(routes.friends);
+      const res = await api.get<Friend[]>(routes.friends);
       return res.data;
     },
     { initialValue: [] },
   );
 
   Object.assign(actions, {
-    async acceptFriendReq(user_id: number) {
-      try {
-        const res = await api.post<friendReqEventDto>(routes.acceptFriendReq, {
-          user_id,
-        });
-        //when the update is successfull we filter out the accepted one from pending req
-        const id = res.data.friend_request.req_user_id;
-        const newFriend = state.users?.find((e) => e.id === id);
-        setState('currentUser', 'pendingFriendReq', (s) => [
-          ...s.filter((e) => e.user.id != id),
-        ]);
-        if (newFriend) {
-          mutate([...friends(), newFriend]);
-        }
-      } catch (e) {}
-    },
-
     refetchFriends() {
       return refetch();
     },

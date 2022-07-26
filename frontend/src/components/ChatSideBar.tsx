@@ -27,54 +27,52 @@ const ChatSideBar: Component = () => {
           Friends
         </li>
       </ul>
-      <Switch>
-        <Match when={state.chatUi.tab == TAB.ROOMS}>
-          <Search
-            setKeyword={setKeyword}
-            placeHolder="Search for room"
-            popperMsg="Create new room"
-          >
-            <CreateRoom />
-          </Search>
-          <Scrollbars>
-            <div class="row-span-4 px-2">
-              <Show when={state.chat.rooms}>
-                <For
-                  each={state.chat.rooms!.filter(
-                    (room) =>
-                      room.room_name
-                        .toLocaleLowerCase()
-                        .includes(keyword().toLocaleLowerCase()) &&
-                      room.type === 'group',
-                  )}
-                >
-                  {(room) => (
-                    <div
-                      onClick={() => {
-                        setCurrentRoom(room);
-                        if (!state.chatUi.showMessages) {
-                          toggleShowMessages();
-                        }
-                      }}
-                      class="flex p-2 items-center"
-                    >
-                      <HiSolidUserGroup color="#2564eb" size={24} />
-                      <div class="pl-2 text-white hover:text-slate-400 transition-all">
-                        <p class="font-bold first-letter:capitalize">
-                          {room.room_name}
-                        </p>
-                      </div>
+      <Scrollbars class="h-full">
+        <Switch>
+          <Match when={state.chatUi.tab == TAB.ROOMS}>
+            <Search
+              setKeyword={setKeyword}
+              placeHolder="Search for room"
+              popperMsg="Create new room"
+            >
+              <CreateRoom />
+            </Search>
+            <Show when={state.chat.rooms}>
+              <For
+                each={state.chat.rooms!.filter(
+                  (room) =>
+                    room.room_name
+                      .toLocaleLowerCase()
+                      .includes(keyword().toLocaleLowerCase()) &&
+                    room.type === 'group',
+                )}
+              >
+                {(room) => (
+                  <div
+                    onClick={() => {
+                      setCurrentRoom(room);
+                      if (!state.chatUi.showMessages) {
+                        toggleShowMessages();
+                      }
+                    }}
+                    class="flex p-2 items-center"
+                  >
+                    <HiSolidUserGroup color="#2564eb" size={24} />
+                    <div class="pl-2 text-white hover:text-slate-400 transition-all">
+                      <p class="font-bold first-letter:capitalize">
+                        {room.room_name}
+                      </p>
                     </div>
-                  )}
-                </For>
-              </Show>
-            </div>
-          </Scrollbars>
-        </Match>
-        <Match when={state.chatUi.tab === TAB.FRIENDS}>
-          <FriendList />
-        </Match>
-      </Switch>
+                  </div>
+                )}
+              </For>
+            </Show>
+          </Match>
+          <Match when={state.chatUi.tab === TAB.FRIENDS}>
+            <FriendList />
+          </Match>
+        </Switch>
+      </Scrollbars>
     </>
   );
 };

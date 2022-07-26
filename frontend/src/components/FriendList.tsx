@@ -1,6 +1,7 @@
+import Scrollbars from 'solid-custom-scrollbars';
 import { Component, createEffect, createSignal, For, Show } from 'solid-js';
 import { useStore } from '../store';
-import { User } from '../types/user.interface';
+import { Friend, User } from '../types/user.interface';
 import AddFriend from './AddFriend';
 import FriendCard from './FriendCard';
 import Search from './Search';
@@ -8,7 +9,7 @@ import Search from './Search';
 const FriendList: Component = () => {
   const [keyword, setKeyword] = createSignal('');
   const [state, { loadFriendMessages, toggleShowMessages }] = useStore();
-  const onLoadFriendMessages = (friend: User) => {
+  const onLoadFriendMessages = (friend: Friend) => {
     if (loadFriendMessages) {
       loadFriendMessages(friend.id);
       if (!state.chatUi.showMessages) {
@@ -18,7 +19,7 @@ const FriendList: Component = () => {
   };
 
   return (
-    <div>
+    <div class="h-full">
       <Search
         setKeyword={setKeyword}
         popperMsg="Add friend"

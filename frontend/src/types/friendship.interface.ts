@@ -14,8 +14,14 @@ export interface friendReqEventDto {
 }
 
 export interface FriendshipRequest {
-  recv_user_id: number;
-  req_user_id: number;
+  requesting_user: {
+    id: number;
+    display_name: string;
+  };
+  receiving_user: {
+    id: number;
+    display_name: string;
+  };
   status: FrienshipStatus;
 }
 

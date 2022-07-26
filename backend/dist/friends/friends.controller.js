@@ -31,27 +31,25 @@ let FriendsController = class FriendsController {
         const friend_request = await this.friendsService.requestFriendship(me.id, user_id);
         const response = {
             event: 'friends: new_request',
-            friend_request
+            friend_request,
         };
         this.wsService.sendMsgToUser(user_id, response);
         return response;
     }
     async acceptFriend(me, user_id, _body) {
-        const friend_request = await this.friendsService
-            .setFriendshipStatus(me.id, user_id, friendship_entity_1.FrienshipStatus.accepted);
+        const friend_request = await this.friendsService.setFriendshipStatus(me.id, user_id, friendship_entity_1.FrienshipStatus.accepted);
         const response = {
             event: 'friends: request_accepted',
-            friend_request
+            friend_request,
         };
         this.wsService.sendMsgToUser(user_id, response);
         return response;
     }
     async rejectFriend(me, user_id, _body) {
-        const friend_request = await this.friendsService
-            .setFriendshipStatus(me.id, user_id, friendship_entity_1.FrienshipStatus.rejected);
+        const friend_request = await this.friendsService.setFriendshipStatus(me.id, user_id, friendship_entity_1.FrienshipStatus.rejected);
         const response = {
             event: 'friends: request_rejected',
-            friend_request
+            friend_request,
         };
         this.wsService.sendMsgToUser(user_id, response);
         return response;
@@ -69,6 +67,7 @@ let FriendsController = class FriendsController {
         return this.friendsService.listFriendsIDs(me.id);
     }
     listFriendsUsers(me) {
+        console.log(this.friendsService.listFriendsIDs(me.id));
         return this.friendsService.listFriendsUsers(me.id);
     }
 };
@@ -105,7 +104,9 @@ __decorate([
 ], FriendsController.prototype, "rejectFriend", null);
 __decorate([
     (0, common_1.Get)('pending_sent'),
-    (0, swagger_1.ApiOperation)({ summary: "friendship requests SENT by you that are pending of the other user's approval" }),
+    (0, swagger_1.ApiOperation)({
+        summary: "friendship requests SENT by you that are pending of the other user's approval",
+    }),
     openapi.ApiResponse({ status: 200, type: [require("./dto/friendReq.dto").FriendshipRecvUser] }),
     __param(0, (0, user_decorator_1.Usr)()),
     __metadata("design:type", Function),
@@ -114,7 +115,9 @@ __decorate([
 ], FriendsController.prototype, "getPendingSent", null);
 __decorate([
     (0, common_1.Get)('pending_received'),
-    (0, swagger_1.ApiOperation)({ summary: 'friendship requests RECEIVED by you that are pending of your approval' }),
+    (0, swagger_1.ApiOperation)({
+        summary: 'friendship requests RECEIVED by you that are pending of your approval',
+    }),
     openapi.ApiResponse({ status: 200, type: [require("./dto/friendReq.dto").FriendshipReqUser] }),
     __param(0, (0, user_decorator_1.Usr)()),
     __metadata("design:type", Function),
@@ -142,7 +145,9 @@ __decorate([
 ], FriendsController.prototype, "listFriendsIds", null);
 __decorate([
     (0, common_1.Get)(),
-    (0, swagger_1.ApiOperation)({ summary: "your friends' User object (more info than just ID)" }),
+    (0, swagger_1.ApiOperation)({
+        summary: "your friends' User object (more info than just ID)",
+    }),
     (0, swagger_1.ApiResponse)({ description: 'list of Users' }),
     openapi.ApiResponse({ status: 200, type: [require("../users/entities/user.entity").User] }),
     __param(0, (0, user_decorator_1.Usr)()),
