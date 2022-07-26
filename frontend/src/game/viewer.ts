@@ -412,15 +412,17 @@ export const viewerSketch = (p5: p5Type) => {
   // called each frame. calls drawcell on every sliders and gets their values
   function drawAndGetSliderValues() {
     sliders.forEach((s) => {
-      s.drawCell();
       switch (s.text) {
         case 'color':
+          const c = colors[colorIndex]
+          s.drawCell(c.r, c.g, c.b);
           colorIndex = s.p5Slider.value();
           break;
         case 'volume':
           const volumeLevel = s.p5Slider.value();
           impactSound.setVolume(volumeLevel);
           scoreSound.setVolume(volumeLevel);
+          s.drawCell();
           break;
       }
     });
