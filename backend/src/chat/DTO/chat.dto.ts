@@ -1,5 +1,4 @@
 import { IsBoolean, IsNotEmpty, IsOptional, IsPositive, IsString, NotContains } from "class-validator";
-import { User } from "src/users/entities/user.entity";
 
 export class PostDmDto {
 	user_id: number;
@@ -32,6 +31,14 @@ export class RoomIdDto {
 	room_id: number
 }
 
+class RoomParticipant {
+	id: number;
+	login42: string;
+	display_name: string;
+	avatarId: number;
+	role?: string;
+	muted?: boolean;
+}
 
 export class RoomInfo {
 	room_id: number;
@@ -40,15 +47,8 @@ export class RoomInfo {
 	blocked?: boolean;
 	private: boolean;
 	password_protected: boolean;
-	users: {
-		id: number,
-		login42: string,
-		display_name: string,
-		avatarId: number
-		role?: string,
-		muted?: boolean
-	}
-	last_msg: MessageDTO
+	users: RoomParticipant[];
+	last_msg: MessageDTO;
 }
 
 export class GroupConfigDto {

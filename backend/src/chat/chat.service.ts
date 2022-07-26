@@ -639,21 +639,7 @@ export class ChatService {
 
 
 	// ====== ROOM CHECKS ===========================================
-	
 
-	/** checks if room is a DM room. if so, check if one the users is
-	 * blocked. Returns true if OK, false if DM && blocked
-	 */
-	async isBlockedDMroom(room_id: number) {
-		const room_info = await this.roomInfo(room_id);
-		if (room_info.type !== 'DM')
-			return false;
-		return this.is_blocked(
-			room_info.users[0].user_id,
-			room_info.users[1].user_id
-		);
-	}
-	
 	async groupNameExists(group_name: string) {
 		const query = await this.pool.query(`
 			SELECT * FROM room

@@ -124,14 +124,10 @@ export class StatsService {
 	}
 
 	async getMatchesByPlayer(user_id: number): Promise<MatchDTO[]> {
-		const matches = await this.matchRepository.find({
-			where: [{ player1: user_id}, { player2: user_id}],
-			relations: ['player1', 'player2'],
-			order: {timestamp: 'DESC'},
-			// loadRelationIds: true
-		});
-		const res = matches.map(this.filterPlayerInfo);
-		return res;
+		const matches = await this.getAllMatches();
+
+		return matches.filter(m => m.p1.user_id === user_id
+								|| m.p2.user_id === user_id);
 	}
 
 	async getMatchResultsByPlayer(user_id: number): Promise<MatchResultDto[]> {
