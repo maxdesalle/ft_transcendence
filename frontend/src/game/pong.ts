@@ -21,9 +21,10 @@ let canvasWidth: number = Math.min(
 let canvasHeight: number = canvasWidth;
 let widthOffset: number = (window.innerWidth - canvasWidth) / 2;
 let sessionId = -1; // current game session id (will be sent by server)
+let okButton: any = undefined;
 
 //game variables (the server will send the correct values to df before the game starts)
-const df: any = {
+let df: any = {
   p1Y: 0,
   p2Y: 0,
   ballX: 0,
@@ -46,6 +47,7 @@ const df: any = {
   sendTime: 0,
   powerUpsSize: 0,
 };
+
 let powerUpsMap = new Map(); //cannot include it in df cuz it's a map...
 //colors
 const colors = [
@@ -115,7 +117,7 @@ export function initSocket(): WebSocket {
 }
 
 export const sketch = (p5: p5Type) => {
-  const [state] = useStore();
+  const [state, {toggleMatchMaking} ] = useStore();
   p5.disableFriendlyErrors = true;
   let sliders = [
     new Slider(
@@ -159,6 +161,57 @@ export const sketch = (p5: p5Type) => {
     ),
   ];
 
+  //function executed when okButton is pressed (resests everything)
+  function handleOkButtonPressed(): void {
+    isDisconnected = false;
+    socketErrObject = undefined;
+    playerNumber = 0;
+    sessionId = -1;
+
+    df = {
+      p1Y: 0,
+      p2Y: 0,
+      ballX: 0,
+      ballY: 0,
+      p1Score: 0,
+      p2Score: 0,
+      playerWon: 0,
+      racketLength: 0,
+      racketThickness: 0,
+      p1X: 0,
+      p2X: 0,
+      ballRad: 0,
+      middleLineThickness: 0,
+      middleLineLength: 0,
+      ballSpeedX: 0,
+      ballSpeedY: 0,
+      racketSpeed: 0,
+      p1Press: 0,
+      p2Press: 0,
+      sendTime: 0,
+      powerUpsSize: 0,
+    };
+
+    powerUpsMap = new Map();
+    colorIndex = 0;
+    sendTimeStamp = 0;
+    playImpact = false;
+    playScore = false;
+    isReady = false;
+    isOtherPlayerReady = false;
+    toggleMatchMaking(false);
+
+    // Sliders are removed, so let's init them again!
+    initSliders();
+
+    okButton.hide();
+  }
+
+  // Wrapper function called when okButton needs to be displayed
+  function displayOkButton(): void {
+    okButton.show();
+  }
+
   //returns true if one player won and displays the according menu
   //else returns false
   function handlePlayerWon() {
@@ -171,6 +224,7 @@ export const sketch = (p5: p5Type) => {
     );
     p5.fill(col);
     p5.text(`Player ${df.playerWon} won!`, canvasWidth / 2, canvasHeight / 2);
+    displayOkButton();
     return true;
   }
 
@@ -190,10 +244,11 @@ export const sketch = (p5: p5Type) => {
       p5.textAlign(p5.CENTER, p5.CENTER);
       p5.fill(col);
       p5.text(
-        `socket error: ${socketErrObject}`,
+        `Socket error: ${socketErrObject}`,
         canvasWidth / 4,
         canvasHeight / 4,
       );
+      displayOkButton();
       return true;
     }
 
@@ -202,24 +257,25 @@ export const sketch = (p5: p5Type) => {
       p5.textAlign(p5.CENTER, p5.CENTER);
       p5.fill(col);
       p5.text(
-        'the other player has been disconnected',
+        'The other player has been disconnected.',
         canvasWidth / 2,
         canvasHeight / 2,
       );
+      displayOkButton();
       return true;
     }
     if (state.pong.inMatchMaking && sessionId === -1) {
       p5.textAlign(p5.CENTER, p5.CENTER);
       p5.fill(col);
       p5.text(
-        'waiting for the other player...',
+        'Waiting for the other player...',
         canvasWidth / 2,
         canvasHeight / 2,
       );
     } else if (sessionId === -1) {
       p5.textAlign(p5.CENTER, p5.CENTER);
       p5.fill(col);
-      p5.text('Press play to play', canvasWidth / 2, canvasHeight / 2);
+      p5.text('Press play to start a game.', canvasWidth / 2, canvasHeight / 2);
     }
     if (playerNumber === 0) {
       return true;
@@ -398,6 +454,7 @@ export const sketch = (p5: p5Type) => {
       );
     }
   }
+
   function initSliders() {
     sliders.forEach((s) =>
       s.setP5Slider(
@@ -525,6 +582,11 @@ export const sketch = (p5: p5Type) => {
       );
       s.p5Slider.size(s.width * 0.9, s.height / 2);
     });
+
+    // setting new pos/size to okButton
+    okButton.position(newWidthOffset + newCanvasWidth / 2, newHeightOffset + newCanvasHeight / 1.5);
+    okButton.size(newCanvasWidth / 10, newCanvasHeight / 25);
+
     p5.resizeCanvas(newCanvasWidth, newCanvasHeight);
     p5.background(0);
     canvasWidth = newCanvasWidth;
@@ -543,6 +605,13 @@ export const sketch = (p5: p5Type) => {
     p5.createCanvas(canvasWidth, canvasHeight);
     p5.noStroke();
     initSliders();
+    okButton = p5.createButton('Ok');
+    okButton.position(widthOffset + canvasWidth / 2, heightOffset + canvasHeight / 1.5);
+    okButton.size(canvasWidth / 10, canvasHeight / 25);
+    okButton.mousePressed(handleOkButtonPressed);
+    okButton.style('color', 'white');
+    okButton.style('background-color', '#555555');
+    okButton.hide();
   };
 
   p5.draw = () => {
