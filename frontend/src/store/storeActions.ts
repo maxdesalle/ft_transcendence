@@ -10,6 +10,7 @@ import { api } from '../utils/api';
 import QRCode from 'qrcode';
 import { fetchUsers } from '../api/user';
 import { friendReqEventDto } from '../types/friendship.interface';
+import { getAllMatches, getLadder } from '../api/stats';
 
 export const createUsers = (
   actions: Object,
@@ -103,7 +104,6 @@ export const createCurrentUser = (
       try {
         //TODO: change status management looks wrong
         const res = await api.get(routes.deactivate2fa);
-        console.log(res);
         batch(() => {
           setState('token', undefined);
           setState(
@@ -234,7 +234,7 @@ export const createFriends = (
   state: StoreState,
   setState: SetStoreFunction<StoreState>,
 ) => {
-  const [friends, { mutate }] = createResource(
+  const [friends, { mutate, refetch }] = createResource(
     async () => {
       const res = await api.get<User[]>(routes.friends);
       return res.data;
@@ -258,6 +258,10 @@ export const createFriends = (
           mutate([...friends(), newFriend]);
         }
       } catch (e) {}
+    },
+
+    refetchFriends() {
+      return refetch();
     },
   });
   return friends;
@@ -286,4 +290,24 @@ export const createFriendMsg = (
   });
 
   return friendMsgs;
+};
+
+export const createMatches = (
+  actions: Object,
+  state: StoreState,
+  setState: SetStoreFunction<StoreState>,
+) => {
+  const [matches, { mutate }] = createResource(getAllMatches);
+
+  return matches;
+};
+
+export const createLadder = (
+  actions: Object,
+  state: StoreState,
+  setState: SetStoreFunction<StoreState>,
+) => {
+  const [ladder, { mutate }] = createResource(getLadder);
+
+  return ladder;
 };

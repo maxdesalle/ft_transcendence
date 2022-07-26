@@ -1,36 +1,51 @@
-import { Component, createSignal } from "solid-js";
-import usePopper from "solid-popper";
-import Modal from "../components/Modal";
+import { useNavigate } from 'solid-app-router';
+import { Component, createSignal, onCleanup, onMount } from 'solid-js';
+import { useStore } from '../store';
 
 const Home: Component = () => {
-  const [isOpen, setIsOpen] = createSignal(false);
-  const [anchor, setAnchor] = createSignal<any>();
-  const [popper, setPopper] = createSignal<any>();
+  const [state, { toggleMatchMaking }] = useStore();
+  const [ref, setRef] = createSignal<any>();
+  const [matchFound, setMatchFound] = createSignal<{
+    event: string;
+    user_id: number;
+  }>();
+  const [buttonText, setButtonText] = createSignal('Launch matchmaking');
 
-  usePopper(anchor, popper, {
-    placement: "top-start",
+  const navigate = useNavigate();
+
+  onMount(() => {
+    state.pong.ws.addEventListener('message', (e) => {
+      const res = JSON.parse(e.data);
+      if (res.event === 'pong: invitation') {
+        setMatchFound(res);
+      }
+    });
   });
+
+  onCleanup(() => {
+    state.pong.ws.removeEventListener('message', (e) => {
+      console.log('removing event: ', e);
+    });
+  });
+
+  const onPlay = () => {
+    const message = { event: 'play' };
+    state.pong.ws.send(JSON.stringify(message));
+    toggleMatchMaking(true);
+    ref().classList.toggle('animate-pulse');
+    setButtonText('Searching for a game');
+  };
 
   return (
     <>
-      <h1>Home</h1>
       <button
-        ref={setAnchor}
-        onClick={() => setIsOpen(true)}
-        class="btn-primary"
+        // style="border-top-color:transparent"
+        ref={setRef}
+        onClick={onPlay}
+        class="w-36 h-36 border-4 text-white bg-blue-600 flex items-center border-purple-600 shadow-md border-solid rounded-full"
       >
-        Open
+        {buttonText()}
       </button>
-      <div ref={setPopper}>
-        <Modal isOpen={isOpen()} toggleModal={setIsOpen}>
-          <p class="text-black">
-            Lorem ipsum dolor sit amet consectetur adipisicing elit. Ipsa vitae
-            nihil inventore architecto soluta, totam sunt, doloremque numquam
-            dignissimos molestias quos iure assumenda. Amet aspernatur excepturi
-            rem, cum dignissimos autem?
-          </p>
-        </Modal>
-      </div>
     </>
   );
 };

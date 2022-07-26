@@ -9,9 +9,13 @@ import {
   createFriends,
   createMessageById,
   createRooms,
+  createMatches,
   createUsers,
+  createLadder,
 } from './storeActions';
 import { urls } from '../api/utils';
+import { initSocket } from '../game/pong';
+import { LadderDto, MatchDTO } from '../types/stats.interface';
 
 const StoreContext = createContext<any>();
 
@@ -42,6 +46,7 @@ export interface ActionsType {
   updateAvatarId: () => void;
   loadApp: () => void;
   toggleMatchMaking: (val: boolean) => void;
+  refetchFriends?: () => void;
 }
 
 export type Status = 'idle' | 'loading' | 'success' | 'failed';
@@ -81,6 +86,9 @@ export interface StoreState {
   };
   pong: {
     inMatchMaking: boolean;
+    ws: WebSocket;
+    matches: MatchDTO[] | undefined;
+    ladder: LadderDto[] | undefined;
   };
   readonly users: User[] | undefined;
 }
@@ -91,13 +99,22 @@ export function StoreProvider(props: any) {
     friends: Resource<User[] | []>,
     currentUser: Resource<User | undefined>,
     roomMsg: Resource<Message[] | undefined>,
-    friendMsg: Resource<Message[] | undefined>;
+    friendMsg: Resource<Message[] | undefined>,
+    matches: Resource<MatchDTO[] | undefined>,
+    ladder: Resource<LadderDto[] | undefined>;
 
   const [state, setState] = createStore<StoreState>({
     token: Cookies.get('jwt_token'),
     ws: new WebSocket(urls.wsUrl),
     pong: {
       inMatchMaking: false,
+      ws: initSocket(),
+      get matches() {
+        return matches();
+      },
+      get ladder() {
+        return ladder();
+      },
     },
     chat: {
       status: 'idle',
@@ -186,6 +203,8 @@ export function StoreProvider(props: any) {
   roomMsg = createMessageById(actions, state, setState);
   friends = createFriends(actions, state, setState);
   friendMsg = createFriendMsg(actions, state, setState);
+  matches = createMatches(actions, state, setState);
+  ladder = createLadder(actions, state, setState);
   return (
     <StoreContext.Provider value={store}>
       {props.children}

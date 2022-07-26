@@ -2,11 +2,12 @@ import { Component, For, Show } from 'solid-js';
 import { useStore } from '../store';
 
 const PendingFriendReqCard: Component = () => {
-  const [state, { acceptFriendReq }] = useStore();
+  const [state, { acceptFriendReq, refetchFriends }] = useStore();
 
   const onAcceptFriendReq = (id: number) => {
-    if (acceptFriendReq) {
+    if (acceptFriendReq && refetchFriends) {
       acceptFriendReq(id);
+      refetchFriends();
     }
   };
   return (

@@ -44,13 +44,13 @@ const Login: Component = () => {
           >
             Login using Mock api
           </button>
+          <button
+            onClick={() => (window.location.href = routes.login42)}
+            class="bg-blue-600 border text-white p-1 mt-1 rounded-md"
+          >
+            Login using 42
+          </button>
         </div>
-        <button
-          onClick={() => (window.location.href = routes.login42)}
-          class="bg-blue-600 border text-white p-1 mt-1 rounded-md"
-        >
-          Login using 42
-        </button>
       </div>
     </div>
   );
