@@ -83,6 +83,11 @@ export class PongGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
         // check if there's a waiting player
         if (waiting_player) {
+            // notify inviting user
+            this.wsService.sendMsgToUser(waiting_player.user_id, {
+                event: 'pong: player_joined',
+                user_id
+            });
             // match current player with waiting player
             this.matchPlayers(waiting_player.socket, client);
         }

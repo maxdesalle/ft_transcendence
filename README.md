@@ -379,6 +379,13 @@ someone accepted your invitation to play
     "user_id": 3
 }
 ```
+you were waiting to play against anyone and someone has just joined you to play pong
+```
+{
+    "event":"pong: player_joined",
+    "user_id":2
+}
+```
 
 ### Ladder change
 When a Pong match is over, points in the general ladder are changed
