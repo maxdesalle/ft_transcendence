@@ -2,19 +2,15 @@ import { Component } from 'solid-js';
 import { useStore } from '../store';
 
 const AddFriend: Component = () => {
-  const [state, { sendFriendRequest }] = useStore();
+  const [state, actions] = useStore();
 
-  const onAddFriend = () => {
-    if (sendFriendRequest) {
-    }
-  };
+  const onAddFriend = () => {};
   return (
     <div class="flex flex-col">
       <input
         autocomplete="off"
         type="text"
         class="bg-white px-4 py-2 rounded border-b focus:outline-none border-b-blue-800 focus:text-blue-600"
-        name=""
         id="room_id"
         placeholder="Enter username"
       />

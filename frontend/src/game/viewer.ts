@@ -1,19 +1,22 @@
-import { Slider } from "./slider";
-import * as p5Type from "p5";
-import "../utils/p5soundfix";
-import "p5/lib/addons/p5.sound";
-import soundScore from "../assets/client_music_score.mp3";
-import soundImpact from "../assets/client_music_impact.mp3";
+import { Slider } from './slider';
+import * as p5Type from 'p5';
+import '../utils/p5soundfix';
+import 'p5/lib/addons/p5.sound';
+import soundScore from '../assets/client_music_score.mp3';
+import soundImpact from '../assets/client_music_impact.mp3';
 
-const socketServerIP = "localhost";
+const socketServerIP = 'localhost';
 const socketServerPort = 3000;
-const httpServerIP = "localhost";
+const httpServerIP = 'localhost';
 const httpServerPort = 3000;
-const socketServerPath = "pong_viewer";
+const socketServerPath = 'pong_viewer';
 let socketErrObject: any = undefined;
 let ws: any; // webSocket
 let heightOffset: number = 54; // bar button height
-let canvasWidth: number = Math.min(window.innerHeight - heightOffset, window.innerWidth);
+let canvasWidth: number = Math.min(
+  window.innerHeight - heightOffset,
+  window.innerWidth,
+);
 let canvasHeight: number = canvasWidth;
 let widthOffset: number = (window.innerWidth - canvasWidth) / 2;
 let gameStarted = false;
@@ -70,18 +73,18 @@ export function initViewerSocket() {
   const serverAddress = `ws://${socketServerIP}:${socketServerPort}/${socketServerPath}`;
   ws = new WebSocket(serverAddress);
 
-  ws.addEventListener("open", () => {
+  ws.addEventListener('open', () => {
     console.log(`connected to ${serverAddress}`);
   });
-  ws.addEventListener("close", () => {
-    console.log("connection closed");
+  ws.addEventListener('close', () => {
+    console.log('connection closed');
   });
-  ws.addEventListener("error", (e: any) => {
+  ws.addEventListener('error', (e: any) => {
     socketErrObject = e;
     console.error(`socket error:${e.message}`);
   });
   // set all the game variables
-  ws.addEventListener("message", ({ data }: any) => {
+  ws.addEventListener('message', ({ data }: any) => {
     const dataOB = JSON.parse(String(data));
     gameStarted = dataOB.gameStarted ?? gameStarted;
     gameFinished = dataOB.gameFinished ?? gameFinished;
@@ -98,7 +101,7 @@ export function initViewerSocket() {
       playScore = true;
     if (
       (df.ballSpeedX !== 0 || df.ballSpeedY !== 0) &&
-        (ballSpeedTmp[0] !== df.ballSpeedX || ballSpeedTmp[1] !== df.ballSpeedY)
+      (ballSpeedTmp[0] !== df.ballSpeedX || ballSpeedTmp[1] !== df.ballSpeedY)
     )
       playImpact = true;
   });
@@ -109,7 +112,7 @@ export const viewerSketch = (p5: p5Type) => {
   let sliders = [
     new Slider(
       p5,
-      "volume",
+      'volume',
       3 * (canvasWidth / 7),
       canvasHeight / 20,
       canvasWidth / 7,
@@ -118,11 +121,11 @@ export const viewerSketch = (p5: p5Type) => {
       1,
       1,
       0,
-      false
+      false,
     ),
     new Slider(
       p5,
-      "color",
+      'color',
       5 * (canvasWidth / 7),
       canvasHeight / 20,
       canvasWidth / 7,
@@ -131,7 +134,7 @@ export const viewerSketch = (p5: p5Type) => {
       6,
       colorIndex,
       1,
-      false
+      false,
     ),
   ];
 
@@ -143,7 +146,7 @@ export const viewerSketch = (p5: p5Type) => {
     const col = p5.color(
       colors[colorIndex].r,
       colors[colorIndex].g,
-      colors[colorIndex].b
+      colors[colorIndex].b,
     );
     p5.fill(col);
     p5.text(`Player ${df.playerWon} won!`, canvasWidth / 2, canvasHeight / 2);
@@ -157,7 +160,7 @@ export const viewerSketch = (p5: p5Type) => {
     const col = p5.color(
       colors[colorIndex].r,
       colors[colorIndex].g,
-      colors[colorIndex].b
+      colors[colorIndex].b,
     );
     if (socketErrObject) {
       sliders.forEach((s) => s.p5Slider.remove());
@@ -166,7 +169,7 @@ export const viewerSketch = (p5: p5Type) => {
       p5.text(
         `socket error: ${socketErrObject}`,
         canvasWidth / 4,
-        canvasHeight / 4
+        canvasHeight / 4,
       );
       return true;
     }
@@ -178,7 +181,7 @@ export const viewerSketch = (p5: p5Type) => {
     const col = p5.color(
       colors[colorIndex].r,
       colors[colorIndex].g,
-      colors[colorIndex].b
+      colors[colorIndex].b,
     );
     p5.fill(col);
     const x = (0.5 - df.middleLineThickness / 2) * canvasWidth;
@@ -188,7 +191,7 @@ export const viewerSketch = (p5: p5Type) => {
         x,
         y,
         df.middleLineThickness * canvasWidth,
-        df.middleLineLength * canvasHeight
+        df.middleLineLength * canvasHeight,
       );
     }
   }
@@ -198,7 +201,7 @@ export const viewerSketch = (p5: p5Type) => {
     const col = p5.color(
       colors[colorIndex].r,
       colors[colorIndex].g,
-      colors[colorIndex].b
+      colors[colorIndex].b,
     );
     p5.fill(col);
     let elTime = (Date.now() - df.sendTime) / 1000;
@@ -211,7 +214,7 @@ export const viewerSketch = (p5: p5Type) => {
       xPos * canvasWidth,
       yPos * canvasHeight,
       df.racketThickness * canvasWidth,
-      df.racketLength * canvasHeight
+      df.racketLength * canvasHeight,
     );
   }
 
@@ -220,7 +223,7 @@ export const viewerSketch = (p5: p5Type) => {
     const col = p5.color(
       colors[colorIndex].r,
       colors[colorIndex].g,
-      colors[colorIndex].b
+      colors[colorIndex].b,
     );
     p5.fill(col);
     let elTime = (Date.now() - df.sendTime) / 1000;
@@ -233,7 +236,7 @@ export const viewerSketch = (p5: p5Type) => {
       xPos * canvasWidth,
       yPos * canvasHeight,
       df.racketThickness * canvasWidth,
-      df.racketLength * canvasHeight
+      df.racketLength * canvasHeight,
     );
   }
 
@@ -241,7 +244,7 @@ export const viewerSketch = (p5: p5Type) => {
     const col = p5.color(
       colors[colorIndex].r,
       colors[colorIndex].g,
-      colors[colorIndex].b
+      colors[colorIndex].b,
     );
     p5.fill(col);
     const elTime = (Date.now() - df.sendTime) / 1000;
@@ -252,7 +255,7 @@ export const viewerSketch = (p5: p5Type) => {
       xPos,
       yPos,
       df.ballRad * 2 * canvasWidth,
-      df.ballRad * 2 * canvasHeight
+      df.ballRad * 2 * canvasHeight,
     );
   }
 
@@ -260,7 +263,7 @@ export const viewerSketch = (p5: p5Type) => {
     const col = p5.color(
       colors[colorIndex].r,
       colors[colorIndex].g,
-      colors[colorIndex].b
+      colors[colorIndex].b,
     );
     p5.fill(col);
     p5.textStyle(p5.BOLD);
@@ -269,20 +272,20 @@ export const viewerSketch = (p5: p5Type) => {
     p5.text(
       `${df.p1Score}   ${df.p2Score}`,
       canvasWidth / 2,
-      canvasHeight * 0.1
+      canvasHeight * 0.1,
     );
   }
 
   function drawPowerUps() {
     powerUpsMap.forEach((yAndType, x) => {
       switch (yAndType.type) {
-        case "wall":
+        case 'wall':
           p5.fill(255);
           break;
-        case "upSpeed":
+        case 'upSpeed':
           p5.fill(255, 0, 0);
           break;
-        case "downSpeed":
+        case 'downSpeed':
           p5.fill(0, 255, 0);
           break;
       }
@@ -290,7 +293,7 @@ export const viewerSketch = (p5: p5Type) => {
         x * canvasWidth,
         yAndType.y * canvasHeight,
         df.powerUpsSize * canvasWidth,
-        df.powerUpsSize * canvasHeight
+        df.powerUpsSize * canvasHeight,
       );
     });
   }
@@ -314,36 +317,36 @@ export const viewerSketch = (p5: p5Type) => {
   let doneChoosing = false; // false if viewer still did not choose first session to watch
   function handleSubmit() {
     const idText = input.value();
-    input.value(""); // empty box
+    input.value(''); // empty box
     if (
-      idText === "" ||
-        isNaN(idText) ||
-        !sessionIdsArray.includes(p5.int(idText))
+      idText === '' ||
+      isNaN(idText) ||
+      !sessionIdsArray.includes(p5.int(idText))
     ) {
       console.log(`${idText} is an invalid id`);
-      document.querySelector("input")!.placeholder = "invalid id";
+      document.getElementById('user_id')!.placeholder = 'Invalid id';
       return;
     }
     ws.send(JSON.stringify({ id: p5.int(idText) }));
     doneChoosing = true;
     gameStarted = false;
     gameFinished = false;
-    document.querySelector("input")!.placeholder = "enter id";
+    document.getElementById('user_id')!.placeholder = 'Enter id';
   }
 
   //blocks user from displaying game if nothing chosen and handles box transparency
   function handleChooseSession() {
     if (doneChoosing) {
-      let op = "0.3";
-      if (p5.mouseY / canvasHeight < 0.25) op = "1";
-      input.style("opacity", op);
-      button.style("opacity", op);
+      let op = '0.3';
+      if (p5.mouseY / canvasHeight < 0.25) op = '1';
+      input.style('opacity', op);
+      button.style('opacity', op);
       idListOpacity = parseFloat(op);
       sliders.forEach((s) => s.setOpacity(parseFloat(op) * 255));
       return false;
     }
-    input.style("opacity", "1");
-    button.style("opacity", "1");
+    input.style('opacity', '1');
+    button.style('opacity', '1');
     idListOpacity = 1;
     sliders.forEach((s) => s.setOpacity(255));
     return true;
@@ -356,7 +359,7 @@ export const viewerSketch = (p5: p5Type) => {
     const col = colors[colorIndex];
     p5.fill(col.r, col.g, col.b);
     p5.textSize(canvasWidth / 50);
-    p5.text("waiting for game to start...", canvasWidth / 2, canvasHeight / 2);
+    p5.text('waiting for game to start...', canvasWidth / 2, canvasHeight / 2);
     return true;
   }
 
@@ -368,7 +371,7 @@ export const viewerSketch = (p5: p5Type) => {
     p5.fill(col.r, col.g, col.b);
     p5.textSize(canvasWidth / 30);
     let msg;
-    if (df.playerWon === 0) msg = "the game session was interrupted";
+    if (df.playerWon === 0) msg = 'the game session was interrupted';
     else msg = `player ${df.playerWon} won!`;
     p5.text(msg, canvasWidth / 2, canvasHeight / 2);
     return true;
@@ -391,7 +394,7 @@ export const viewerSketch = (p5: p5Type) => {
       p5.text(`${sessionIdsArray[i]}`, (i + 1) * (canvasWidth / 40) * 1.8, 0);
     //display '...' if more than 20 sessions
     if (sessionIdsArray.length > max)
-      p5.text("...", (max + 1) * (canvasWidth / 40) * 1.8, 0);
+      p5.text('...', (max + 1) * (canvasWidth / 40) * 1.8, 0);
   }
 
   /* === sliders === */
@@ -401,8 +404,9 @@ export const viewerSketch = (p5: p5Type) => {
       s.setP5Slider(
         p5.createSlider(s.s1, s.s2, s.s3, s.s4),
         widthOffset,
-        heightOffset
-      ));
+        heightOffset,
+      ),
+    );
   }
 
   // called each frame. calls drawcell on every sliders and gets their values
@@ -410,10 +414,10 @@ export const viewerSketch = (p5: p5Type) => {
     sliders.forEach((s) => {
       s.drawCell();
       switch (s.text) {
-        case "color":
+        case 'color':
           colorIndex = s.p5Slider.value();
           break;
-        case "volume":
+        case 'volume':
           const volumeLevel = s.p5Slider.value();
           impactSound.setVolume(volumeLevel);
           scoreSound.setVolume(volumeLevel);
@@ -425,18 +429,21 @@ export const viewerSketch = (p5: p5Type) => {
 
   // function that adapts the screen to its current size
   function handleWindowResize() {
-    const newCanvasWidth = Math.min(window.innerHeight - heightOffset, window.innerWidth);
+    const newCanvasWidth = Math.min(
+      window.innerHeight - heightOffset,
+      window.innerWidth,
+    );
     const newCanvasHeight = newCanvasWidth;
     const newWidthOffset = (window.innerWidth - newCanvasWidth) / 2;
     const newHeightOffset = heightOffset;
     sliders.forEach((s) => {
-      s.x = (s.x / canvasWidth * newCanvasWidth);
-      s.y = (s.y / canvasHeight * newCanvasHeight);
-      s.width = (s.width / canvasWidth * newCanvasWidth);
-      s.height = (s.height / canvasHeight * newCanvasHeight);
+      s.x = (s.x / canvasWidth) * newCanvasWidth;
+      s.y = (s.y / canvasHeight) * newCanvasHeight;
+      s.width = (s.width / canvasWidth) * newCanvasWidth;
+      s.height = (s.height / canvasHeight) * newCanvasHeight;
       s.p5Slider.position(
         s.x + newWidthOffset + (s.width * 0.1) / 2,
-        s.y + newHeightOffset + s.height / 1.5
+        s.y + newHeightOffset + s.height / 1.5,
       );
       s.p5Slider.size(s.width * 0.9, s.height / 2);
     });
@@ -447,7 +454,6 @@ export const viewerSketch = (p5: p5Type) => {
     //updating submit button box
     button.position(input.x + input.width, input.y);
     button.size(input.width / 1.5, input.height);
-
 
     p5.resizeCanvas(newCanvasWidth, newCanvasHeight);
     p5.background(0);
@@ -471,9 +477,10 @@ export const viewerSketch = (p5: p5Type) => {
     input = p5.createInput();
     input.position(widthOffset, canvasHeight / 20 + heightOffset);
     input.size(canvasWidth / 7, canvasHeight / 25);
-    document.querySelector("input")!.placeholder = "enter id";
+    input.id('user_id');
+    document.getElementById('user_id')!.placeholder = 'Enter id';
     // create submit button
-    button = p5.createButton("submit");
+    button = p5.createButton('submit');
     button.position(input.x + input.width, input.y);
     button.mousePressed(handleSubmit);
     button.size(input.width / 1.5, input.height);
@@ -487,7 +494,7 @@ export const viewerSketch = (p5: p5Type) => {
 
   p5.draw = () => {
     p5.background(0);
-    handleWindowResize()
+    handleWindowResize();
     if (handleSocketError()) return; //check if we are connected to server
     drawAndGetSliderValues();
     getAndDisplayIds();

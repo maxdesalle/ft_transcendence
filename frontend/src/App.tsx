@@ -20,6 +20,7 @@ import { useStore } from './store/index';
 import EditProfile from './pages/EditProfile';
 import TwoFactorAuth from './pages/TwoFactorAuth';
 import { Message } from './types/chat.interface';
+import LeaderBoard from './pages/LeaderBoard';
 
 const App: Component = () => {
   const [state, { loadPendingFriendReq, mutateFriendMsgs, mutateRoomMsgs }] =
@@ -60,7 +61,7 @@ const App: Component = () => {
 
   onCleanup(() => {
     state.ws.close();
-    console.log('cleaning up');
+    state.pong.ws.close();
   });
 
   return (
@@ -79,6 +80,7 @@ const App: Component = () => {
           <Route path="/edit_profile" element={<EditProfile />} />
           <Route path="/login" element={<Login />} />
           <Route path="/2fa" element={<TwoFactorAuth />} />
+          <Route path="/leaderboard" element={<LeaderBoard />} />
         </Routes>
       </div>
     </>

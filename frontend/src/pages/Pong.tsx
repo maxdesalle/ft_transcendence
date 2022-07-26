@@ -1,22 +1,44 @@
 import p5Type from 'p5';
-import { Component, createSignal, onCleanup, onMount } from 'solid-js';
-import { initSocket, sketch } from '../game/pong';
+import {
+  Component,
+  createEffect,
+  createSignal,
+  onCleanup,
+  onMount,
+  Show,
+} from 'solid-js';
+import { unwrap } from 'solid-js/store';
+import { sketch } from '../game/pong';
 import { useStore } from '../store';
 
 const Pong: Component = () => {
   let ref: any;
   let myP5: p5Type;
-  let ws: WebSocket;
   const [friendId, setFriendId] = createSignal(0);
   const [state, { toggleMatchMaking }] = useStore();
+  const [invitation, setInvitation] = createSignal<{
+    event: string;
+    user_id: number;
+  }>();
   onMount(() => {
-    ws = initSocket();
     myP5 = new p5Type(sketch, ref);
+    state.ws.addEventListener('message', (e) => {
+      const res = JSON.parse(e.data);
+      if (res.event === 'pong: invitation') {
+        setInvitation(res);
+      }
+    });
   });
+
+  const onAcceptInvite = () => {
+    const data = { event: 'accept', data: invitation()?.user_id };
+    state.pong.ws.send(JSON.stringify(data));
+    setInvitation(undefined);
+  };
 
   const onPlay = () => {
     const message = { event: 'play' };
-    ws.send(JSON.stringify(message));
+    state.pong.ws.send(JSON.stringify(message));
     toggleMatchMaking(true);
   };
 
@@ -26,16 +48,21 @@ const Pong: Component = () => {
       event: 'invite',
       data: friendId(),
     };
-    ws.send(JSON.stringify(data));
+    state.pong.ws.send(JSON.stringify(data));
   };
 
+  createEffect(() => {
+    console.log(unwrap(state.pong.ladder));
+  });
+
   onCleanup(() => {
-    ws.close();
     myP5.remove();
+    // cancel the matchmaking when leaving the page
     toggleMatchMaking(false);
   });
+  
   return (
-    <div class="flex flex-col items-center">
+    <div class="flex flex-col">
       <div class="flex">
         <button
           onClick={onPlay}
@@ -57,6 +84,11 @@ const Pong: Component = () => {
           <button class="btn-primary" onClick={onInviteFriend}>
             Invite
           </button>
+          <Show when={invitation()}>
+            <button class="btn-primary" onClick={onAcceptInvite}>
+              Accept
+            </button>
+          </Show>
         </div>
       </div>
       <div ref={ref}></div>

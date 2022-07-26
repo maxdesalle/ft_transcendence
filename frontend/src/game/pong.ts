@@ -5,7 +5,6 @@ import soundScore from '../assets/client_music_score.mp3';
 import soundImpact from '../assets/client_music_impact.mp3';
 import 'p5/lib/addons/p5.sound';
 import { useStore } from '../store';
-import { createEffect } from 'solid-js';
 
 const socketServerIP = 'localhost';
 const socketServerPort = 3000;
@@ -87,7 +86,6 @@ export function initSocket(): WebSocket {
   });
   // set all the game variables
   ws.addEventListener('message', (e: any) => {
-    console.log(e);
     const dataOB = JSON.parse(String(e.data));
     sessionId = dataOB.id ?? sessionId;
     if (playerNumber === 1)
@@ -198,6 +196,7 @@ export const sketch = (p5: p5Type) => {
       );
       return true;
     }
+
     if (isDisconnected) {
       sliders.forEach((s) => s.p5Slider.remove());
       p5.textAlign(p5.CENTER, p5.CENTER);
@@ -209,7 +208,7 @@ export const sketch = (p5: p5Type) => {
       );
       return true;
     }
-    if (state.pong.inMatchMaking) {
+    if (state.pong.inMatchMaking && sessionId === -1) {
       p5.textAlign(p5.CENTER, p5.CENTER);
       p5.fill(col);
       p5.text(
@@ -217,6 +216,10 @@ export const sketch = (p5: p5Type) => {
         canvasWidth / 2,
         canvasHeight / 2,
       );
+    } else if (sessionId === -1) {
+      p5.textAlign(p5.CENTER, p5.CENTER);
+      p5.fill(col);
+      p5.text('Press play to play', canvasWidth / 2, canvasHeight / 2);
     }
     if (playerNumber === 0) {
       return true;
