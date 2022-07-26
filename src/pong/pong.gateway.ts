@@ -70,6 +70,7 @@ export class PongGateway implements OnGatewayConnection, OnGatewayDisconnect {
     handleDisconnect(client: WebSocket) {
         const user_id = connected_users.get(client);
         connected_users.delete(client);
+        playing.delete(user_id);
         clearInviteWait(user_id);
         removeGameSession(client);
         if (user_id)
@@ -80,6 +81,11 @@ export class PongGateway implements OnGatewayConnection, OnGatewayDisconnect {
     @UseGuards(PongGuard)
     playAgainstAnyone(client: WebSocket, data: string) {
         const user_id = connected_users.get(client);
+
+        if (waiting_player?.user_id == user_id) {
+            console.log("You shall not play against yourself")
+            return;
+        }
 
         // check if there's a waiting player
         if (waiting_player) {
