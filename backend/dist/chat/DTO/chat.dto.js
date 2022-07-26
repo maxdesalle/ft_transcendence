@@ -9,7 +9,7 @@ var __metadata = (this && this.__metadata) || function (k, v) {
     if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.SetPrivateDto = exports.RoomAndPasswordDto = exports.BanMuteDTO = exports.AddGroupUserByNameDTO = exports.RoomAndUserDto = exports.GroupConfigDto = exports.RoomInfoShort = exports.RoomInfo = exports.RoomIdDto = exports.UserIdDto = exports.MessageDTO = exports.Message2RoomDTO = exports.PostDmDto = void 0;
+exports.SetPrivateDto = exports.RoomAndPasswordDto = exports.BanMuteDTO = exports.AddGroupUserByNameDTO = exports.RoomAndUserDto = exports.GroupConfigDto = exports.RoomInfo = exports.RoomIdDto = exports.UserIdDto = exports.MessageDTO = exports.Message2RoomDTO = exports.PostDmDto = void 0;
 const openapi = require("@nestjs/swagger");
 const class_validator_1 = require("class-validator");
 class PostDmDto {
@@ -50,23 +50,12 @@ class RoomIdDto {
     }
 }
 exports.RoomIdDto = RoomIdDto;
-class UserRole {
-    static _OPENAPI_METADATA_FACTORY() {
-        return { user_id: { required: true, type: () => Number }, role: { required: true, type: () => String } };
-    }
-}
 class RoomInfo {
     static _OPENAPI_METADATA_FACTORY() {
-        return { room_id: { required: true, type: () => Number }, room_name: { required: true, type: () => String }, type: { required: true, type: () => String }, blocked: { required: false, type: () => Boolean }, private: { required: true, type: () => Boolean }, password_protected: { required: true, type: () => Boolean }, users: { required: true, type: () => [UserRole] } };
+        return { room_id: { required: true, type: () => Number }, room_name: { required: true, type: () => String }, type: { required: true, type: () => String }, blocked: { required: false, type: () => Boolean }, private: { required: true, type: () => Boolean }, password_protected: { required: true, type: () => Boolean }, users: { required: true, type: () => ({ id: { required: true, type: () => Number }, login42: { required: true, type: () => String }, display_name: { required: true, type: () => String }, avatarId: { required: true, type: () => Number }, role: { required: false, type: () => String }, muted: { required: false, type: () => Boolean } }) }, last_msg: { required: true, type: () => require("./chat.dto").MessageDTO } };
     }
 }
 exports.RoomInfo = RoomInfo;
-class RoomInfoShort {
-    static _OPENAPI_METADATA_FACTORY() {
-        return { room_id: { required: true, type: () => Number }, room_name: { required: true, type: () => String }, type: { required: true, type: () => String }, blocked: { required: false, type: () => Boolean }, participants: { required: true, type: () => [require("../../users/entities/user.entity").User] }, last_msg: { required: true, type: () => require("./chat.dto").MessageDTO } };
-    }
-}
-exports.RoomInfoShort = RoomInfoShort;
 class GroupConfigDto {
     static _OPENAPI_METADATA_FACTORY() {
         return { name: { required: true, type: () => String }, private: { required: false, type: () => Boolean }, password: { required: false, type: () => String } };

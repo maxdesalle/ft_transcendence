@@ -32,10 +32,6 @@ export class RoomIdDto {
 	room_id: number
 }
 
-class UserRole {
-	user_id: number;
-	role: string;
-}
 
 export class RoomInfo {
 	room_id: number;
@@ -44,16 +40,15 @@ export class RoomInfo {
 	blocked?: boolean;
 	private: boolean;
 	password_protected: boolean;
-	users: UserRole[];
-}
-
-export class RoomInfoShort {
-	room_id: number;
-	room_name: string;
-	type: string;
-	blocked?: boolean;
-	participants: User[];
-	last_msg: MessageDTO;
+	users: {
+		id: number,
+		login42: string,
+		display_name: string,
+		avatarId: number
+		role?: string,
+		muted?: boolean
+	}
+	last_msg: MessageDTO
 }
 
 export class GroupConfigDto {

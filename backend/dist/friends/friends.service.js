@@ -28,6 +28,19 @@ let FriendsService = class FriendsService {
         this.usersService = usersService;
         this.wsService = wsService;
     }
+    friendshipToFriendshipRequest(request) {
+        return {
+            requesting_user: {
+                id: request.requesting_user.id,
+                display_name: request.requesting_user.display_name,
+            },
+            receiving_user: {
+                id: request.receiving_user.id,
+                display_name: request.receiving_user.display_name,
+            },
+            status: request.status,
+        };
+    }
     async requestFriendship(my_id, user_id) {
         const me = await this.usersService.findById(my_id);
         const friend = await this.usersService.findById(user_id);
@@ -48,17 +61,7 @@ let FriendsService = class FriendsService {
         request.receiving_user = friend;
         request.recv_user_id = user_id;
         await this.friendsRepository.save(request);
-        return {
-            requesting_user: {
-                id: request.requesting_user.id,
-                display_name: request.requesting_user.display_name,
-            },
-            receiving_user: {
-                id: request.receiving_user.id,
-                display_name: request.receiving_user.display_name,
-            },
-            status: friendship_entity_1.FrienshipStatus.pending,
-        };
+        return this.friendshipToFriendshipRequest(request);
     }
     async sentRequests(my_id) {
         const me = await this.usersRepository.findOne(my_id, {
@@ -91,11 +94,12 @@ let FriendsService = class FriendsService {
         const request = await this.friendsRepository.findOne({
             recv_user_id: my_id,
             req_user_id: requester_id
-        });
+        }, { relations: ['requesting_user', 'receiving_user'] });
         if (!request)
             throw new common_1.BadRequestException("friendship request does not exist");
         request.status = status;
-        return this.friendsRepository.save(request);
+        await this.friendsRepository.save(request);
+        return this.friendshipToFriendshipRequest(request);
     }
     async listFriendsIDs(my_id) {
         const me = await this.usersRepository.findOne(my_id, {

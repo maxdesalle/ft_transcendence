@@ -19,7 +19,7 @@ import Login from './pages/Login';
 import { useStore } from './store/index';
 import EditProfile from './pages/EditProfile';
 import TwoFactorAuth from './pages/TwoFactorAuth';
-import { Message } from './types/chat.interface';
+import { Message, WsNotificationEvent } from './types/chat.interface';
 import LeaderBoard from './pages/LeaderBoard';
 
 const App: Component = () => {
@@ -29,25 +29,38 @@ const App: Component = () => {
 
   onMount(() => {
     state.ws.addEventListener('message', (e) => {
-      console.log('message', e);
-      let res;
+      let res: { event: WsNotificationEvent; message?: any };
       res = JSON.parse(e.data);
-      if (res.event === 'chat_room_msg') {
-        if (mutateRoomMsgs) {
-          mutateRoomMsgs(res.message as Message);
-        }
-      } else if (res.event == 'chat_dm') {
-        if (mutateFriendMsgs) {
-          mutateFriendMsgs(res.message as Message);
-        }
+      switch (res.event) {
+        case 'chat_room_msg':
+          if (mutateRoomMsgs) {
+            mutateRoomMsgs(res.message as Message);
+          }
+          break;
+        case 'chat_dm':
+          if (mutateFriendMsgs) {
+            mutateFriendMsgs(res.message as Message);
+          }
+          break;
+        case 'friends: new_request':
+          console.log('Friend req: ', res);
+          break;
+        default:
+          console.log('default: ', res);
+          break;
       }
+      // if (res.event === 'chat_room_msg') {
+      //   if (mutateRoomMsgs) {
+      //     mutateRoomMsgs(res.message as Message);
+      //   }
+      // } else if (res.event == 'chat_dm') {
+      //   if (mutateFriendMsgs) {
+      //     mutateFriendMsgs(res.message as Message);
+      //   }
+      // }
     });
-    state.ws.addEventListener('open', (e) => {
-      console.log('conection open: ', e);
-    });
-    state.ws.addEventListener('close', (e) => {
-      console.log('closed', e);
-    });
+    state.ws.addEventListener('open', (e) => {});
+    state.ws.addEventListener('close', (e) => {});
     if (loadPendingFriendReq) {
       loadPendingFriendReq();
     }

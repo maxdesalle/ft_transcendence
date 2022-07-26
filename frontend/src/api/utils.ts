@@ -30,4 +30,10 @@ export const routes = {
   unblockUser: `${urls.backendUrl}/chat/unblock`,
   matches: `${urls.backendUrl}/stats/matches`,
   ladder: `${urls.backendUrl}/stats/ladder`,
+  banUser: `${urls.backendUrl}/chat/ban_group_user`,
+  unbanUser: `${urls.backendUrl}/chat/unban_group_user`,
+  muteUser: `${urls.backendUrl}/chat/mute_group_user`,
+  unmuteUser: `${urls.backendUrl}/chat/unmute_group_user`,
+  promoteUser: `${urls.backendUrl}/chat/promote_group_user`,
+  demoteUser: `${urls.backendUrl}/chat/demote_group_user`,
 };

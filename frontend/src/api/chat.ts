@@ -1,12 +1,18 @@
 import { createResource } from 'solid-js';
-import { Message, RoomInfo, RoomInfoShort } from '../types/chat.interface';
+import { Message, RoomInfo } from '../types/chat.interface';
 import { api } from '../utils/api';
 import { routes } from './utils';
 
-type CreateRoomType = {
+export type CreateRoomType = {
   name: string;
   private?: boolean;
   password?: string;
+};
+
+export type ChatPostBody = {
+  room_id: number;
+  user_id: number;
+  time_minutes: number;
 };
 
 export const createRoomResource = () => {
@@ -19,12 +25,12 @@ export const createRoomResource = () => {
 };
 
 const createRoom = async (data: CreateRoomType) => {
-  const res = await api.post<RoomInfoShort[]>(routes.createGroup, data);
+  const res = await api.post<RoomInfo[]>(routes.createGroup, data);
   return res;
 };
 
 const getRooms = async () => {
-  const res = await api.get<RoomInfoShort[]>(routes.getRooms);
+  const res = await api.get<RoomInfo[]>(routes.getRooms);
   return res.data;
 };
 
@@ -64,8 +70,44 @@ export const blockUser = async (data: { user_id: number }) => {
   return await api.post(routes.blockUser, data);
 };
 
-export const unblockUser = async (data: { user_id: number }) => {
+const unblockUser = async (data: { user_id: number }) => {
   return await api.post(routes.unblockUser, data);
+};
+
+const banUser = async (data: {
+  room_id: number;
+  user_id: number;
+  time_minutes: number;
+}) => {
+  return await api.post<RoomInfo>(routes.banUser, data);
+};
+
+const unbanUser = async (data: ChatPostBody) => {
+  return await api.post<RoomInfo>(routes.unbanUser, data);
+};
+
+const muteUser = async (data: {
+  room_id: number;
+  user_id: number;
+  time_minutes: number;
+}) => {
+  return await api.post<RoomInfo>(routes.muteUser, data);
+};
+
+const promoteUser = async (data: ChatPostBody) => {
+  return await api.post<RoomInfo>(routes.promoteUser, data);
+};
+
+const demoteUser = async (data: ChatPostBody) => {
+  return await api.post<RoomInfo>(routes.demoteUser, data);
+};
+
+const unmuteUser = async (data: {
+  room_id: number;
+  user_id: number;
+  time_minutes: number;
+}) => {
+  return await api.post<RoomInfo>(routes.muteUser, data);
 };
 
 export const chatApi = {
@@ -76,4 +118,11 @@ export const chatApi = {
   getFriendMessages,
   postMessageToRoom,
   sendDm,
+  muteUser,
+  unmuteUser,
+  banUser,
+  unbanUser,
+  promoteUser,
+  demoteUser,
+  unblockUser,
 };

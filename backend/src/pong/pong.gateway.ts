@@ -30,7 +30,7 @@ interface playerScoresInterface {
 };
 const sockets: gameSocketsInterface[] = []; // array that will contain session objects
 
-// keeps track of who is connected to '/pong/ gateway (socket - user_id pairs)
+// keeps track of who is connected to /pong/ gateway (socket - user_id pairs)
 export const connected_users = new Map<WebSocket, number>();
 // pending invitations to play (inviting user_id - invited user_id pairs )
 const invitations = new Map<number, number>();
@@ -72,6 +72,8 @@ export class PongGateway implements OnGatewayConnection, OnGatewayDisconnect {
         connected_users.delete(client);
         clearInviteWait(user_id);
         removeGameSession(client);
+        if (user_id)
+            console.log(`User ${user_id} disconnected`)
     }
 
     @SubscribeMessage('play')
@@ -135,8 +137,22 @@ export class PongGateway implements OnGatewayConnection, OnGatewayDisconnect {
             // client.close(1000, 'inviting user is no longer available');
             return;
         }
+        // notify inviting user
+        this.wsService.sendMsgToUser(inviting_user_id, {
+            event: 'pong: invitation_accepted',
+            user_id
+        });
+
         // start game
         this.matchPlayers(inviting_user_socket, client);
+    }
+
+    @SubscribeMessage('cancel')
+    @UseGuards(PongGuard)
+    clear(client: WebSocket, data: string) {
+        const user_id = connected_users.get(client);
+        clearInviteWait(user_id);
+        console.log(`User ${user_id} cleared as waiting player or inviting player`);
     }
 
    // TODO: refuse invitation ? withdraw invitation?
@@ -335,8 +351,4 @@ function startSession(p1Socket: WebSocket, p2Socket: WebSocket) {
     });
     return (id);
 }
-
-
-
-
 

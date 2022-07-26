@@ -1,4 +1,4 @@
-import { User } from "./user.interface";
+import { RoomUser, User } from './user.interface';
 
 export interface RoomConfig {
   name: string;
@@ -6,12 +6,15 @@ export interface RoomConfig {
   password?: boolean;
 }
 
-export interface RoomInfoShort {
-  last_msg: Message;
+export interface RoomInfo {
   room_id: number;
   room_name: string;
   type: string;
-  participants: User[];
+  blocked?: boolean;
+  private: boolean;
+  password_protected: boolean;
+  users: RoomUser[];
+  last_msg: Message;
 }
 
 export interface Message {
@@ -28,12 +31,18 @@ export interface UserRole {
   role: string;
 }
 
-export interface RoomInfo {
-  room_id: number;
-  room_name: string;
-  type: string;
-  blocked?: boolean;
-  private: boolean;
-  password_protected: boolean;
-  users: UserRole[];
-}
+export type WsNotificationEvent =
+  | 'ws_auth_success'
+  | 'ws_auth_fail'
+  | 'chat_dm'
+  | 'chat_new_group'
+  | 'chat_new_user_in_group'
+  | 'chat_room_msg'
+  | 'friends: new_request'
+  | 'friends: request_accepted'
+  | 'friends: request_rejected'
+  | 'status: friend_online'
+  | 'status: friend_offline'
+  | 'status: friend_playing'
+  | 'pong: invitation'
+  | 'pong: invitation_accepted';

@@ -1,4 +1,4 @@
-import { Component, createSignal, For, Show } from 'solid-js';
+import { Component, createEffect, createSignal, For, Show } from 'solid-js';
 import { useStore } from '../store';
 import { User } from '../types/user.interface';
 import AddFriend from './AddFriend';

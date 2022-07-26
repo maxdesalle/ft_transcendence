@@ -1,4 +1,3 @@
-import { User } from "src/users/entities/user.entity";
 export declare class PostDmDto {
     user_id: number;
     message: string;
@@ -21,10 +20,6 @@ export declare class UserIdDto {
 export declare class RoomIdDto {
     room_id: number;
 }
-declare class UserRole {
-    user_id: number;
-    role: string;
-}
 export declare class RoomInfo {
     room_id: number;
     room_name: string;
@@ -32,14 +27,14 @@ export declare class RoomInfo {
     blocked?: boolean;
     private: boolean;
     password_protected: boolean;
-    users: UserRole[];
-}
-export declare class RoomInfoShort {
-    room_id: number;
-    room_name: string;
-    type: string;
-    blocked?: boolean;
-    participants: User[];
+    users: {
+        id: number;
+        login42: string;
+        display_name: string;
+        avatarId: number;
+        role?: string;
+        muted?: boolean;
+    };
     last_msg: MessageDTO;
 }
 export declare class GroupConfigDto {
@@ -68,4 +63,3 @@ export declare class SetPrivateDto {
     room_id: number;
     private: boolean;
 }
-export {};

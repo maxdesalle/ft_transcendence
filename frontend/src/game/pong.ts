@@ -117,7 +117,7 @@ export function initSocket(): WebSocket {
 }
 
 export const sketch = (p5: p5Type) => {
-  const [state, {toggleMatchMaking} ] = useStore();
+  const [state, { toggleMatchMaking }] = useStore();
   p5.disableFriendlyErrors = true;
   let sliders = [
     new Slider(
@@ -251,7 +251,7 @@ export const sketch = (p5: p5Type) => {
       displayOkButton();
       return true;
     }
-
+    toggleMatchMaking(false);
     if (isDisconnected) {
       sliders.forEach((s) => s.p5Slider.remove());
       p5.textAlign(p5.CENTER, p5.CENTER);

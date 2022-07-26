@@ -22,17 +22,26 @@ let WsGateway = class WsGateway {
             user = this.wsService.getUserFromUpgradeRequest(req);
         }
         catch (error) {
-            client.send('Authentication KO. Gimme a valid JWT!');
+            client.send(JSON.stringify({
+                event: "ws_auth_fail",
+                reason: "no valid JWT"
+            }));
             client.close(1008, 'Bad credentials');
             return;
         }
         if (this.wsService.isUserOnline(user.id)) {
+            client.send(JSON.stringify({
+                event: "ws_auth_fail",
+                reason: "already connected"
+            }));
             client.close(1008, 'user already connected via another socket');
             return;
         }
         this.wsService.setUserOnline(user.id, client);
         console.log(`user ${user.id} (${user.login42}) is connected.`);
-        client.send(`Authentication OK. user_id: ${user.id}, login42: ${user.login42}`);
+        client.send(JSON.stringify({
+            event: "ws_auth_success",
+        }));
         this.wsService.notifyStatusChangeToFriends(user.id, 'online');
     }
     handleDisconnect(client) {

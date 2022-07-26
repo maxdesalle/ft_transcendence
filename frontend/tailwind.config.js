@@ -5,7 +5,7 @@ module.exports = {
     extend: {
       height: {
         90: '94vh',
-        82: '83vh',
+        82: '89vh',
       },
       textColor: {
         skin: {
