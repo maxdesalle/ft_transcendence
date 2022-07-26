@@ -43,6 +43,7 @@ export const playing = new Set<number>();
 export class PongGateway implements OnGatewayConnection, OnGatewayDisconnect {
     constructor(
         private jwtService: JwtService,
+		@Inject(forwardRef(() => UsersService))
         private usersService: UsersService,
 		@Inject(forwardRef(() => WsService))
         private wsService: WsService,

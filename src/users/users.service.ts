@@ -2,6 +2,7 @@ import { ConflictException, Injectable, InternalServerErrorException } from '@ne
 import { InjectRepository } from '@nestjs/typeorm';
 import { DatabaseFilesService } from 'src/database-files/database-files.service';
 import { StatsService } from 'src/stats/stats.service';
+import { WsService } from 'src/ws/ws.service';
 import { Connection, Repository } from 'typeorm';
 import { User } from './entities/user.entity';
 
@@ -12,7 +13,8 @@ export class UsersService {
 		private usersRepository: Repository<User>,
 		private readonly databaseFilesService: DatabaseFilesService,
 		private connection: Connection,
-		private statsService: StatsService
+		private statsService: StatsService,
+		private wsService: WsService
 	) {}
 
 	/** creates new user if non-existant, just returns the user otherwise */
@@ -24,6 +26,10 @@ export class UsersService {
 			user.display_name = login42; 
 			const new_user = await this.usersRepository.save(user);
 			await this.statsService.newPlayer(new_user.id);
+			this.wsService.sendMsgToAll({
+				event: "users: new_user",
+				user_id: new_user.id
+			});
 		}
 		return user;
 	}

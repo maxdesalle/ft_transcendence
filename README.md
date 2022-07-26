@@ -404,7 +404,14 @@ When a Pong match is over, points in the general ladder are changed
     ]
 }
 ```
-
+### Users
+A new user was created
+```
+{
+    "event":"users: new_user",
+    "user_id":4
+}
+```
 
 ## Chat specification
 (things that are not cristal clear in the subject and a decision had to be made)

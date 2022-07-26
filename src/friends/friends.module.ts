@@ -5,7 +5,6 @@ import { UsersModule } from 'src/users/users.module';
 import { Friendship } from './entities/friendship.entity';
 import { FriendsService } from './friends.service';
 import { FriendsController } from './friends.controller';
-import { ChatModule } from 'src/chat/chat.module';
 import { WsModule } from 'src/ws/ws.module';
 
 @Module({
@@ -13,7 +12,7 @@ import { WsModule } from 'src/ws/ws.module';
 	imports: [
 		TypeOrmModule.forFeature([User]),
 		TypeOrmModule.forFeature([Friendship]),
-		UsersModule,
+		forwardRef(() => UsersModule),
 		forwardRef(() => WsModule) 
 	],
 	controllers: [FriendsController],
