@@ -47,17 +47,17 @@ export class UsersService {
 	}
 
 	findById(id: number) {
-		return this.usersRepository.findOne(id);
+		return this.usersRepository.findOneBy({id});
 	}
 
 	findByLogin42(login42: string): Promise<User | undefined> {
 
-		return this.usersRepository.findOne({ login42 });
+		return this.usersRepository.findOneBy({ login42 });
 	}
 
 	findByDisplayName(display_name: string): Promise<User | undefined> {
 
-		return this.usersRepository.findOne({ display_name });
+		return this.usersRepository.findOneBy({ display_name });
 	}
 
 	findAll() {
@@ -66,10 +66,10 @@ export class UsersService {
 
 	async setDisplayName(user_id: number, new_name: string) {
 		const user_exists = await 
-			this.usersRepository.findOne({display_name: new_name});
+			this.usersRepository.findOneBy({display_name: new_name});
 		if (user_exists)
 			throw new ConflictException("name already taken");
-		const user = await this.usersRepository.findOne(user_id);
+		const user = await this.usersRepository.findOneBy({id: user_id});
 		user.display_name = new_name;
 		this.usersRepository.save(user);
 		return user;
@@ -84,7 +84,7 @@ export class UsersService {
 		await queryRunner.startTransaction();
 
 		try {
-			const user = await queryRunner.manager.findOne(User, userId);
+			const user = await queryRunner.manager.findOneBy(User, {id: userId});
 			const currentAvatarId = user.avatarId;
 			const avatar = await this.databaseFilesService.uploadDBFileWithQueryRunner(
 				imageBuffer, filename, queryRunner);

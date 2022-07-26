@@ -41,10 +41,10 @@ export class FriendsService {
 		if (!friend || my_id === user_id)
 			throw new BadRequestException("bad user id");
 		// check if request or the reverse one already exists
-		if (await this.friendsRepository.findOne({
+		if (await this.friendsRepository.findOneBy({
 			req_user_id: user_id,
 			recv_user_id: my_id})
-			|| await this.friendsRepository.findOne({
+			|| await this.friendsRepository.findOneBy({
 			req_user_id: my_id,
 			recv_user_id: user_id}))
 			throw new BadRequestException('friendship request already exists');
@@ -58,16 +58,17 @@ export class FriendsService {
 	}
 
 	async sentRequests(my_id: number): Promise<any> {
-		const me = await this.usersRepository.findOne(my_id, {
+		const me = await this.usersRepository.findOne({
+			where: {id: my_id},
 			relations: ['requested_friendships']
 		});
 		return me.requested_friendships;
 
-		// return pending;
 	} 
 
 	async recvdRequests(my_id: number): Promise<any> {
-		const me = await this.usersRepository.findOne(my_id, {
+		const me = await this.usersRepository.findOne({
+			where: {id: my_id},
 			relations: ['received_friendships']
 		});
 		return me.received_friendships;
@@ -93,9 +94,12 @@ export class FriendsService {
 
 	async setFriendshipStatus(my_id: number, requester_id: number, status: FriendshipStatus) {
 		const request = await this.friendsRepository.findOne({
-			recv_user_id: my_id,
-			req_user_id: requester_id
-		}, {relations: ['requesting_user', 'receiving_user']});
+			where: {
+				recv_user_id: my_id,
+				req_user_id: requester_id 
+			},
+			relations: ['requesting_user', 'receiving_user']
+		});
 		if (!request)
 			throw new BadRequestException("friendship request does not exist");
 		request.status = status;
@@ -104,7 +108,8 @@ export class FriendsService {
 	}
 
 	async listFriendsIDs(my_id: number): Promise<number[]> {
-		const me = await this.usersRepository.findOne(my_id, {
+		const me = await this.usersRepository.findOne({
+			where: {id: my_id},
 			relations: ['received_friendships', 'requested_friendships']
 		});
 
