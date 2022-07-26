@@ -40,7 +40,7 @@ export class Slider {
     this.s3 = s3;
     this.s4 = s4;
     this.isGlobal = isGlobal;
-    this.a = a;
+    this.a = (a === undefined ? 255 : a);
   }
 
   // call this function to set a p5.js slider to this slider object
@@ -55,7 +55,7 @@ export class Slider {
   }
 
   // changes cell opacity to a (0-255)
-  setOpacity(a: any) {
+  setOpacity(a: number) {
     this.a = a;
     if (this.p5Slider !== undefined)
       this.p5Slider.style("opacity", (a / 255).toString());
@@ -76,7 +76,7 @@ export class Slider {
     p5.noStroke();
     p5.textSize((this.width / this.text.length) * 1.3);
     p5.textAlign(p5.CENTER, p5.TOP);
-    p5.fill(r, g, b);
+    p5.fill(r, g, b, this.a);
     p5.text(this.text, this.x + this.width / 2, this.y + this.height / 8);
   }
 }
