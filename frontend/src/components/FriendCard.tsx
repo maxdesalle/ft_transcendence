@@ -1,4 +1,4 @@
-import { Component, createSignal } from 'solid-js';
+import { Component, createEffect, createSignal } from 'solid-js';
 import { User } from '../types/user.interface';
 import { generateImageUrl } from '../utils/helpers';
 import Avatar from './Avatar';
@@ -19,13 +19,14 @@ export const FriendCard: Component<{ friend: User; onClick?: () => void }> = (
       })
       .catch((err) => console.log(err));
   };
+
   return (
     <div class="flex text-white justify-between items-center w-full">
       <div onClick={props.onClick} class="flex">
         <Avatar
           imgUrl={
             props.friend.avatarId
-              ? `${generateImageUrl(props.friend.id)}`
+              ? `${generateImageUrl(props.friend.avatarId)}`
               : defaultAvatar
           }
         />

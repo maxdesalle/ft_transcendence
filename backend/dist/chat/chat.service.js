@@ -60,37 +60,12 @@ let ChatService = class ChatService {
         return my_query.rows;
     }
     async get_convs(me) {
-        const blockedList = await this.listBlockedUsers(me.id);
-        let room_query = await this.pool.query(`SELECT id, name, owner FROM room
+        let room_query = await this.pool.query(`SELECT id FROM room
 			WHERE id IN (SELECT room_id FROM participants WHERE user_id = ${me.id})
 			ORDER BY activity DESC`);
         const conversations = [];
-        for (let i = 0; i < room_query.rowCount; i++) {
-            let room_row = room_query.rows[i];
-            let room_id = room_row.id;
-            let part_q = await this.pool.query(`
-				SELECT id, login42, display_name, "avatarId"
-				FROM participants
-				JOIN public.user ON user_id = public.user.id
-				WHERE room_id = ${room_row.id}`);
-            const type = room_row.owner ? 'group' : 'DM';
-            let blocked;
-            if (type === 'DM' && (blockedList.includes(part_q.rows[0].user_id) || blockedList.includes(part_q.rows[1].user_id)))
-                blocked = true;
-            let conv = {
-                room_id,
-                room_name: room_row.name,
-                type,
-                blocked,
-                participants: [],
-                last_msg: null
-            };
-            for (let n = 0; n < part_q.rowCount; n++)
-                conv.participants.push(part_q.rows[n]);
-            const last_msg = await this.getMessagesByRoomId(room_row.id);
-            if (last_msg.length)
-                conv.last_msg = last_msg[0];
-            conversations.push(conv);
+        for (let room of room_query.rows) {
+            conversations.push(await this.roomInfo(room.id));
         }
         return conversations;
     }
@@ -101,25 +76,32 @@ let ChatService = class ChatService {
 			WHERE id = ${room_id};`);
         const info = query.rows[0];
         const is_group = !!info.owner;
-        const userIDs = await this.listRoomParticipants(room_id);
+        const users = (await this.pool.query(`
+			SELECT public.user.id, login42, display_name, "avatarId" FROM participants
+			JOIN public.user ON user_id=public.user.id
+			WHERE room_id=${room_id};	
+		`)).rows;
         const roles = ['participant', 'admin', 'owner'];
-        const users = [];
-        for (let user_id of userIDs) {
-            users.push({
-                user_id,
-                role: is_group ? roles[await this.get_role(user_id, room_id)] : undefined,
-                muted: is_group ? await this.is_muted(user_id, room_id) : undefined,
-            });
+        if (is_group) {
+            for (let user of users) {
+                user.role = roles[await this.get_role(user.id, room_id)];
+                user.muted = await this.is_muted(user.id, room_id);
+            }
         }
+        let last_msg;
+        const msgs = await this.getMessagesByRoomId(room_id);
+        if (msgs.length)
+            last_msg = msgs[0];
         return {
             room_id: room_id,
             room_name: info.name,
             type: is_group ? 'group' : 'DM',
             blocked: !is_group ?
-                await this.is_blocked(users[0].user_id, users[1].user_id) : undefined,
-            private: info.private,
-            password_protected: !!info.password,
-            users
+                await this.is_blocked(users[0].id, users[1].id) : undefined,
+            private: is_group ? info.private : undefined,
+            password_protected: is_group ? !!info.password : undefined,
+            users,
+            last_msg
         };
     }
     async postDM(me, toId, msg) {
@@ -407,8 +389,11 @@ let ChatService = class ChatService {
     async showPublicRooms() {
         const public_groups = await this.listPublicGroups();
         const info_array = [];
-        for (let room_id of public_groups)
-            info_array.push(await this.roomInfo(room_id));
+        for (let room_id of public_groups) {
+            const room = await this.roomInfo(room_id);
+            delete room.last_msg;
+            info_array.push(room);
+        }
         return info_array;
     }
     async is_muted(user_id, room_id) {

@@ -60,6 +60,8 @@ let PongGateway = class PongGateway {
         exports.connected_users.delete(client);
         clearInviteWait(user_id);
         removeGameSession(client);
+        if (user_id)
+            console.log(`User ${user_id} disconnected`);
     }
     playAgainstAnyone(client, data) {
         const user_id = exports.connected_users.get(client);
@@ -102,7 +104,16 @@ let PongGateway = class PongGateway {
             console.log('inviting user is no longer available');
             return;
         }
+        this.wsService.sendMsgToUser(inviting_user_id, {
+            event: 'pong: invitation_accepted',
+            user_id
+        });
         this.matchPlayers(inviting_user_socket, client);
+    }
+    clear(client, data) {
+        const user_id = exports.connected_users.get(client);
+        clearInviteWait(user_id);
+        console.log(`User ${user_id} cleared as waiting player or inviting player`);
     }
     matchPlayers(p1Socket, p2Socket) {
         const p1 = exports.connected_users.get(p1Socket);
@@ -151,6 +162,13 @@ __decorate([
     __metadata("design:paramtypes", [ws_1.WebSocket, String]),
     __metadata("design:returntype", void 0)
 ], PongGateway.prototype, "acceptInvitation", null);
+__decorate([
+    (0, websockets_1.SubscribeMessage)('cancel'),
+    (0, common_1.UseGuards)(pong_guard_1.PongGuard),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [ws_1.WebSocket, String]),
+    __metadata("design:returntype", void 0)
+], PongGateway.prototype, "clear", null);
 PongGateway = __decorate([
     (0, websockets_1.WebSocketGateway)({ path: '/pong' }),
     __param(2, (0, common_1.Inject)((0, common_1.forwardRef)(() => ws_service_1.WsService))),

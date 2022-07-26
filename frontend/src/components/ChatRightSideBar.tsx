@@ -1,23 +1,31 @@
-import { useNavigate } from 'solid-app-router';
-import { Component, createSignal, For, Show } from 'solid-js';
-import UserCard from './UserCard';
+import { Component, createEffect, createSignal, For, Show } from 'solid-js';
 import { AiOutlinePlusCircle } from 'solid-icons/ai';
 import Modal from './Modal';
 import AddUserToRoom from './admin/AddUserToRoom';
 import { useStore } from '../store';
 import Avatar from './Avatar';
+import ChatRoomUserCard from './ChatRoomUserCard';
+import { unwrap } from 'solid-js/store';
+import { RoomUser } from '../types/user.interface';
 
 const ChatRightSideBar: Component<{}> = () => {
-  const navigate = useNavigate();
   const [isOpen, setIsOpen] = createSignal(false);
   const [state] = useStore();
+  const [owner, setOwner] = createSignal<RoomUser>();
+
+  createEffect(() => {
+    setOwner(
+      state.chat.currentRoom?.users.find((user) => user.role === 'owner'),
+    );
+  });
   return (
     <>
       <div class="text-white">
         <h4 class="text-center p-2 bg-skin-menu-background">Admin</h4>
-        <Show when={state.currentUser.userData}>
-          <div class="p-2">
+        <Show when={owner()}>
+          <div class="p-2 flex items-center">
             <Avatar />
+            <h1 class="pl-4">{owner()!.display_name}</h1>
           </div>
         </Show>
       </div>
@@ -29,25 +37,20 @@ const ChatRightSideBar: Component<{}> = () => {
           </button>
           <h4 class="pl-4">Add member</h4>
           <Modal isOpen={isOpen()} toggleModal={setIsOpen}>
-            <div class="p-2 bg-skin-header-background absolute right-3 border rounded-md shadow-md">
+            <div class="p-2 bg-skin-header-background absolute right-7 border border-header-menu rounded-md shadow-md">
               <AddUserToRoom currentRoom={state.chat.currentRoom!} />
             </div>
           </Modal>
         </div>
-        <Show when={state.chat.currentRoom}>
+        <Show
+          when={state.chat.currentRoom && state.currentUser.userData && owner()}
+        >
           <For
-            each={state.chat.currentRoom!.participants!.filter(
-              (user) => user.id !== state.currentUser.userData?.id,
+            each={state.chat.currentRoom!.users!.filter(
+              (user) => user.id !== owner()?.id,
             )}
           >
-            {(user) => (
-              <div class="shadow-md">
-                <UserCard
-                  onClick={() => navigate(`/profile/${user.id}`)}
-                  user={user}
-                />
-              </div>
-            )}
+            {(user) => <ChatRoomUserCard user={user} ownerId={owner()!.id} />}
           </For>
         </Show>
       </div>

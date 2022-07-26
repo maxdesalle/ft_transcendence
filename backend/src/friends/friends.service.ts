@@ -20,6 +20,21 @@ export class FriendsService {
 		private wsService: WsService
 	) {}
 
+	/** Converts a Friendship (entity) obj to a FriendshipRequest object */
+	friendshipToFriendshipRequest(request: Friendship): FriendshipRequest {
+		return {
+			requesting_user: {
+				id: request.requesting_user.id,
+				display_name: request.requesting_user.display_name,
+			},
+			receiving_user: {
+				id: request.receiving_user.id,
+				display_name: request.receiving_user.display_name,
+			},
+			status: request.status,
+		}
+	}
+
 	async requestFriendship(my_id: number, user_id: number): Promise<FriendshipRequest> {
 		const me = await this.usersService.findById(my_id); 
 		const friend = await this.usersService.findById(user_id); 
@@ -39,17 +54,7 @@ export class FriendsService {
 		request.receiving_user = friend;
 		request.recv_user_id = user_id;
 		await this.friendsRepository.save(request);
-		return {
-			requesting_user: {
-				id: request.requesting_user.id,
-				display_name: request.requesting_user.display_name,
-			},
-			receiving_user: {
-				id: request.receiving_user.id,
-				display_name: request.receiving_user.display_name,
-			},
-			status: FriendshipStatus.pending,
-		}
+		return this.friendshipToFriendshipRequest(request);
 	}
 
 	async sentRequests(my_id: number): Promise<any> {
@@ -90,12 +95,12 @@ export class FriendsService {
 		const request = await this.friendsRepository.findOne({
 			recv_user_id: my_id,
 			req_user_id: requester_id
-		});
+		}, {relations: ['requesting_user', 'receiving_user']});
 		if (!request)
 			throw new BadRequestException("friendship request does not exist");
 		request.status = status;
-		return this.friendsRepository.save(request);
-		// return this.listFriendsIDs(my_id);
+		await this.friendsRepository.save(request);
+		return this.friendshipToFriendshipRequest(request);
 	}
 
 	async listFriendsIDs(my_id: number): Promise<number[]> {

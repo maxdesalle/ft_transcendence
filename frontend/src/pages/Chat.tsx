@@ -52,7 +52,12 @@ const Chat: Component = () => {
       </div>
       {/* TODO: adapt when it's on the friend tab or room tab */}
       <div class="flex relative flex-col border-x shadow-md border-x-header-menu col-span-1">
-        <ChatRightSideBar />
+        <Switch>
+          <Match when={state.chatUi.tab === TAB.ROOMS}>
+            <ChatRightSideBar />
+          </Match>
+          <Match when={state.chatUi.tab === TAB.FRIENDS}>Friend tab</Match>
+        </Switch>
       </div>
     </div>
   );

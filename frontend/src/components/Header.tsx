@@ -70,12 +70,13 @@ const Header: Component = () => {
           <div class="absolute top-0 z-10 ml-16">
             <For
               each={state.users
-                ?.slice()
+                ?.slice(0)
                 ?.filter((user) =>
                   user.display_name
                     .toLocaleLowerCase()
                     .includes(keyword().toLocaleLowerCase()),
-                )}
+                )
+                .slice(0, 15)}
             >
               {(user) => (
                 <div ref={ref} class="w-60">

@@ -10,13 +10,14 @@ export declare class FriendsService {
     private usersService;
     private wsService;
     constructor(usersRepository: Repository<User>, friendsRepository: Repository<Friendship>, usersService: UsersService, wsService: WsService);
+    friendshipToFriendshipRequest(request: Friendship): FriendshipRequest;
     requestFriendship(my_id: number, user_id: number): Promise<FriendshipRequest>;
     sentRequests(my_id: number): Promise<any>;
     recvdRequests(my_id: number): Promise<any>;
     pendingSentRequests(my_id: number): Promise<FriendshipRecvUser[]>;
     pendingReceivedRequests(my_id: number): Promise<FriendshipReqUser[]>;
     rejectedReceivedRequests(my_id: number): Promise<FriendshipReqUser[]>;
-    setFriendshipStatus(my_id: number, requester_id: number, status: FriendshipStatus): Promise<Friendship>;
+    setFriendshipStatus(my_id: number, requester_id: number, status: FriendshipStatus): Promise<FriendshipRequest>;
     listFriendsIDs(my_id: number): Promise<number[]>;
     listFriendsUsers(my_id: number): Promise<User[]>;
     getUserStatus(user_id: number): string;

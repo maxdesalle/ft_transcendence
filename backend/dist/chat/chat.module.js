@@ -21,6 +21,7 @@ ChatModule = __decorate([
         controllers: [chat_controller_1.ChatController],
         providers: [chat_service_1.ChatService],
         imports: [jwt_1.JwtModule.registerAsync(jwt_config_1.jwtConfig), users_module_1.UsersModule, ws_module_1.WsModule],
+        exports: [chat_service_1.ChatService]
     })
 ], ChatModule);
 exports.ChatModule = ChatModule;

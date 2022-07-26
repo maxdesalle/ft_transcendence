@@ -1,7 +1,7 @@
 import { User } from 'src/users/entities/user.entity';
 import { UsersService } from 'src/users/users.service';
 import { Connection, EntityManager } from 'typeorm';
-import { GroupConfigDto, MessageDTO, RoomInfo, RoomInfoShort } from './DTO/chat.dto';
+import { GroupConfigDto, MessageDTO, RoomInfo } from './DTO/chat.dto';
 declare class queryAdaptor {
     private manager;
     constructor(manager: EntityManager);
@@ -17,7 +17,7 @@ export declare class ChatService {
     constructor(connection: Connection, usersService: UsersService);
     send_msg_to_room(me: User, room_id: number, message: string): Promise<MessageDTO>;
     getMessagesByRoomId(room_id: number): Promise<MessageDTO[]>;
-    get_convs(me: User): Promise<RoomInfoShort[]>;
+    get_convs(me: User): Promise<RoomInfo[]>;
     roomInfo(room_id: number): Promise<RoomInfo>;
     postDM(me: User, toId: number, msg: string): Promise<MessageDTO>;
     postDMbyRoomId(me: User, room_id: number, msg: string): Promise<MessageDTO>;

@@ -45,7 +45,7 @@ let AuthController = class AuthController {
         });
         res.cookie('jwt_token', jwtToken);
         if (user.isTwoFactorAuthenticationEnabled) {
-            console.log("2fa activated");
+            console.log('2fa activated');
             return res.redirect(`${this.configService.get('FRONTEND_URL')}/2fa`);
         }
         return res.redirect(this.configService.get('FRONTEND_URL'));

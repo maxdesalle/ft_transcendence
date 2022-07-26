@@ -5,7 +5,7 @@ import { Usr } from 'src/users/decorators/user.decorator';
 import { User } from 'src/users/entities/user.entity';
 import { WsService } from 'src/ws/ws.service';
 import { ChatService } from './chat.service';
-import { PostDmDto, MessageDTO, RoomInfo, RoomInfoShort, GroupConfigDto, Message2RoomDTO, AddGroupUserByNameDTO, UserIdDto, BanMuteDTO, RoomIdDto, RoomAndUserDto, RoomAndPasswordDto, SetPrivateDto } from './DTO/chat.dto';
+import { PostDmDto, MessageDTO, RoomInfo, GroupConfigDto, Message2RoomDTO, AddGroupUserByNameDTO, UserIdDto, BanMuteDTO, RoomIdDto, RoomAndUserDto, RoomAndPasswordDto, SetPrivateDto } from './DTO/chat.dto';
 import { ValidateRoomPipe, ValidGroupRoomPipe } from './pipes/validate_room.pipe';
 import { UserDisplayNameToIdPipe, ValidateUserPipe } from './pipes/validate_user.pipe';
 
@@ -141,14 +141,14 @@ export class ChatController {
 	async createGroup(
 		@Usr() me: User,
 		@Body() group_config: GroupConfigDto 
-	): Promise<RoomInfoShort[]> {
+	){
 		const room_id = await this.chatService.create_group(me, group_config);
 		this.wsService.sendMsgToUser(me.id, {
 			event: 'chat_new_group',
 			room_id
 		});
 
-		return this.chatService.get_convs(me);
+		return this.chatService.roomInfo(room_id);
 	}
 
 	@Post('rm_group')
@@ -159,7 +159,7 @@ export class ChatController {
 		@Body() _body: RoomIdDto
 	) {
 		await this.chatService.rm_group(me, room_id);
-		return this.chatService.get_convs(me);
+		return { room_id };
 	}
 
 	@Post('add_group_user')
@@ -324,7 +324,7 @@ export class ChatController {
 	@ApiOperation({summary:' DMs + groups'})
 	getConvs(
 		@Usr() user: User,
-	): Promise<RoomInfoShort[]> {
+	){
 		return this.chatService.get_convs(user);
 	}
 
