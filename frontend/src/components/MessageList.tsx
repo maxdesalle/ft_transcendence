@@ -12,12 +12,15 @@ const MessageList: Component<{ messages?: Message[]; id?: number }> = (
   let scrollbarRef: any;
   createEffect(() => {
     props.messages;
-    console.log(scrollbarRef);
+    //TODO: Srool bottom
   });
 
   return (
     <Show when={props.messages}>
-      <div ref={scrollbarRef} class="flex flex-col overflow-y-scroll h-82">
+      <div
+        ref={scrollbarRef}
+        class="flex flex-col scrollbar scrollbar-thumb-gray-700 scrollbar-track-gray-500 h-82"
+      >
         <For each={props.messages}>
           {(msg) => (
             <MessageCard

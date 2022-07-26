@@ -1,6 +1,6 @@
 import Cookies from 'js-cookie';
 import { createContext, Resource, useContext } from 'solid-js';
-import { Message, RoomInfoShort } from '../types/chat.interface';
+import { Message, RoomInfo } from '../types/chat.interface';
 import { User } from '../types/user.interface';
 import { createStore, produce } from 'solid-js/store';
 import {
@@ -22,9 +22,9 @@ const StoreContext = createContext<any>();
 export interface ActionsType {
   loadMessages?: (id: number | undefined) => void;
   mutateRoomMsgs?: (message: Message) => void;
-  updateRooms?: (rooms: RoomInfoShort[]) => RoomInfoShort[] | undefined;
+  updateRooms?: (rooms: RoomInfo[]) => RoomInfo[] | undefined;
   loadRooms?: (reload: boolean) => void;
-  getRoomById: (id: number) => RoomInfoShort | undefined;
+  getRoomById: (id: number) => RoomInfo | undefined;
   logout?: () => void;
   changeUsername?: (value: string) => void;
   activate2fa?: () => void;
@@ -35,7 +35,7 @@ export interface ActionsType {
     room_id: number;
     user_display_name: string;
   }) => void;
-  setCurrentRoom: (room: RoomInfoShort) => void;
+  setCurrentRoom: (room: RoomInfo) => void;
   sendFriendReq?: (user_id: number) => void;
   acceptFriendReq?: (user_id: number) => void;
   loadPendingFriendReq?: () => void;
@@ -62,11 +62,11 @@ export interface StoreState {
   ws: WebSocket;
   chat: {
     status: Status;
-    currentRoom: RoomInfoShort | undefined;
+    currentRoom: RoomInfo | undefined;
     error?: any;
     roomId: number | undefined;
     friendId: number | undefined;
-    readonly rooms: RoomInfoShort[] | undefined;
+    readonly rooms: RoomInfo[] | undefined;
     readonly roomMsgs: Message[] | undefined;
     readonly friendMsgs: Message[] | undefined;
   };
@@ -95,7 +95,7 @@ export interface StoreState {
 
 export function StoreProvider(props: any) {
   let users: Resource<User[] | undefined>,
-    rooms: Resource<RoomInfoShort[] | undefined>,
+    rooms: Resource<RoomInfo[] | undefined>,
     friends: Resource<User[] | []>,
     currentUser: Resource<User | undefined>,
     roomMsg: Resource<Message[] | undefined>,
@@ -160,7 +160,7 @@ export function StoreProvider(props: any) {
     getUserById(id: number) {
       return users()?.find((user) => user.id === id);
     },
-    setCurrentRoom(room: RoomInfoShort) {
+    setCurrentRoom(room: RoomInfo) {
       setState(
         produce((s) => {
           s.chat.currentRoom = room;

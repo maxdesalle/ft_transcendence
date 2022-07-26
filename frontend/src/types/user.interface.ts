@@ -6,3 +6,7 @@ export interface User {
   isTwoFactorAuthenticationEnabled: boolean;
 }
 
+export interface RoomUser extends User {
+  role?: string;
+  muted?: string;
+}

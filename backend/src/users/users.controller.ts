@@ -8,7 +8,6 @@ import { Readable } from 'stream';
 import { createReadStream, ReadStream } from 'fs';
 import { join } from 'path';
 import { ConfigService } from '@nestjs/config';
-import { User } from './entities/user.entity';
 import { ApiBody, ApiConsumes, ApiTags } from '@nestjs/swagger';
 import { fileUploadDto } from './dto/fileUpload.dto';
 import { changeNameDto } from './dto/changeName.dto';

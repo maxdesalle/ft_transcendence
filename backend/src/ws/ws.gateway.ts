@@ -17,12 +17,19 @@ export class WsGateway implements OnGatewayConnection, OnGatewayDisconnect{
 		try {
 			user = this.wsService.getUserFromUpgradeRequest(req);
 		} catch (error) {
-			client.send('Authentication KO. Gimme a valid JWT!');
+			client.send(JSON.stringify({
+				event: "ws_auth_fail",
+				reason: "no valid JWT"
+			}));
 			client.close(1008, 'Bad credentials');
 			return;
 		}
 		// avoid duplicate connection for same user
 		if (this.wsService.isUserOnline(user.id)) {
+			client.send(JSON.stringify({
+				event: "ws_auth_fail",
+				reason: "already connected"
+			}));
 			client.close(1008, 'user already connected via another socket');
 			return;
 		}
@@ -31,7 +38,9 @@ export class WsGateway implements OnGatewayConnection, OnGatewayDisconnect{
 		this.wsService.setUserOnline(user.id, client);
 		// log client and server side
 		console.log(`user ${user.id} (${user.login42}) is connected.`);
-		client.send(`Authentication OK. user_id: ${user.id}, login42: ${user.login42}`);
+		client.send(JSON.stringify({
+			event: "ws_auth_success",
+		}));
 		// notify state change to friends
 		this.wsService.notifyStatusChangeToFriends(user.id, 'online');
 	}
@@ -44,19 +53,4 @@ export class WsGateway implements OnGatewayConnection, OnGatewayDisconnect{
 			this.wsService.notifyStatusChangeToFriends(user_id, 'offline');
 		}
 	}
-
-	// @SubscribeMessage('message')
-	// handleMessage(client: WebSocket, payload: string){
-	// 	console.log(`Message received`);
-	// 	console.log(payload);
-	// 	const pl = {
-	// 		event: 'party',
-	// 		what: 'pool party',
-	// 		where: 'pool'
-	// 	}
-	// 	client.send(JSON.stringify(pl));
-
-		// return 'Got your message!';
-	// }
-
 }

@@ -76,11 +76,11 @@ let ChatController = class ChatController {
             event: 'chat_new_group',
             room_id
         });
-        return this.chatService.get_convs(me);
+        return this.chatService.roomInfo(room_id);
     }
     async removeGroup(me, room_id, _body) {
         await this.chatService.rm_group(me, room_id);
-        return this.chatService.get_convs(me);
+        return { room_id };
     }
     async addGroupUser(me, room_id, user_id, _body) {
         await this.chatService.addGroupUser(me, room_id, user_id);
@@ -231,7 +231,7 @@ __decorate([
 __decorate([
     (0, common_1.Post)('leave_group'),
     (0, swagger_1.ApiTags)('chat - groups'),
-    openapi.ApiResponse({ status: 201, type: [require("./DTO/chat.dto").RoomInfoShort] }),
+    openapi.ApiResponse({ status: 201, type: [require("./DTO/chat.dto").RoomInfo] }),
     __param(0, (0, user_decorator_1.Usr)()),
     __param(1, (0, common_1.Body)('room_id', common_1.ParseIntPipe, validate_room_pipe_1.ValidGroupRoomPipe)),
     __param(2, (0, common_1.Body)()),
@@ -263,7 +263,7 @@ __decorate([
 __decorate([
     (0, common_1.Post)('create_group'),
     (0, swagger_1.ApiTags)('chat - group admin'),
-    openapi.ApiResponse({ status: 201, type: [require("./DTO/chat.dto").RoomInfoShort] }),
+    openapi.ApiResponse({ status: 201, type: require("./DTO/chat.dto").RoomInfo }),
     __param(0, (0, user_decorator_1.Usr)()),
     __param(1, (0, common_1.Body)()),
     __metadata("design:type", Function),
@@ -274,7 +274,7 @@ __decorate([
 __decorate([
     (0, common_1.Post)('rm_group'),
     (0, swagger_1.ApiTags)('chat - group admin'),
-    openapi.ApiResponse({ status: 201, type: [require("./DTO/chat.dto").RoomInfoShort] }),
+    openapi.ApiResponse({ status: 201 }),
     __param(0, (0, user_decorator_1.Usr)()),
     __param(1, (0, common_1.Body)('room_id', common_1.ParseIntPipe, validate_room_pipe_1.ValidGroupRoomPipe)),
     __param(2, (0, common_1.Body)()),
@@ -428,11 +428,11 @@ __decorate([
     (0, common_1.Get)('conversations'),
     (0, swagger_1.ApiTags)('chat - general(DM + groups)'),
     (0, swagger_1.ApiOperation)({ summary: ' DMs + groups' }),
-    openapi.ApiResponse({ status: 200, type: [require("./DTO/chat.dto").RoomInfoShort] }),
+    openapi.ApiResponse({ status: 200, type: [require("./DTO/chat.dto").RoomInfo] }),
     __param(0, (0, user_decorator_1.Usr)()),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [user_entity_1.User]),
-    __metadata("design:returntype", Promise)
+    __metadata("design:returntype", void 0)
 ], ChatController.prototype, "getConvs", null);
 __decorate([
     (0, common_1.Post)('message_to_room'),

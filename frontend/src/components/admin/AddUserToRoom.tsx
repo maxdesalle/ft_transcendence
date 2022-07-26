@@ -1,9 +1,8 @@
 import { Component, createSignal, onMount } from 'solid-js';
-import { unwrap } from 'solid-js/store';
 import { useStore } from '../../store';
-import { RoomInfoShort } from '../../types/chat.interface';
+import { RoomInfo } from '../../types/chat.interface';
 
-const AddUserToRoom: Component<{ currentRoom: RoomInfoShort }> = (props) => {
+const AddUserToRoom: Component<{ currentRoom: RoomInfo }> = (props) => {
   const [username, setUsername] = createSignal('');
   const [state, { addUserToRoomByName }] = useStore();
 
@@ -31,7 +30,7 @@ const AddUserToRoom: Component<{ currentRoom: RoomInfoShort }> = (props) => {
       />
       <button
         onClick={onAddUser}
-        class="px-6 py-2 mt-3 text-sm text-blue-100 transition-colors duration-300 bg-blue-600 rounded-full shadow-xl hover:bg-blue-900 shadow-blue-400/30"
+        class="px-6 py-2 mt-3 text-sm text-blue-100 transition-colors duration-300 bg-blue-600 rounded-full hover:bg-blue-900 shadow-blue-400/30"
       >
         Add user
       </button>

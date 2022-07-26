@@ -19,6 +19,7 @@ export declare class PongGateway implements OnGatewayConnection, OnGatewayDiscon
     playAgainstAnyone(client: WebSocket, data: string): void;
     invitePlayer(client: WebSocket, data: string): Promise<void>;
     acceptInvitation(client: WebSocket, data: string): void;
+    clear(client: WebSocket, data: string): void;
     matchPlayers(p1Socket: WebSocket, p2Socket: WebSocket): void;
 }
 export declare class PongViewerGateway implements OnGatewayInit {

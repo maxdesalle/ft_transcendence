@@ -1,5 +1,5 @@
-import { Component, JSXElement, Setter, Show } from "solid-js";
-import { Portal } from "solid-js/web";
+import { Component, JSXElement, Setter, Show } from 'solid-js';
+import { Portal } from 'solid-js/web';
 
 const Modal: Component<{
   children?: JSXElement;
@@ -19,7 +19,7 @@ const Modal: Component<{
             class="fixed z-10 top-0 right-0 left-0 bottom-0"
           />
         </Portal>
-        <div class="z-50 fixed">{props.children}</div>
+        <div class="z-50 fixed opacity-100">{props.children}</div>
       </Show>
     </>
   );

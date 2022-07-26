@@ -16,6 +16,7 @@ const Pong: Component = () => {
   let myP5: p5Type;
   const [friendId, setFriendId] = createSignal(0);
   const [state, { toggleMatchMaking }] = useStore();
+  // TODO: put it in the store
   const [invitation, setInvitation] = createSignal<{
     event: string;
     user_id: number;
@@ -51,16 +52,12 @@ const Pong: Component = () => {
     state.pong.ws.send(JSON.stringify(data));
   };
 
-  createEffect(() => {
-    console.log(unwrap(state.pong.ladder));
-  });
-
   onCleanup(() => {
     myP5.remove();
     // cancel the matchmaking when leaving the page
     toggleMatchMaking(false);
   });
-  
+
   return (
     <div class="flex flex-col">
       <div class="flex">
