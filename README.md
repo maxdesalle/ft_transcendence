@@ -379,11 +379,12 @@ someone accepted your invitation to play
     "user_id": 3
 }
 ```
-you were waiting to play against anyone and someone has just joined you to play pong
+someone has just joined a waiting player to play pong (both users get notified)
 ```
 {
-    "event":"pong: player_joined",
-    "user_id":2
+    "event": "pong: player_joined",
+    "waiting_player": 3,
+    "joining_player": 4
 }
 ```
 
