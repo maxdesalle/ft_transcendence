@@ -3,6 +3,22 @@
 set -e
 
 ROOT_DIR=$(pwd)
+FRONTEND_PID=''
+
+kill_frontend() {
+    if ! [[ $FRONTEND_PID = '' ]]; then
+        kill $FRONTEND_PID
+    fi
+    FRONTEND_PID=''
+}
+
+check_env() {
+    if [ ! -f "$ROOT_DIR/backend/.env" ]; then
+        echo 'Error: Missing backend/.env' 1>&2
+        kill_frontend
+        exit 1
+    fi
+}
 
 build_backend () {
     cd $ROOT_DIR/backend
@@ -17,10 +33,7 @@ build_frontend () {
 
 exec_backend () {
     # Check for .env file
-    if [ ! -f "backend/.env" ]; then
-        echo 'Error: Missing backend/.env' 1>&2
-        exit 1
-    fi
+    check_env
     # Launch backend and db
     cd $ROOT_DIR/backend
     npm install
@@ -30,10 +43,7 @@ exec_backend () {
 
 exec_backend_no_db () {
     # Check for .env file
-    if [ ! -f "backend/.env" ]; then
-        echo 'Error: Missing backend/.env' 1>&2
-        exit 1
-    fi
+    check_env
     # Launch backend
     cd $ROOT_DIR/backend
     npm install
@@ -41,71 +51,40 @@ exec_backend_no_db () {
 }
 
 exec_frontend() {
-    # Launch frontend
     cd $ROOT_DIR/frontend
     npm install
-    npm run dev
+    npm run dev & FRONTEND_PID=$!
 }
 
 exec_all () {
-    exec_frontend & P=$!
+    exec_frontend
     exec_backend
-    kill $P
 }
 
 exec_all_no_db () {
-    exec_frontend & P=$!
+    exec_frontend || exit 1
     exec_backend_no_db
-    kill $P
 }
 
 # Argument handling
-BDB=true
 if [[ $# = 1 && $1 = '--build' ]]; then
-    BBACK=true
-    BFRONT=true
-    BEXEC=false
-elif [[  $# = 1 && $1 = '--build-backend' ]]; then
-    BBACK=true
-    BFRONT=false
-    BEXEC=false
-elif [[  $# = 1 && $1 = '--build-frontend' ]]; then
-    BBACK=false
-    BFRONT=true
-    BEXEC=false
+    build_backend
+    build_frontend
 elif [[ $# = 1 && $1 = '--no-db' ]]; then
-     BBACK=true
-     BFRONT=true
-     BEXEC=true
-     BDB=false
-elif [[  $# = 0 ]]; then
-    BBACK=true
-    BFRONT=true
-    BEXEC=true
+    build_backend
+    build_frontend
+    exec_all_no_db
+elif [[ $# = 0 ]]; then
+    build_backend
+    build_frontend
+    exec_all
 else
-    echo 'launch.sh -- launch or build ft_transcendence
-    (none)              --> builds (if necessary) and launches ft_transcendance
-    --build-backend     --> only builds backend
-    --build-frontend    --> only builds frontend
-    --no-db             --> runs transcendence with the database' 1>&2
+    echo 'launch.sh -- build/launch ft_transcendence
+    (none)              --> builds (if necessary) and launches transcendance
+    --build             --> builds (if nexessary) transcendence
+    --no-db             --> builds (if nexessary) and runs transcendence without the database' 1>&2
     exit 1
 fi
 
-set -x
-
-# Executing functions according to arguments
-if $BBACK && $BFRONT && $BEXEC; then
-    if $BDB; then exec_all;
-    else exec_all_no_db; fi
-    exit 0
-fi
-
-if ! $BEXEC; then
-    if $BBACK; then
-        build_backend
-    fi
-    if $BFRONT; then
-        build_frontend
-    fi
-    exit 0
-fi
+# To make sure frontend does not block the script
+kill_frontend
