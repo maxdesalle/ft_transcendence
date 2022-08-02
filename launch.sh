@@ -1,5 +1,24 @@
 #!/bin/bash
 
+# Handling --build argument
+if [[ $# = 1 && $1 = '--build' ]]; then
+    set -e
+    set -x
+    cd frontend
+    npm install
+    cd ../backend
+    npm install
+    npm run prebuild # To avoid the "Cannot find stats.service module' error.
+    exit 0
+fi
+
+# Checking number of arguments
+if ! [[ $# = 0 ]]; then
+    echo "Error: Invalid arguments" 1>&2
+    exit 1
+fi
+
+
 # Check for .env file
 if [ ! -f "backend/.env" ]; then
 	echo 'Error: Missing backend/.env' 1>&2
