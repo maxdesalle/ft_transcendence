@@ -7,7 +7,8 @@ services:
       - db
     ports: 
       - 3000:3000
-    env_file:
+      - 8000:8000
+    env:
       - .env
 
   db:
