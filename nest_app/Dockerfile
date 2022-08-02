@@ -6,11 +6,17 @@ RUN mkdir -p /usr/src/app && \
 
 WORKDIR /usr/src/app
 
+# Changing database's hostname to container name
+RUN sed -i 's/host:\s*"127\.0\.0\.1"/host: "db"/g' \
+    ./backend/src/config/typeorm.config.ts
+
 # Building transcendence
-RUN ./launch --build
+RUN ./launch.sh --build
 
 # --no-db becase the db will be ran by our docker-compose
-ENTRYPOINT ['/usr/src/app/launch', '--no-db']
+ENTRYPOINT ["./launch.sh", "--no-db"]
 
-EXPOSE 3000 # Backend
-EXPOSE 8000 # Frontend
+# Backend
+EXPOSE 3000
+# Frontend
+EXPOSE 8000
