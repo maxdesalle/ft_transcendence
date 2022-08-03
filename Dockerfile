@@ -4,6 +4,7 @@ FROM node:18
 RUN mkdir -p /usr/src/app && \
     git clone https://github.com/maxdesalle/ft_transcendence.git /usr/src/app
 
+# If you change the workdir, change the location of the .env in the docker-compose
 WORKDIR /usr/src/app
 
 # Changing database's hostname to container name

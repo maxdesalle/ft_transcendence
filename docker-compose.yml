@@ -2,7 +2,7 @@ version: '3.5'
 services:
   nest_app:
     container_name: nest_app
-    build: ./nest_app
+    build: .
     depends_on:
       - db
     ports: 
@@ -10,6 +10,8 @@ services:
       - 8000:8000
     env_file:
       - .env
+    volumes:
+      - ./.env:/usr/src/app/backend/.env
 
   db:
     container_name: db
