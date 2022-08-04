@@ -37,16 +37,8 @@ exec_backend () {
     # Launch backend and db
     cd $ROOT_DIR/backend
     npm install
-    docker-compose up -d
-    npm run start:dev
-}
-
-exec_backend_no_db () {
-    # Check for .env file
-    check_env
-    # Launch backend
-    cd $ROOT_DIR/backend
-    npm install
+    # Execute docker db if no argument passed
+    [[ $1 = '--no-db' ]] || docker-compose up -d
     npm run start:dev
 }
 
@@ -58,12 +50,7 @@ exec_frontend() {
 
 exec_all () {
     exec_frontend
-    exec_backend
-}
-
-exec_all_no_db () {
-    exec_frontend || exit 1
-    exec_backend_no_db
+    exec_backend $1
 }
 
 # Argument handling
@@ -73,7 +60,7 @@ if [[ $# = 1 && $1 = '--build' ]]; then
 elif [[ $# = 1 && $1 = '--no-db' ]]; then
     build_backend
     build_frontend
-    exec_all_no_db
+    exec_all --no-db
 elif [[ $# = 0 ]]; then
     build_backend
     build_frontend
