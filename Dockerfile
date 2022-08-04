@@ -1,14 +1,17 @@
 FROM node:18
 
-# Cloning transcendence into image
-RUN mkdir -p /usr/src/app && \
-    git clone https://github.com/maxdesalle/ft_transcendence.git /usr/src/app
+# Dockerfile arguments (defined in .env)
+ARG DB_HOSTNAME
+ARG APP_DIR
 
-# If you change the workdir, change the location of the .env in the docker-compose
-WORKDIR /usr/src/app
+# Cloning transcendence into image
+RUN mkdir -p $APP_DIR && \
+    git clone https://github.com/maxdesalle/ft_transcendence.git $APP_DIR
+
+WORKDIR $APP_DIR
 
 # Changing database's hostname to container name
-RUN sed -i 's/host:\s*"127\.0\.0\.1"/host: "db"/g' \
+RUN sed -i "s/host:\s*\"127\.0\.0\.1\"/host: \"$DB_HOSTNAME\"/g" \
     ./backend/src/config/typeorm.config.ts
 
 # Building transcendence

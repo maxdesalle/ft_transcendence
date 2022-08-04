@@ -2,7 +2,12 @@ version: '3.5'
 services:
   nest_app:
     container_name: nest_app
-    build: .
+    hostname: nest_app
+    build:
+      context: .
+      args:
+        - DB_HOSTNAME=${DB_HOSTNAME}
+        - APP_DIR=${APP_DIR}
     depends_on:
       - db
     ports: 
@@ -11,10 +16,13 @@ services:
     env_file:
       - .env
     volumes:
-      - ./.env:/usr/src/app/backend/.env
+      - .env:${APP_DIR}/backend/.env
 
   db:
     container_name: db
+    hostname: ${DB_HOSTNAME}
     image: postgres
     environment:
       POSTGRES_PASSWORD: ${DB_PASSWORD}
+    ports:
+      - 5432:5432
