@@ -8,7 +8,7 @@
 docker-compose up
     #+END_SRC
 ** .env
-*** You MUST add a .env file containing something like:
+*** You must add a .env file containing:
   #+BEGIN_SRC bash
 # auth
 FORTYTWO_CLIENT_ID=[***]
