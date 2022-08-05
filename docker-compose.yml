@@ -1,27 +1,32 @@
 version: '3.5'
+
+# DB_HOSTNAME and APP_DIR must be defined in
+# .env (in same dir as this file)
+
 services:
+  # transcendence container
   nest_app:
     container_name: nest_app
-    build: ./nest_app
+    hostname: nest_app
+    build:
+      context: .
+      args:
+        - DB_HOSTNAME=${DB_HOSTNAME}
+        - APP_DIR=${APP_DIR}
     depends_on:
       - db
-    ports: 
+    ports:
+      - 8000:8000
       - 3000:3000
-    env_file:
-      - .env
+    # adding .env file (same dir as this file)
+    volumes:
+      - .env:${APP_DIR}/backend/.env
 
+  # database container
   db:
     container_name: db
+    hostname: ${DB_HOSTNAME}
     image: postgres
     environment:
       POSTGRES_PASSWORD: ${DB_PASSWORD}
-
-  adminer:
-    image: adminer
-    restart: always
-    ports:
-      - 8080:8080
-
-
-# how to access the database client:
-# docker exec -it db psql -U postgres
+    # forward port 5432 if you want to connect to database
