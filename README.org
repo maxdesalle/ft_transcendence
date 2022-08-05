@@ -2,7 +2,7 @@
 
 * /\/\ ft_transcendence /\/\
 ** Launching transcendence
-*** Do not forget to add a correct .env in the root of the project! (for more info, see .env section)
+*** Do not forget to add a correct .env in the root of the project! (for more info, see the =.env= section)
 *** Then:
     #+BEGIN_SRC bash
 docker-compose up
