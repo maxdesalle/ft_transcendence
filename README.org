@@ -30,5 +30,5 @@ APP_DIR=/usr/src/app
 DB_HOSTNAME=db
   #+END_SRC
 *** Note that:
-- [***] represents hidden content. You must replace it.
-- The "additional stuff for docker" section is not present in .env example files from other branches!
+- =[***]= represents hidden content. You must replace it.
+- The =additional stuff for docker= section is not present in .env example files from other branches!
