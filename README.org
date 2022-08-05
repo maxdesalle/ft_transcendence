@@ -31,3 +31,6 @@ DB_HOSTNAME=db
 ** Note that:
 - =[***]= represents hidden content. You must replace it.
 - The =additional stuff for docker= section is not present in .env example files from other branches!
+* Connecting to transcendence
+** =http://localhost:3000= -> backend
+** =http://localhost:8000= -> frontend (actual site)

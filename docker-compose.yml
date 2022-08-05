@@ -15,10 +15,10 @@ services:
         - APP_DIR=${APP_DIR}
     depends_on:
       - db
-    # forward port 3000 if you want to connect to backend
-    ports: 
+    ports:
       - 8000:8000
-    # adding .env file (same dire as this file)
+      - 3000:3000
+    # adding .env file (same dir as this file)
     volumes:
       - .env:${APP_DIR}/backend/.env
 

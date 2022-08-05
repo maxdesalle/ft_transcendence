@@ -28,3 +28,5 @@ ENTRYPOINT ["./launch.sh", "--no-db"]
 
 # Frontend
 EXPOSE 8000
+# Backend
+EXPOSE 3000
