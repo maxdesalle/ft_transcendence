@@ -1,14 +1,13 @@
-#+title: Readme
+#+title: Dockerized Transcendence
 
-* /\/\ dockerized ft_transcendence /\/\
-** Launching transcendence
-*** Do not forget to add a correct =.env= file in the root of the project! (see =.env= section)
-*** Then:
+* Launching transcendence
+** Do not forget to add a correct =.env= file in the root of the project! (see =.env= section)
+** Then:
     #+BEGIN_SRC bash
 docker-compose up
     #+END_SRC
-** .env
-*** You must add a .env file containing:
+* .env
+** You must add a .env file containing:
   #+BEGIN_SRC bash
 # auth
 FORTYTWO_CLIENT_ID=[***]
@@ -29,6 +28,6 @@ AVATAR_MAX_SIZE=1000000
 APP_DIR=/usr/src/app
 DB_HOSTNAME=db
   #+END_SRC
-*** Note that:
+** Note that:
 - =[***]= represents hidden content. You must replace it.
 - The =additional stuff for docker= section is not present in .env example files from other branches!
