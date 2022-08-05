@@ -1,0 +1,34 @@
+#+title: Readme
+
+* /\/\ ft_transcendence /\/\
+** Launching transcendence
+*** Do not forget to add a correct .env in the root of the project! (for more info, see .env section)
+*** Then:
+    #+BEGIN_SRC bash
+docker-compose up
+    #+END_SRC
+** .env
+*** You MUST add a .env file containing something like:
+  #+BEGIN_SRC bash
+# auth
+FORTYTWO_CLIENT_ID=[***]
+FORTYTWO_CLIENT_SECRET=[***]
+FORTYTWO_CALLBACK_URL=http://127.0.0.1:3000/login/42/return
+JWT_TOKEN_SECRET=[***]
+JWT_TOKEN_EXPIRY=1d
+TWOFA_ISSUER=[***]
+
+# database
+DB_PASSWORD=[***]
+
+# avatar photo
+AVATAR_DEFAULT_FILE=images/avatardefault.png
+AVATAR_MAX_SIZE=1000000
+
+# additional stuff for docker
+APP_DIR=/usr/src/app
+DB_HOSTNAME=db
+  #+END_SRC
+*** Note that:
+- [***] represents hidden content. You must replace it.
+- The "additional stuff for docker" section is not present in .env example files from other branches!
