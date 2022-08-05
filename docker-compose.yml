@@ -1,5 +1,10 @@
 version: '3.5'
+
+# DB_HOSTNAME and APP_DIR must be defined in
+# .env (in same dir as this file)
+
 services:
+  # transcendence container
   nest_app:
     container_name: nest_app
     hostname: nest_app
@@ -10,19 +15,18 @@ services:
         - APP_DIR=${APP_DIR}
     depends_on:
       - db
+    # forward port 3000 if you want to connect to backend
     ports: 
-      - 3000:3000
       - 8000:8000
-    env_file:
-      - .env
+    # adding .env file (same dire as this file)
     volumes:
       - .env:${APP_DIR}/backend/.env
 
+  # database container
   db:
     container_name: db
     hostname: ${DB_HOSTNAME}
     image: postgres
     environment:
       POSTGRES_PASSWORD: ${DB_PASSWORD}
-    ports:
-      - 5432:5432
+    # forward port 5432 if you want to connect to database
