@@ -1,6 +1,6 @@
 #+title: Readme
 
-* /\/\ ft_transcendence /\/\
+* /\/\ dockerized ft_transcendence /\/\
 ** Launching transcendence
 *** Do not forget to add a correct =.env= file in the root of the project! (see =.env= section)
 *** Then:
