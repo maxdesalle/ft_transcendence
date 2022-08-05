@@ -16,7 +16,7 @@ services:
     env_file:
       - .env
     volumes:
-      - ./.env:${APP_DIR}/backend/.env
+      - .env:${APP_DIR}/backend/.env
 
   db:
     container_name: db
