@@ -7,8 +7,8 @@
 *** Then:
 #+BEGIN_SRC bash
 git clone git@github.com:maxdesalle/ft_transcendence.git app && \
-rm -rf app/.git && \
-docker-compose up
+rm -rf app/.git;
+# docker-compose up #(only if you want to try it)
 #+END_SRC
 ** .env
 *** You must add a .env file containing:
