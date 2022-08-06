@@ -4,11 +4,10 @@ FROM node:18
 ARG DB_HOSTNAME
 ARG APP_DIR
 
-# Cloning transcendence into image
-RUN mkdir -p $APP_DIR && \
-    git clone https://github.com/maxdesalle/ft_transcendence.git $APP_DIR
-
 WORKDIR $APP_DIR
+
+# Copying transcendece into container
+ADD app .
 
 # Changing database's hostname to container name
 # then changing frontend bind-address
