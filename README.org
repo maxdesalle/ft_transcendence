@@ -1,14 +1,18 @@
-#+title: Dockerized Transcendence
+#+title: Dockerized Transcendence (src)
 
-* Launching transcendence
-** Do not forget to add a correct =.env= file in the root of the project! (see =.env= section)
-** Then:
-    #+BEGIN_SRC bash
+* This is the branch that will sent to the intra. You must do these steps before pushing it:
+
+** Launching transcendence
+*** Do not forget to add a correct =.env= file in the root of the project! (see =.env= section)
+*** Then:
+#+BEGIN_SRC bash
+git clone git@github.com:maxdesalle/ft_transcendence.git app && \
+rm -rf app/.git && \
 docker-compose up
-    #+END_SRC
-* .env
-** You must add a .env file containing:
-  #+BEGIN_SRC bash
+#+END_SRC
+** .env
+*** You must add a .env file containing:
+#+BEGIN_SRC bash
 # auth
 FORTYTWO_CLIENT_ID=[***]
 FORTYTWO_CLIENT_SECRET=[***]
@@ -27,10 +31,10 @@ AVATAR_MAX_SIZE=1000000
 # additional stuff for docker
 APP_DIR=/usr/src/app
 DB_HOSTNAME=db
-  #+END_SRC
-** Note that:
+#+END_SRC
+*** Note that:
 - =[***]= represents hidden content. You must replace it.
 - The =additional stuff for docker= section is not present in .env example files from other branches!
-* Connecting to transcendence
-** =http://localhost:3000= -> backend
-** =http://localhost:8000= -> frontend (actual site)
+** Connecting to transcendence
+*** =http://localhost:3000= -> backend
+*** =http://localhost:8000= -> frontend (actual site)
