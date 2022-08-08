@@ -2,5 +2,5 @@
 
 set -e
 
-git clone git@github.com:maxdesalle/ft_transcendence.git app && \
+git clone https://github.com/maxdesalle/ft_transcendence.git app && \
 rm -rf app/.git;
