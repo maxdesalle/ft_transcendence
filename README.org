@@ -12,16 +12,17 @@ docker-compose up
 # auth
 FORTYTWO_CLIENT_ID=[***]
 FORTYTWO_CLIENT_SECRET=[***]
-FORTYTWO_CALLBACK_URL=http://127.0.0.1:3000/login/42/return
+FORTYTWO_CALLBACK_URL="http://localhost:3000/login/42/return"
 JWT_TOKEN_SECRET=[***]
-JWT_TOKEN_EXPIRY=1d
+JWT_TOKEN_EXPIRY=99999999999999999999
 TWOFA_ISSUER=[***]
 
 # database
 DB_PASSWORD=[***]
 
 # avatar photo
-AVATAR_DEFAULT_FILE=images/avatardefault.png
+FRONTEND_URL="http://localhost:8000"
+AVATAR_DEFAULT_FILE="images/avatardefault.png"
 AVATAR_MAX_SIZE=1000000
 
 # additional stuff for docker
