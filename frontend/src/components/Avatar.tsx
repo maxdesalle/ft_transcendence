@@ -1,13 +1,17 @@
 import { Component, createEffect, Show } from 'solid-js';
-import { useStore } from '../store';
 import defaultAvatar from '../../../backend/images/avatardefault.png';
 
-const Avatar: Component<{ imgUrl?: string }> = (props) => {
+type AvatarType = 'rounded' | 'rounded-full';
+
+const Avatar: Component<{
+  imgUrl?: string;
+  type?: AvatarType;
+}> = (props) => {
   return (
     <>
-      <div class="relative w-8 h-8 bg-blue-400 rounded-full dark:bg-gray-600">
+      <div class={`relative rounded-full w-8 h-8 bg-blue-400 dark:bg-gray-600`}>
         <img
-          class="w-8 h-8 bg-blue-400 rounded-full"
+          class={`w-8 h-8 rounded-full bg-blue-400`}
           src={props.imgUrl ? props.imgUrl : defaultAvatar}
         />
         <path

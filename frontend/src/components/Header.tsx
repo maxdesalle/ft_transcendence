@@ -11,6 +11,8 @@ import { generateImageUrl } from '../utils/helpers';
 import { createTurboResource } from 'turbo-solid';
 import { routes } from '../api/utils';
 import { User } from '../types/user.interface';
+import { api } from '../utils/api';
+import toast from 'solid-toast';
 
 const LINKS = ['pong', 'viewer', 'chat'];
 
@@ -21,8 +23,21 @@ const Header: Component = () => {
   const [currentUser] = createTurboResource<User>(() => routes.currentUser);
   const navigate = useNavigate();
 
+  const notifySuccess = (msg: string) => toast.success(msg);
+  const notifyError = (msg: string) => toast.error(msg);
   const [isOpen, setIsOpen] = createSignal(false);
   let ref: any;
+
+  const onSendFriendReq = (userId: number, userName: string) => {
+    api
+      .post(routes.sendFriendReq, { user_id: userId })
+      .then(() => {
+        notifySuccess(`friend request sent to ${userName}`);
+      })
+      .catch(() => {
+        notifyError('failed to send friend request');
+      });
+  };
 
   const onAcceptInvite = () => {
     const data = {
@@ -103,9 +118,7 @@ const Header: Component = () => {
                 <div ref={ref} class="w-60">
                   <SearchUserCard
                     onClick={() => {
-                      if (sendFriendReq) {
-                        sendFriendReq(user.id);
-                      }
+                      onSendFriendReq(user.id, user.display_name);
                     }}
                     user={user}
                   />

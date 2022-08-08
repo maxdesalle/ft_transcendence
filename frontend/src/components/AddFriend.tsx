@@ -1,13 +1,16 @@
-import { Component } from 'solid-js';
+import { Component, createSignal } from 'solid-js';
 import { useStore } from '../store';
 
 const AddFriend: Component = () => {
-  const [state, actions] = useStore();
+  const [username, setUsername] = createSignal();
 
-  const onAddFriend = () => {};
+  const onAddFriend = () => {
+    if (!username()) return;
+  };
   return (
     <div class="flex flex-col">
       <input
+        onInput={(e) => setUsername(e.currentTarget.value)}
         autocomplete="off"
         type="text"
         class="bg-white px-4 py-2 rounded border-b focus:outline-none border-b-blue-800 focus:text-blue-600"

@@ -14,6 +14,6 @@ export interface Friend {
 }
 
 export interface RoomUser extends User {
-  role?: string;
+  role?: 'owner' | 'admin' | 'participant';
   muted?: string;
 }

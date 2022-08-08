@@ -37,10 +37,6 @@ const Pong: Component = () => {
     toggleMatchMaking(true);
   };
 
-  createEffect(() => {
-    console.log(state.pong.inMatchMaking);
-  });
-
   const onInviteFriend = () => {
     if (!friendId()) return;
     const data = {
@@ -55,35 +51,7 @@ const Pong: Component = () => {
   });
 
   return (
-    <div class="flex flex-col items-center">
-      <div class="flex">
-        <button
-          onClick={onPlay}
-          class="p-1 border bg-indigo-400 rounded-md w-24"
-        >
-          Play
-        </button>
-        <button
-          class="btn-primary w-fit"
-          onClick={() => toggleMatchMaking(false)}
-        >
-          Cancel
-        </button>
-        <div>
-          <input
-            onInput={(e) => setFriendId(parseInt(e.currentTarget.value))}
-            type="number"
-          />
-          <button class="btn-primary" onClick={onInviteFriend}>
-            Invite
-          </button>
-          <Show when={invitation()}>
-            <button class="btn-primary" onClick={onAcceptInvite}>
-              Accept
-            </button>
-          </Show>
-        </div>
-      </div>
+    <div class="flex flex-col mt-3 items-center">
       <div ref={ref}></div>
     </div>
   );

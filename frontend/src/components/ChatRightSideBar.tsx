@@ -1,4 +1,11 @@
-import { Component, createEffect, createSignal, For, Show } from 'solid-js';
+import {
+  Component,
+  createEffect,
+  createResource,
+  createSignal,
+  For,
+  Show,
+} from 'solid-js';
 import { AiOutlinePlusCircle } from 'solid-icons/ai';
 import Modal from './Modal';
 import AddUserToRoom from './admin/AddUserToRoom';
@@ -10,16 +17,21 @@ import { generateImageUrl } from '../utils/helpers';
 import { createTurboResource } from 'turbo-solid';
 import { routes } from '../api/utils';
 import { RoomInfo } from '../types/chat.interface';
+import { api } from '../utils/api';
 
 const ChatRightSideBar: Component<{}> = () => {
   const [isOpen, setIsOpen] = createSignal(false);
   const [state] = useStore();
   const [owner, setOwner] = createSignal<RoomUser>();
-  const [currentUser] = createTurboResource<User>(() => routes.currentUser);
-  const [currentRoom, { refetch: refetchCurrentRoom }] =
-    createTurboResource<RoomInfo>(() => `${routes.chat}/room_info/${roomId()}`);
-
   const roomId = () => state.chat.roomId;
+  const [currentUser] = createTurboResource<User>(() => routes.currentUser);
+  const [currentRoom, { refetch }] = createResource(
+    roomId,
+    async (id: number) => {
+      const res = await api.get<RoomInfo>(`${routes.chat}/room_info/${id}`);
+      return res.data;
+    },
+  );
   const currentUserRole = () =>
     currentRoom()?.users.find((user) => user.id === currentUser()?.id)?.role;
   createEffect(() => {
@@ -46,18 +58,14 @@ const ChatRightSideBar: Component<{}> = () => {
       <div class="h-full text-white">
         <h4 class="text-center p-2 bg-skin-menu-background">Members</h4>
         <div class="flex items-center p-2 pl-6">
-          <Show
-            when={
-              currentUserRole() === 'admin' || currentUserRole() === 'owner'
-            }
-          >
+          <Show when={currentUserRole() === 'owner'}>
             <button onClick={() => setIsOpen(!isOpen())}>
               <AiOutlinePlusCircle class="block" size={26} />
             </button>
             <h4 class="pl-4">Add member</h4>
             <Modal isOpen={isOpen()} toggleModal={setIsOpen}>
               <div class="p-2 bg-skin-header-background absolute right-7 border border-header-menu rounded-md shadow-md">
-                <AddUserToRoom />
+                <AddUserToRoom currentRoom={currentRoom()!} refetch={refetch} />
               </div>
             </Modal>
           </Show>

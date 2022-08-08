@@ -62,6 +62,7 @@ export interface ActionsType {
   loadUsers: () => void;
   setToken: (token: string | undefined) => void;
   setCurrentRoomId: (id: number) => void;
+  setFriendId: (id: number | undefined) => void;
 }
 
 export type Status = 'idle' | 'loading' | 'success' | 'failed';
@@ -226,6 +227,9 @@ export function StoreProvider(props: any) {
     },
     setCurrentRoomId(id) {
       setState('chat', 'roomId', id);
+    },
+    setFriendId(id) {
+      setState('chat', 'friendId', id);
     },
   };
   const store: [StoreState, ActionsType] = [state, actions];

@@ -139,7 +139,6 @@ export const createCurrentUser = (
         await api.post<friendReqEventDto>(routes.acceptFriendReq, {
           user_id,
         });
-        // await this.loadPendingFriendReq();
       } catch (e) {
         //TODO: server error
       }

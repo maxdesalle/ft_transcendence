@@ -1,29 +1,33 @@
-import { Component, createSignal, onMount } from 'solid-js';
+import { Component, createResource, createSignal, onMount } from 'solid-js';
 import toast from 'solid-toast';
 import { createTurboResource } from 'turbo-solid';
 import { addUserToRoomByName } from '../../api/chat';
 import { routes } from '../../api/utils';
 import { useStore } from '../../store';
 import { RoomInfo } from '../../types/chat.interface';
+import { api } from '../../utils/api';
 
-const AddUserToRoom: Component<{}> = () => {
+const AddUserToRoom: Component<{
+  refetch?: () => void;
+  currentRoom: RoomInfo;
+}> = (props) => {
+  const [state] = useStore();
   const [username, setUsername] = createSignal('');
   const notify = (msg: string) => toast(msg);
-  const [state] = useStore();
-  const [currentRoom, { refetch: refetchCurrentRoom }] =
-    createTurboResource<RoomInfo>(() => `${routes.chat}/room_info/${roomId()}`);
-
-  const roomId = () => state.chat.roomId;
 
   const onAddUser = () => {
-    if (username() && currentRoom()) {
+    if (username() && props.currentRoom) {
       addUserToRoomByName({
-        room_id: currentRoom()!.room_id,
+        room_id: props.currentRoom!.room_id,
         user_display_name: username(),
       })
         .then(() => {
-          refetchCurrentRoom();
-          notify(`${username()} has been added to ${currentRoom()!.room_name}`);
+          if (props.refetch) {
+            props.refetch();
+          }
+          notify(
+            `${username()} has been added to ${props.currentRoom!.room_name}`,
+          );
           setUsername('');
         })
         .catch(() => {

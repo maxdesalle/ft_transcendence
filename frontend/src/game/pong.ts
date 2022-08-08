@@ -225,6 +225,7 @@ export const sketch = (p5: p5Type) => {
     p5.fill(col);
     p5.text(`Player ${df.playerWon} won!`, canvasWidth / 2, canvasHeight / 2);
     displayOkButton();
+    handleOkButtonPressed();
     return true;
   }
 
@@ -583,7 +584,10 @@ export const sketch = (p5: p5Type) => {
     });
 
     // setting new pos/size to okButton
-    okButton.position(newWidthOffset + newCanvasWidth / 2, newHeightOffset + newCanvasHeight / 1.5);
+    okButton.position(
+      newWidthOffset + newCanvasWidth / 2,
+      newHeightOffset + newCanvasHeight / 1.5,
+    );
     okButton.size(newCanvasWidth / 10, newCanvasHeight / 25);
 
     p5.resizeCanvas(newCanvasWidth, newCanvasHeight);
@@ -605,7 +609,10 @@ export const sketch = (p5: p5Type) => {
     p5.noStroke();
     initSliders();
     okButton = p5.createButton('Ok');
-    okButton.position(widthOffset + canvasWidth / 2, heightOffset + canvasHeight / 1.5);
+    okButton.position(
+      widthOffset + canvasWidth / 2,
+      heightOffset + canvasHeight / 1.5,
+    );
     okButton.size(canvasWidth / 10, canvasHeight / 25);
     okButton.mousePressed(handleOkButtonPressed);
     okButton.style('color', 'white');

@@ -94,10 +94,13 @@ const App: Component = () => {
           break;
         case 'pong: invitation_accepted':
           navigate('/pong');
+          break;
         case 'pong: invitation':
           setFriendInvitation(res);
+          break;
         case 'ws_auth_fail':
           navigate('/login');
+          break;
         default:
           console.log('default: ', res);
           break;
@@ -105,9 +108,6 @@ const App: Component = () => {
     });
     state.ws.addEventListener('open', (e) => {});
     state.ws.addEventListener('close', (e) => {});
-    if (loadPendingFriendReq) {
-      loadPendingFriendReq();
-    }
   });
 
   createEffect(() => {

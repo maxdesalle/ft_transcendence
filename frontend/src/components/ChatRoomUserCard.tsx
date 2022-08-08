@@ -8,20 +8,20 @@ import {
 import { RoomUser } from '../types/user.interface';
 import { AiOutlineMore } from 'solid-icons/ai';
 import Modal from './Modal';
-import { useStore } from '../store';
+import { TAB, useStore } from '../store';
 import { Link } from 'solid-app-router';
 import Avatar from './Avatar';
 import { chatApi } from '../api/chat';
 import { createTurboResource } from 'turbo-solid';
 import { routes } from '../api/utils';
 import { User } from '../types/user.interface';
-import toast, { Toaster } from 'solid-toast';
+import toast from 'solid-toast';
 
 const ChatRoomUserCard: Component<{ user: RoomUser; ownerId: number }> = (
   props,
 ) => {
   const [isOpen, setIsOpen] = createSignal(false);
-  const [state] = useStore();
+  const [state, { changeTab, setFriendId }] = useStore();
   const [currentUser] = createTurboResource<User>(() => routes.currentUser);
 
   const notify = (msg: string) => toast.success(msg);
@@ -85,10 +85,6 @@ const ChatRoomUserCard: Component<{ user: RoomUser; ownerId: number }> = (
     notify('user demoted');
   };
 
-  createEffect(() => {
-    console.log(notify);
-  });
-
   return (
     <Suspense>
       <div
@@ -117,6 +113,15 @@ const ChatRoomUserCard: Component<{ user: RoomUser; ownerId: number }> = (
             class="text-start hover:bg-gray-600 px-3 rounded-sm transition-all"
           >
             Send invite
+          </button>
+          <button
+            onClick={() => {
+              changeTab(TAB.FRIENDS);
+              setFriendId(props.user.id);
+            }}
+            class="text-start hover:bg-gray-600 px-3 rounded-sm transition-all"
+          >
+            Send message
           </button>
           <Show
             when={

@@ -24,6 +24,7 @@ export const FriendCard: Component<{ friend: Friend; onClick?: () => void }> = (
     <div class="flex text-white justify-between items-center w-full">
       <div onClick={props.onClick} class="flex">
         <Avatar
+          type="rounded-full"
           imgUrl={
             props.friend.avatarId
               ? `${generateImageUrl(props.friend.avatarId)}`

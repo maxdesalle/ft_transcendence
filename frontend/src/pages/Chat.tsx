@@ -27,14 +27,13 @@ const Chat: Component = () => {
   const notifyError = (msg: string) => toast.error(msg);
   const notifySuccess = (msg: string) => toast.success(msg);
   const roomId = () => state.chat.roomId;
-  const [currentRoom, { refetch }] = createResource(
-    roomId,
-    async (id: number) => {
-      const res = await api.get<RoomInfo>(`${routes.chat}/room_info/${id}`);
-      return res.data;
-    },
+  const [currentRoom] = createResource(roomId, async (id: number) => {
+    const res = await api.get<RoomInfo>(`${routes.chat}/room_info/${id}`);
+    return res.data;
+  });
+  const [blockedFriends, { refetch }] = createTurboResource<number[]>(
+    () => routes.blocked,
   );
-  const [blockedFriends] = createTurboResource(() => routes.blocked);
 
   const [friends] = createTurboResource<User[]>(() => routes.friends);
   const selectedFriend = () =>
@@ -51,6 +50,9 @@ const Chat: Component = () => {
         notifyError('You have been muted 😞');
       });
   };
+
+  const isBlocked = () =>
+    blockedFriends()?.includes(selectedFriend()?.id as number);
 
   const onSendMessageToFriend = (message: string) => {
     if (state.chat.friendId && friends) {
@@ -69,6 +71,7 @@ const Chat: Component = () => {
     if (!selectedFriend()) return;
     blockUser({ user_id: selectedFriend()!.id })
       .then(() => {
+        refetch();
         notifySuccess(`${selectedFriend()!.display_name} blocked successfully`);
       })
       .catch(() => {
@@ -76,9 +79,20 @@ const Chat: Component = () => {
       });
   };
 
-  createEffect(() => {
-    console.log(selectedFriend());
-  });
+  const onUnblockFriend = () => {
+    if (!selectedFriend()) return;
+    chatApi
+      .unblockUser({ user_id: selectedFriend()!.id })
+      .then(() => {
+        refetch();
+        notifySuccess(
+          `${selectedFriend()!.display_name} unblocked successfully`,
+        );
+      })
+      .catch(() => {
+        notifyError(`${selectedFriend()!.display_name} cant be unblocked`);
+      });
+  };
 
   return (
     <div class="grid grid-cols-6 h-full">
@@ -126,13 +140,24 @@ const Chat: Component = () => {
                   >
                     Invite to play
                   </button>
-                  <button
-                    onClick={onBlockFriend}
-                    type="button"
-                    class="text-white bg-gradient-to-r from-red-400 via-red-500 to-red-600 hover:bg-gradient-to-br focus:ring-4 focus:outline-none focus:ring-red-300 dark:focus:ring-red-800 font-medium rounded-sm text-sm px-2 py-1 text-center mr-2 mb-2"
-                  >
-                    Block
-                  </button>
+                  <Show when={isBlocked() === false}>
+                    <button
+                      onClick={onBlockFriend}
+                      type="button"
+                      class="text-white bg-gradient-to-r from-red-400 via-red-500 to-red-600 hover:bg-gradient-to-br focus:ring-4 focus:outline-none focus:ring-red-300 dark:focus:ring-red-800 font-medium rounded-sm text-sm px-2 py-1 text-center mr-2 mb-2"
+                    >
+                      Block
+                    </button>
+                  </Show>
+                  <Show when={isBlocked()}>
+                    <button
+                      onClick={onUnblockFriend}
+                      type="button"
+                      class="text-white bg-gradient-to-r from-cyan-500 to-blue-500 hover:bg-gradient-to-bl focus:ring-4 focus:outline-none focus:ring-cyan-300 dark:focus:ring-cyan-800 font-medium rounded-sm text-sm px-2 py-1 text-center mr-2 mb-2"
+                    >
+                      Unblock
+                    </button>
+                  </Show>
                 </div>
               </Show>
             </div>
