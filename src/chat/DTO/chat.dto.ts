@@ -100,3 +100,11 @@ export class SetPrivateDto {
 	@IsBoolean()
 	private: boolean;
 }
+
+export class BannedUser {
+	id: number;
+	login42: string;
+	display_name: string;
+	unban: Date;
+}
+

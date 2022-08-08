@@ -2,7 +2,7 @@ import { BadRequestException, ForbiddenException, Injectable } from '@nestjs/com
 import { User } from 'src/users/entities/user.entity';
 import { UsersService } from 'src/users/users.service';
 import { Connection, EntityManager } from 'typeorm';
-import { GroupConfigDto, MessageDTO, RoomInfo} from './DTO/chat.dto';
+import { BannedUser, GroupConfigDto, MessageDTO, RoomInfo} from './DTO/chat.dto';
 import { Message } from './entities/message.entity';
 
 const PARTICIPANT = 0;
@@ -729,6 +729,18 @@ export class ChatService {
 		for (let i = 0; i < my_query.rowCount; i++)
 			blocked.push(my_query.rows[i].blocked_id);
 		return blocked;
+	}
+
+	async listBannedUsers(room_id: number): Promise<BannedUser[]>{
+		const query = await this.pool.query(
+			`SELECT u.id, u.login42, u.display_name, b.unban FROM
+				(SELECT * FROM banned
+			 	WHERE mute = FALSE
+			 	AND room_id = ${room_id}
+			 	AND unban > NOW()) b
+		  	JOIN public.user u ON b.banned_id = u.id;`
+		);
+		return query.rows;
 	}
 
 }
