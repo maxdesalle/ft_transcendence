@@ -63,7 +63,7 @@ export class StatsService {
 
 	// user_id must be valid
 	async addPoints(user_id: number, points: number) {
-		this.pointsRepository.createQueryBuilder()
+		await this.pointsRepository.createQueryBuilder()
 			.update()
 			.set({
 				points: () => `points + ${points}`
@@ -79,15 +79,15 @@ export class StatsService {
 		const loser = ladder.find((value) => value.user_id === p_loss);
 		// points for  the winner
 		if (winner.rank > loser.rank) 
-			this.addPoints(p_win, POINTS_WIN_HIGHER_RANK);
+			await this.addPoints(p_win, POINTS_WIN_HIGHER_RANK);
 		else
-			this.addPoints(p_win, POINTS_WIN_LOWER_RANK);
+			await this.addPoints(p_win, POINTS_WIN_LOWER_RANK);
 		// points for the loser (avoid dropping below 0)
 		if (loser.points >= -POINTS_LOSS)
-			this.addPoints(p_loss, POINTS_LOSS);
+			await this.addPoints(p_loss, POINTS_LOSS);
 	}
 
-	insertMatch(p1: number, p2: number, p1Score: number, p2Score: number) {
+	async insertMatch(p1: number, p2: number, p1Score: number, p2Score: number) {
 		const match = new Match();
 		match.player1 = p1;
 		match.player2 = p2;
@@ -96,9 +96,9 @@ export class StatsService {
 		match.timestamp = new Date();
 		this.matchRepository.save(match);
 		if (p1Score > p2Score) 
-			this.addMatchPoints(p1, p2);
+			await this.addMatchPoints(p1, p2);
 		else
-			this.addMatchPoints(p2, p1);
+			await this.addMatchPoints(p2, p1);
 	}
 
 	filterPlayerInfo(match: any): MatchDTO {
