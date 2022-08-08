@@ -28,7 +28,7 @@ export interface Message {
 
 export interface UserRole {
   user_id: number;
-  role: string;
+  role: 'admin' | 'owner' | 'participant';
 }
 
 export type WsNotificationEvent =
@@ -45,4 +45,6 @@ export type WsNotificationEvent =
   | 'status: friend_offline'
   | 'status: friend_playing'
   | 'pong: invitation'
-  | 'pong: invitation_accepted';
+  | 'pong: invitation_accepted'
+  | 'pong: player_joined'
+  | 'ladder_change';

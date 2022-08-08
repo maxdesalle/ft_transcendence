@@ -1,7 +1,10 @@
+import Cookies from 'js-cookie';
 import { useNavigate } from 'solid-app-router';
 import { Component, createRenderEffect, createSignal } from 'solid-js';
+import toast from 'solid-toast';
 import { loginFromMockApi } from '../api/mock';
 import { routes } from '../api/utils';
+import { useStore } from '../store';
 
 function model(el: any, accessor: any) {
   const [s, set] = accessor();
@@ -12,12 +15,24 @@ function model(el: any, accessor: any) {
 const Login: Component = () => {
   const [username, setUsername] = createSignal<string>('');
   const navigate = useNavigate();
+  const [_, { setToken }] = useStore();
+  const notify = (msg: string) => toast.error(msg);
 
   const onLogin = () => {
     if (!username().length) return;
-    loginFromMockApi(username());
+    loginFromMockApi(username())
+      .then((res) => {
+        console.log(res);
+        const token = Cookies.get('jwt_token');
+        if (token) {
+          setToken(token);
+        }
+        navigate('/');
+      })
+      .catch((err) => {
+        notify(err.message);
+      });
     setUsername('');
-    navigate('/');
   };
 
   return (

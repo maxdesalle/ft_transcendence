@@ -1,33 +1,84 @@
-import { Component, Match, Show, Suspense, Switch } from 'solid-js';
+import {
+  Component,
+  createEffect,
+  createResource,
+  Match,
+  Show,
+  Switch,
+} from 'solid-js';
 import ChatSideBar from '../components/ChatSideBar';
 import ChatMessagesBox from '../components/ChatMessagesBox';
 import ChatRightSideBar from '../components/ChatRightSideBar';
 import 'simplebar';
-import Scrollbars from 'solid-custom-scrollbars';
-import { chatApi } from '../api/chat';
+import { blockUser, chatApi } from '../api/chat';
 import { TAB, useStore } from '../store/index';
+import toast from 'solid-toast';
+import { routes } from '../api/utils';
+import { RoomInfo } from '../types/chat.interface';
+import { api } from '../utils/api';
+import { createTurboResource } from 'turbo-solid';
+import { User } from '../types/user.interface';
+import Avatar from '../components/Avatar';
+import { generateImageUrl } from '../utils/helpers';
+import { AxiosError } from 'axios';
 
 const Chat: Component = () => {
   const [state] = useStore();
+  const notifyError = (msg: string) => toast.error(msg);
+  const notifySuccess = (msg: string) => toast.success(msg);
+  const roomId = () => state.chat.roomId;
+  const [currentRoom, { refetch }] = createResource(
+    roomId,
+    async (id: number) => {
+      const res = await api.get<RoomInfo>(`${routes.chat}/room_info/${id}`);
+      return res.data;
+    },
+  );
+
+  const [currentUser] = createTurboResource(() => routes.currentUser);
+  const [friends] = createTurboResource<User[]>(() => routes.friends);
+  const selectedFriend = () =>
+    friends()?.find((friend) => friend.id === state.chat.friendId);
 
   const onSendMessageToRoom = (message: string) => {
-    if (!state.chat.currentRoom) return;
-    chatApi.postMessageToRoom({
-      room_id: state.chat.currentRoom.room_id,
-      message: message,
-    });
+    if (!currentRoom()) return;
+    chatApi
+      .postMessageToRoom({
+        room_id: currentRoom()!.room_id,
+        message: message,
+      })
+      .catch(() => {
+        notifyError('You have been muted 😞');
+      });
   };
 
   const onSendMessageToFriend = (message: string) => {
-    if (state.chat.friendId) {
-      const friend = state.currentUser.friends.find(
-        (f) => f.id === state.chat.friendId,
-      );
+    if (state.chat.friendId && friends) {
+      const friend = friends()!.find((f) => f.id === state.chat.friendId);
       if (friend) {
-        chatApi.sendDm({ user_id: friend.id, message: message });
+        chatApi
+          .sendDm({ user_id: friend.id, message: message })
+          .catch((err: AxiosError<{ message: string }>) => {
+            notifyError(err.response?.data.message as string);
+          });
       }
     }
   };
+
+  const onBlockFriend = () => {
+    if (!selectedFriend()) return;
+    blockUser({ user_id: selectedFriend()!.id })
+      .then(() => {
+        notifySuccess(`${selectedFriend()!.display_name} blocked successfully`);
+      })
+      .catch(() => {
+        notifyError(`${selectedFriend()!.display_name} cant be blocked`);
+      });
+  };
+
+  createEffect(() => {
+    console.log(selectedFriend());
+  });
 
   return (
     <div class="grid grid-cols-6 h-full">
@@ -56,7 +107,36 @@ const Chat: Component = () => {
           <Match when={state.chatUi.tab === TAB.ROOMS}>
             <ChatRightSideBar />
           </Match>
-          <Match when={state.chatUi.tab === TAB.FRIENDS}>Friend tab</Match>
+          <Match when={state.chatUi.tab === TAB.FRIENDS}>
+            <div class="pt-5 px-2 w-full">
+              <Show when={selectedFriend()} fallback={<p>Select a friend</p>}>
+                <div class="flex flex-col">
+                  <div class="mb-2 mx-auto">
+                    <Avatar
+                      imgUrl={
+                        selectedFriend()!.avatarId
+                          ? generateImageUrl(selectedFriend()!.avatarId)
+                          : undefined
+                      }
+                    />
+                  </div>
+                  <button
+                    type="button"
+                    class="text-white bg-gradient-to-r from-blue-500 via-blue-600 to-blue-700 hover:bg-gradient-to-br focus:ring-4 focus:outline-none focus:ring-blue-300 dark:focus:ring-blue-800 font-medium rounded-sm text-sm px-2 py-1 text-center mr-2 mb-2"
+                  >
+                    Invite to play
+                  </button>
+                  <button
+                    onClick={onBlockFriend}
+                    type="button"
+                    class="text-white bg-gradient-to-r from-red-400 via-red-500 to-red-600 hover:bg-gradient-to-br focus:ring-4 focus:outline-none focus:ring-red-300 dark:focus:ring-red-800 font-medium rounded-sm text-sm px-2 py-1 text-center mr-2 mb-2"
+                  >
+                    Block
+                  </button>
+                </div>
+              </Show>
+            </div>
+          </Match>
         </Switch>
       </div>
     </div>

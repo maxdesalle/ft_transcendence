@@ -1,16 +1,16 @@
 import Cookies from 'js-cookie';
+import QRCode from 'qrcode';
 import { batch, createResource } from 'solid-js';
-import { produce, SetStoreFunction, Store, unwrap } from 'solid-js/store';
+import { SetStoreFunction } from 'solid-js/store';
 import { StoreState } from '.';
 import { addUserToRoomByName, chatApi, ChatPostBody } from '../api/chat';
+import { getAllMatches, getLadder } from '../api/stats';
+import { fetchUsers } from '../api/user';
 import { routes, urls } from '../api/utils';
 import { Message, RoomInfo } from '../types/chat.interface';
+import { friendReqEventDto } from '../types/friendship.interface';
 import { Friend, User } from '../types/user.interface';
 import { api } from '../utils/api';
-import QRCode from 'qrcode';
-import { fetchUsers } from '../api/user';
-import { friendReqEventDto } from '../types/friendship.interface';
-import { getAllMatches, getLadder } from '../api/stats';
 
 export const createUsers = (
   actions: Object,
@@ -51,7 +51,7 @@ export const createCurrentUser = (
   Object.assign(actions, {
     logout() {
       Cookies.remove('jwt_token');
-      setState('token', () => undefined);
+      setState('token', undefined);
       mutate(undefined);
     },
     async changeUsername(value: string) {
@@ -202,37 +202,12 @@ export const createRooms = (
           (room) => room.room_id === res.data.room_id,
         );
         if (index) {
-          // TODO: the api needs to return the newly added participant
-          // setState("chat", "rooms", index, 'participants', );
+          setState('chat', 'rooms', index, 'users', () => [...res.data.users]);
           setState('chat', 'status', 'success');
         }
       } catch (error) {
         setState('chat', 'error', error);
       }
-    },
-    async muteUser(data: ChatPostBody) {
-      const res = await chatApi.muteUser(data);
-      //TODO: update store or refetch
-    },
-    async unmuteUser(data: ChatPostBody) {
-      const res = await chatApi.unmuteUser(data);
-    },
-
-    async banUser(data: ChatPostBody) {
-      const res = await chatApi.banUser(data);
-    },
-
-    async unbanUser(data: ChatPostBody) {
-      const res = await chatApi.unbanUser(data);
-    },
-    async promoteUser(data: ChatPostBody) {
-      const res = await chatApi.promoteUser(data);
-    },
-    async demoteUser(data: ChatPostBody) {
-      const res = await chatApi.demoteUser(data);
-    },
-    async unblockUser(data: ChatPostBody) {
-      const res = await chatApi.unblockUser(data);
     },
   });
   return rooms;

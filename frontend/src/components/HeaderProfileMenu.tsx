@@ -9,22 +9,29 @@ import logOutLogo from '../assets/log-out.png';
 import { Link, useNavigate } from 'solid-app-router';
 import { useStore } from '../store';
 import { routes, urls } from '../api/utils';
+import { createTurboResource, forget } from 'turbo-solid';
 
 const HeaderProfileMenu: Component<{ user: User }> = (props) => {
   const navigate = useNavigate();
   const [state, { logout }] = useStore();
+  const [currentUser] = createTurboResource<User>(() => routes.currentUser);
   const onLogout = () => {
     if (logout) {
       logout();
+      forget();
     }
     navigate('/login');
   };
 
   return (
-    <>
+    <Show when={currentUser()}>
       <div class="flex flex-col items-center py-3">
         <Avatar
-          imgUrl={`${urls.backendUrl}/database-files/${state.currentUser.userData?.avatarId}`}
+          imgUrl={
+            currentUser()!.avatarId
+              ? `${urls.backendUrl}/database-files/${state.currentUser.userData?.avatarId}`
+              : undefined
+          }
         />
         <h3 class="text-slate-100 font-light">{props.user.display_name}</h3>
         <p class="text-slate-500 font-light">{props.user.login42}</p>
@@ -70,7 +77,7 @@ const HeaderProfileMenu: Component<{ user: User }> = (props) => {
           </button>
         </li>
       </ul>
-    </>
+    </Show>
   );
 };
 

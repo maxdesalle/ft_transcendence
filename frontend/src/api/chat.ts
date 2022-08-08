@@ -12,7 +12,7 @@ export type CreateRoomType = {
 export type ChatPostBody = {
   room_id: number;
   user_id: number;
-  time_minutes: number;
+  time_minutes?: number;
 };
 
 export const createRoomResource = () => {
@@ -102,11 +102,7 @@ const demoteUser = async (data: ChatPostBody) => {
   return await api.post<RoomInfo>(routes.demoteUser, data);
 };
 
-const unmuteUser = async (data: {
-  room_id: number;
-  user_id: number;
-  time_minutes: number;
-}) => {
+const unmuteUser = async (data: { room_id: number; user_id: number }) => {
   return await api.post<RoomInfo>(routes.muteUser, data);
 };
 

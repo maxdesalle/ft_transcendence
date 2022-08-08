@@ -1,20 +1,17 @@
-import { Component, createRenderEffect, createSignal } from 'solid-js';
+import { Component, createSignal } from 'solid-js';
 import { chatApi } from '../../api/chat';
 import { useStore } from '../../store';
 
-const CreateRoom: Component<{ ref?: any }> = () => {
+const CreateRoom: Component<{ refetch: () => void }> = (props) => {
   const [roomName, setRoomName] = createSignal('');
   const [password, setPassword] = createSignal('');
   const [isPrivate, setIsPrivate] = createSignal(false);
   const [_, { updateRooms }] = useStore();
 
   const onCreateRoom = () => {
-    console.log("creating group: ", roomName());
     if (!roomName().length) return;
     chatApi.createRoom({ name: roomName() }).then((res) => {
-      if (updateRooms) {
-        updateRooms(res.data);
-      }
+      props.refetch();
     });
     setRoomName('');
   };

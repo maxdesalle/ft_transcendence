@@ -1,6 +1,10 @@
 import Cookies from 'js-cookie';
-import { createContext, Resource, useContext } from 'solid-js';
-import { Message, RoomInfo } from '../types/chat.interface';
+import { createContext, createResource, Resource, useContext } from 'solid-js';
+import {
+  Message,
+  RoomInfo,
+  WsNotificationEvent,
+} from '../types/chat.interface';
 import { Friend, User } from '../types/user.interface';
 import { createStore, produce } from 'solid-js/store';
 import {
@@ -16,6 +20,7 @@ import {
 import { urls } from '../api/utils';
 import { initSocket } from '../game/pong';
 import { LadderDto, MatchDTO } from '../types/stats.interface';
+import { fetchUsers } from '../api/user';
 
 const StoreContext = createContext<any>();
 
@@ -44,11 +49,19 @@ export interface ActionsType {
   mutateFriendMsgs?: (msg: Message) => void;
   toggleShowMessages: () => void;
   updateAvatarId: () => void;
-  loadApp: () => void;
   toggleMatchMaking: (val: boolean) => void;
   refetchFriends?: () => Promise<Friend[]>;
   addPendingFriendReq: (pendigUser: { user: User; status: number }) => void;
   updateFriendList: (user: Friend) => void;
+  setFriendInvitation: (
+    data: {
+      event: WsNotificationEvent;
+      user_id?: number;
+    } | null,
+  ) => void;
+  loadUsers: () => void;
+  setToken: (token: string) => void;
+  setCurrentRoomId: (id: number) => void;
 }
 
 export type Status = 'idle' | 'loading' | 'success' | 'failed';
@@ -91,8 +104,10 @@ export interface StoreState {
     ws: WebSocket;
     matches: MatchDTO[] | undefined;
     ladder: LadderDto[] | undefined;
+    friendInvitation: { event: WsNotificationEvent; user_id?: number } | null;
   };
   readonly users: User[] | undefined;
+  test: User[];
 }
 
 export function StoreProvider(props: any) {
@@ -109,6 +124,7 @@ export function StoreProvider(props: any) {
     token: Cookies.get('jwt_token'),
     ws: new WebSocket(urls.wsUrl),
     pong: {
+      friendInvitation: null,
       inMatchMaking: false,
       ws: initSocket(),
       get matches() {
@@ -153,23 +169,24 @@ export function StoreProvider(props: any) {
     get users() {
       return users();
     },
+    test: [],
   });
 
   const actions: ActionsType = {
-    getRoomById(id: number) {
+    getRoomById(id) {
       return rooms()?.find((room) => room.room_id === id);
     },
-    getUserById(id: number) {
+    getUserById(id) {
       return users()?.find((user) => user.id === id);
     },
-    setCurrentRoom(room: RoomInfo) {
+    setCurrentRoom(room) {
       setState(
         produce((s) => {
           s.chat.currentRoom = room;
         }),
       );
     },
-    changeTab(tab: TAB) {
+    changeTab(tab) {
       setState(
         produce((s) => {
           s.chatUi.tab = tab;
@@ -186,14 +203,6 @@ export function StoreProvider(props: any) {
     updateAvatarId() {
       setState('currentUser', 'userData', 'avatarId', (id) => id + 1);
     },
-    loadApp() {
-      users = createUsers(actions, state, setState);
-      currentUser = createCurrentUser(actions, state, setState);
-      rooms = createRooms(actions, state, setState);
-      roomMsg = createMessageById(actions, state, setState);
-      friends = createFriends(actions, state, setState);
-      friendMsg = createFriendMsg(actions, state, setState);
-    },
     toggleMatchMaking(val) {
       setState('pong', 'inMatchMaking', val);
     },
@@ -202,6 +211,21 @@ export function StoreProvider(props: any) {
     },
     updateFriendList(friend) {
       setState('currentUser', 'friends', (e) => [...e, friend]);
+    },
+    setFriendInvitation(data) {
+      setState('pong', 'friendInvitation', data);
+    },
+    loadUsers() {
+      const [users] = createResource(fetchUsers);
+      if (users()) {
+        setState('test', () => [...users()!]);
+      }
+    },
+    setToken(token) {
+      setState('token', token);
+    },
+    setCurrentRoomId(id) {
+      setState('chat', 'roomId', id);
     },
   };
   const store: [StoreState, ActionsType] = [state, actions];

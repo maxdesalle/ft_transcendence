@@ -1,5 +1,5 @@
-import { Link } from 'solid-app-router';
-import { Component, createSignal, For, Show } from 'solid-js';
+import { Link, useNavigate } from 'solid-app-router';
+import { Component, createEffect, createSignal, For, Show } from 'solid-js';
 import logo from '../assets/logo.png';
 import { BiSearchAlt2 } from 'solid-icons/bi';
 import HeaderProfileMenu from './HeaderProfileMenu';
@@ -8,19 +8,34 @@ import Avatar from './Avatar';
 import { useStore } from '../store/index';
 import SearchUserCard from './SearchUserCard';
 import { generateImageUrl } from '../utils/helpers';
-import defaultAvatar from '../../../backend/images/avatardefault.png';
+import { createTurboResource } from 'turbo-solid';
+import { routes } from '../api/utils';
+import { User } from '../types/user.interface';
 
 const LINKS = ['pong', 'viewer', 'chat'];
 
 const Header: Component = () => {
   const [keyword, setKeyword] = createSignal<string>('');
-  const [state, { sendFriendReq }] = useStore();
+  const [state, { sendFriendReq, setFriendInvitation }] = useStore();
+  const [users] = createTurboResource<User[]>(() => routes.users);
+  const [currentUser] = createTurboResource<User>(() => routes.currentUser);
+  const navigate = useNavigate();
 
   const [isOpen, setIsOpen] = createSignal(false);
   let ref: any;
 
+  const onAcceptInvite = () => {
+    const data = {
+      event: 'accept',
+      data: state.pong.friendInvitation?.user_id,
+    };
+    state.pong.ws.send(JSON.stringify(data));
+    navigate('/pong');
+    setFriendInvitation(null);
+  };
+
   return (
-    <>
+    <Show when={currentUser()}>
       <header class="flex items-center relative z-20 bg-skin-header-background py-1 px-6 justify-between">
         <div class="flex items-center">
           <Link href="/">
@@ -40,26 +55,32 @@ const Header: Component = () => {
           <For each={LINKS}>
             {(link) => (
               <li class="text-white first-letter:capitalize">
-                {' '}
-                <Link href={`/${link}`}>{link}</Link>{' '}
+                <Link href={`/${link}`}>{link}</Link>
               </li>
             )}
           </For>
+          <Show when={state.pong.friendInvitation}>
+            <li>
+              <button onClick={onAcceptInvite} class="btn-primary">
+                Accept
+              </button>
+            </li>
+          </Show>
         </ul>
         <div class="relative">
           <button onClick={() => setIsOpen(!isOpen())}>
             <Avatar
               imgUrl={
-                state.currentUser.userData?.avatarId
-                  ? `${generateImageUrl(state.currentUser.userData.avatarId)}`
-                  : defaultAvatar
+                currentUser()?.avatarId
+                  ? `${generateImageUrl(currentUser()!.avatarId)}`
+                  : undefined
               }
             />
           </button>
           <Modal isOpen={isOpen()} toggleModal={setIsOpen}>
-            <Show when={state.currentUser.userData}>
+            <Show when={currentUser()}>
               <div class="bg-skin-menu-background w-60 absolute border-header-menu -right-4 border shadow-sm p-2 -top-1">
-                <HeaderProfileMenu user={state.currentUser.userData!} />
+                <HeaderProfileMenu user={currentUser()!} />
               </div>
             </Show>
           </Modal>
@@ -69,7 +90,7 @@ const Header: Component = () => {
         <div class="relative">
           <div class="absolute top-0 z-10 ml-16">
             <For
-              each={state.users
+              each={users()
                 ?.slice(0)
                 ?.filter((user) =>
                   user.display_name
@@ -94,7 +115,7 @@ const Header: Component = () => {
           </div>
         </div>
       </Show>
-    </>
+    </Show>
   );
 };
 

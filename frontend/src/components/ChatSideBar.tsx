@@ -5,11 +5,18 @@ import FriendList from './FriendList';
 import Search from './Search';
 import CreateRoom from './admin/createRoom';
 import Scrollbars from 'solid-custom-scrollbars';
+import { createTurboResource } from 'turbo-solid';
+import { routes } from '../api/utils';
+import { RoomInfo } from '../types/chat.interface';
 
 const ChatSideBar: Component = () => {
   const [keyword, setKeyword] = createSignal('');
 
-  const [state, { setCurrentRoom, changeTab, toggleShowMessages }] = useStore();
+  const [state, { setCurrentRoomId, changeTab, toggleShowMessages }] =
+    useStore();
+  const [rooms, { refetch }] = createTurboResource<RoomInfo[]>(
+    () => routes.getRooms,
+  );
 
   return (
     <>
@@ -35,11 +42,11 @@ const ChatSideBar: Component = () => {
               placeHolder="Search for room"
               popperMsg="Create new room"
             >
-              <CreateRoom />
+              <CreateRoom refetch={refetch} />
             </Search>
-            <Show when={state.chat.rooms}>
+            <Show when={rooms()}>
               <For
-                each={state.chat.rooms!.filter(
+                each={rooms()!.filter(
                   (room) =>
                     room.room_name
                       .toLocaleLowerCase()
@@ -50,7 +57,7 @@ const ChatSideBar: Component = () => {
                 {(room) => (
                   <div
                     onClick={() => {
-                      setCurrentRoom(room);
+                      setCurrentRoomId(room.room_id);
                       if (!state.chatUi.showMessages) {
                         toggleShowMessages();
                       }

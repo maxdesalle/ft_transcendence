@@ -23,12 +23,6 @@ const Pong: Component = () => {
   }>();
   onMount(() => {
     myP5 = new p5Type(sketch, ref);
-    state.ws.addEventListener('message', (e) => {
-      const res = JSON.parse(e.data);
-      if (res.event === 'pong: invitation') {
-        setInvitation(res);
-      }
-    });
   });
 
   const onAcceptInvite = () => {
@@ -43,6 +37,10 @@ const Pong: Component = () => {
     toggleMatchMaking(true);
   };
 
+  createEffect(() => {
+    console.log(state.pong.inMatchMaking);
+  });
+
   const onInviteFriend = () => {
     if (!friendId()) return;
     const data = {
@@ -54,12 +52,10 @@ const Pong: Component = () => {
 
   onCleanup(() => {
     myP5.remove();
-    // cancel the matchmaking when leaving the page
-    toggleMatchMaking(false);
   });
 
   return (
-    <div class="flex flex-col">
+    <div class="flex flex-col items-center">
       <div class="flex">
         <button
           onClick={onPlay}
