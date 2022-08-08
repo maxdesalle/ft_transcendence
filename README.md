@@ -1,10 +1,14 @@
+## TODO's before push
+- no more need to serve "client" dir (backend)
+- remove mock auth module
+
 ## Bugs... ?
 A major massive multi package upgrade was performed (26 july). And, of course, plenty of bugs had to be fixed. If you find a bug, that might be the reason... (and, of course, report it!)
 
 
 ## How to make stuff happen
 
-First you need a .env file at the repo's root, like this: (cannot put secret stuff in a public repo, sorry)
+First you need a .env file inside **backend** directory, like this: (cannot put secret stuff in a public repo, sorry)
 ```
     # auth
     FORTYTWO_CLIENT_ID=<you gotta provide the right one>  
@@ -19,17 +23,14 @@ First you need a .env file at the repo's root, like this: (cannot put secret stu
     # avatar photo
     AVATAR_DEFAULT_FILE="images/avatardefault.png"
     AVATAR_MAX_SIZE=1000000
+    
+    # frontend url
+    FRONTEND_URL="http://127.0.01:8000"
 ```
 Then:
-* install node dependencies (if not yet done): `npm install`
-* launch database container: `docker-compose up -d`
-* launch node server in watch mode: `npm run start:dev`
-
 OR: `./launch.sh` (have the **.env** file ready)
 
-Wanna restart with a fresh DB? `./restart.sh`
-
-The app should be available at 127.0.0.1:3000
+Frontend app should be available at `http://127.0.01:8000`
 
 -----------------------
 
@@ -385,6 +386,22 @@ someone has just joined a waiting player to play pong (both users get notified)
     "event": "pong: player_joined",
     "waiting_player": 3,
     "joining_player": 4
+}
+```
+
+a game session has just begun
+```
+{
+    "event":"pong: new_session",
+    "session_id":1
+}
+```
+
+a game session has just ended
+```
+{
+    "event":"pong: session_over",
+    "session_id":1
 }
 ```
 
