@@ -8,7 +8,10 @@ import {
   onMount,
   Show,
 } from 'solid-js';
+import { createTurboResource } from 'turbo-solid';
+import { routes } from '../api/utils';
 import { useStore } from '../store';
+import { User } from '../types/user.interface';
 
 const Home: Component = () => {
   const [state, { toggleMatchMaking, setFriendInvitation }] = useStore();
@@ -19,6 +22,8 @@ const Home: Component = () => {
     user_id: number;
   }>();
   const [buttonText, setButtonText] = createSignal('Play');
+  const [currentUser] = createTurboResource<User>(() => routes.currentUser);
+  const [friends] = createTurboResource<User[]>(() => routes.friends);
 
   const navigate = useNavigate();
 
@@ -77,12 +82,12 @@ const Home: Component = () => {
         <h1 class="text-4xl text-center w-full">{buttonText()}</h1>
       </button>
       <div>
-        <Show when={state.pong.friendInvitation && state.currentUser.friends}>
+        <Show when={state.pong.friendInvitation && friends()}>
           <div class="animate-bounce">
             <h1 class="text-2xl">
               New invitation from{' '}
               {
-                state.currentUser.friends.find(
+                friends()!.find(
                   (user) => user.id === state.pong.friendInvitation?.user_id,
                 )?.display_name
               }
@@ -107,8 +112,8 @@ const Home: Component = () => {
           <option disabled selected value="">
             select a friend
           </option>
-          <Show when={state.currentUser.friends}>
-            <For each={state.currentUser.friends}>
+          <Show when={friends()}>
+            <For each={friends()}>
               {(friend) => (
                 <option value={friend.id}>{friend.display_name}</option>
               )}

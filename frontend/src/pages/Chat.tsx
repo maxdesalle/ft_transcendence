@@ -34,8 +34,8 @@ const Chat: Component = () => {
       return res.data;
     },
   );
+  const [blockedFriends] = createTurboResource(() => routes.blocked);
 
-  const [currentUser] = createTurboResource(() => routes.currentUser);
   const [friends] = createTurboResource<User[]>(() => routes.friends);
   const selectedFriend = () =>
     friends()?.find((friend) => friend.id === state.chat.friendId);

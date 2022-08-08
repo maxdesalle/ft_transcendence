@@ -60,7 +60,7 @@ export interface ActionsType {
     } | null,
   ) => void;
   loadUsers: () => void;
-  setToken: (token: string) => void;
+  setToken: (token: string | undefined) => void;
   setCurrentRoomId: (id: number) => void;
 }
 

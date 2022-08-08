@@ -36,4 +36,5 @@ export const routes = {
   unmuteUser: `${urls.backendUrl}/chat/unmute_group_user`,
   promoteUser: `${urls.backendUrl}/chat/promote_group_user`,
   demoteUser: `${urls.backendUrl}/chat/demote_group_user`,
+  blocked: `${urls.backendUrl}/chat/blocked`,
 };

@@ -1,25 +1,32 @@
-import { useNavigate } from "solid-app-router";
-import { Component, createEffect, createSignal } from "solid-js";
-import { useStore } from "../store";
+import Cookies from 'js-cookie';
+import { useNavigate } from 'solid-app-router';
+import { Component, createSignal } from 'solid-js';
+import { urls } from '../api/utils';
+import { useStore } from '../store';
+import { api } from '../utils/api';
 
 const TwoFactorAuth: Component = () => {
-  const [state, { send2faCode }] = useStore();
-  const [code, setCode] = createSignal("");
+  const [code, setCode] = createSignal('');
   const navigate = useNavigate();
+  const [_, { setToken }] = useStore();
   const onSendCode = () => {
-    if (code() && send2faCode) {
-      send2faCode(code());
-    }
+    api
+      .post<{ success: boolean }>(
+        `${urls.backendUrl}/login/two-factor-authentication/`,
+        {
+          twoFactorAuthenticationCode: code(),
+        },
+      )
+      .then(() => {
+        const token = Cookies.get('jwt_token');
+        console.log(token);
+        setToken(token);
+        navigate('/');
+      });
   };
 
-  createEffect(() => {
-    if (state.currentUser.twoFaConfirmed) {
-      navigate("/");
-    }
-  });
-
   return (
-    <div>
+    <div class="m-auto w-full h-full">
       <input
         type="number"
         onInput={(e) => setCode(e.currentTarget.value)}

@@ -96,6 +96,8 @@ const App: Component = () => {
           navigate('/pong');
         case 'pong: invitation':
           setFriendInvitation(res);
+        case 'ws_auth_fail':
+          navigate('/login');
         default:
           console.log('default: ', res);
           break;

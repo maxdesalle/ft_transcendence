@@ -21,8 +21,7 @@ const Login: Component = () => {
   const onLogin = () => {
     if (!username().length) return;
     loginFromMockApi(username())
-      .then((res) => {
-        console.log(res);
+      .then(() => {
         const token = Cookies.get('jwt_token');
         if (token) {
           setToken(token);
