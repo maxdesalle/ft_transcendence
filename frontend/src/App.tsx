@@ -1,12 +1,4 @@
-import {
-  Component,
-  createEffect,
-  createResource,
-  createSignal,
-  onCleanup,
-  onMount,
-  Show,
-} from 'solid-js';
+import { Component, createEffect, onCleanup, onMount, Show } from 'solid-js';
 import { Route, Routes, useNavigate } from 'solid-app-router';
 import Chat from './pages/Chat';
 import Pong from './pages/Pong';
@@ -21,6 +13,9 @@ import EditProfile from './pages/EditProfile';
 import TwoFactorAuth from './pages/TwoFactorAuth';
 import { Message, WsNotificationEvent } from './types/chat.interface';
 import LeaderBoard from './pages/LeaderBoard';
+import { TurboContext } from 'turbo-solid';
+import { api } from './utils/api';
+import { Toaster } from 'solid-toast';
 
 const App: Component = () => {
   const [
@@ -31,6 +26,7 @@ const App: Component = () => {
       mutateRoomMsgs,
       addPendingFriendReq,
       refetchFriends,
+      setFriendInvitation,
     },
   ] = useStore();
   const navigate = useNavigate();
@@ -74,7 +70,6 @@ const App: Component = () => {
           }
           break;
         case 'friends: request_accepted':
-          console.log(res);
           if (refetchFriends) refetchFriends();
           break;
         case 'friends: request_rejected':
@@ -94,19 +89,17 @@ const App: Component = () => {
         case 'status: friend_online':
           console.log(res);
           break;
+        case 'pong: player_joined':
+          navigate('/pong');
+          break;
+        case 'pong: invitation_accepted':
+          navigate('/pong');
+        case 'pong: invitation':
+          setFriendInvitation(res);
         default:
           console.log('default: ', res);
           break;
       }
-      // if (res.event === 'chat_room_msg') {
-      //   if (mutateRoomMsgs) {
-      //     mutateRoomMsgs(res.message as Message);
-      //   }
-      // } else if (res.event == 'chat_dm') {
-      //   if (mutateFriendMsgs) {
-      //     mutateFriendMsgs(res.message as Message);
-      //   }
-      // }
     });
     state.ws.addEventListener('open', (e) => {});
     state.ws.addEventListener('close', (e) => {});
@@ -126,8 +119,15 @@ const App: Component = () => {
     state.pong.ws.close();
   });
 
+  const configuration = {
+    async fetcher(key: string) {
+      const response = await api.get(key);
+      return response.data;
+    },
+  };
+
   return (
-    <>
+    <TurboContext.Provider value={configuration}>
       <Show when={state.token}>
         <Header />
       </Show>
@@ -145,7 +145,8 @@ const App: Component = () => {
           <Route path="/leaderboard" element={<LeaderBoard />} />
         </Routes>
       </div>
-    </>
+      <Toaster />
+    </TurboContext.Provider>
   );
 };
 

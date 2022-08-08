@@ -1,3 +1,4 @@
+import autoAnimate from '@formkit/auto-animate';
 import Scrollbars from 'solid-custom-scrollbars';
 import { Component, createEffect, createSignal, For, Show } from 'solid-js';
 import { useStore } from '../store';

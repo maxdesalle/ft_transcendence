@@ -1,10 +1,12 @@
 /* @refresh reload */
-import { render } from "solid-js/web";
-import { Router } from "solid-app-router";
+import { render } from 'solid-js/web';
+import { Router } from 'solid-app-router';
 
-import "./index.css";
-import App from "./App";
-import { StoreProvider } from "./store/index";
+import './index.css';
+import App from './App';
+import { StoreProvider } from './store/index';
+
+console.warn = function () {};
 
 render(
   () => (
@@ -14,5 +16,5 @@ render(
       </StoreProvider>
     </Router>
   ),
-  document.getElementById("root") as HTMLElement
+  document.getElementById('root') as HTMLElement,
 );

@@ -1,26 +1,45 @@
+import autoAnimate from '@formkit/auto-animate';
 import Scrollbars from 'solid-custom-scrollbars';
-import { Component, createEffect, createSignal, For, Show } from 'solid-js';
-import { useStore } from '../store';
+import {
+  Component,
+  createEffect,
+  createSignal,
+  For,
+  onCleanup,
+  onMount,
+  Show,
+} from 'solid-js';
 import { Message } from '../types/chat.interface';
 import MessageCard from './MessageCard';
 
 const MessageList: Component<{ messages?: Message[]; id?: number }> = (
   props,
 ) => {
-  const [state, { loadFriendMessages }] = useStore();
-
   let scrollbarRef: any;
   createEffect(() => {
     props.messages;
     //TODO: Srool bottom
   });
 
+  onMount(() => {
+    document.addEventListener(
+      'mousedown',
+      function (event) {
+        if (event.detail > 1) {
+          event.preventDefault();
+        }
+      },
+      false,
+    );
+  });
+
+  onCleanup(() => {
+    document.removeEventListener('mousedown', () => {});
+  });
+
   return (
     <Show when={props.messages}>
-      <div
-        ref={scrollbarRef}
-        class="flex flex-col scrollbar scrollbar-thumb-gray-700 scrollbar-track-gray-500 h-82"
-      >
+      <div class="flex flex-col first:mt-auto overflow-y-scroll scrollbar scrollbar-thumb-gray-700 scrollbar-track-gray-500 h-82">
         <For each={props.messages}>
           {(msg) => (
             <MessageCard

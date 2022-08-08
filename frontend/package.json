@@ -36,8 +36,7 @@
     "solid-js": "^1.4.2",
     "solid-js-form": "^0.1.5",
     "solid-popper": "^0.2.1",
-    "solid-zustand": "^1.4.1",
-    "turbo-solid": "^1.1.0",
-    "zustand": "^4.0.0-rc.1"
+    "solid-toast": "^0.3.4",
+    "turbo-solid": "^1.1.0"
   }
 }
