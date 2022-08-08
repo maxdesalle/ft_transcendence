@@ -23,7 +23,7 @@ check_env() {
 build_backend () {
     cd $ROOT_DIR/backend
     npm install
-    npm run prebuild # To avoid the "Cannot find stats.service module' error.
+    # npm run prebuild # To avoid the "Cannot find stats.service module' error.
 }
 
 build_frontend () {

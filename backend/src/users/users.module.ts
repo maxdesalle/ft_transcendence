@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { forwardRef, Module } from '@nestjs/common';
 import { MulterModule } from '@nestjs/platform-express';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { multerConfig } from 'src/config/multer.config';
@@ -8,13 +8,15 @@ import { UsersController } from './users.controller';
 import { UsersService } from './users.service';
 import { ConfigModule } from '@nestjs/config';
 import { StatsModule } from 'src/stats/stats.module';
+import { WsModule } from 'src/ws/ws.module';
 
 @Module({
 	imports: [
 		TypeOrmModule.forFeature([User]),
 		DatabaseFilesModule,
 		MulterModule.registerAsync(multerConfig),
-		StatsModule
+		StatsModule,
+		WsModule
 	],
 	controllers: [UsersController],
 	providers: [UsersService],

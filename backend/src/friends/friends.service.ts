@@ -15,6 +15,7 @@ export class FriendsService {
 		private usersRepository: Repository<User>,
 		@InjectRepository(Friendship)
 		private friendsRepository: Repository<Friendship>,
+		@Inject(forwardRef(() => UsersService))
 		private usersService: UsersService,
 		@Inject(forwardRef(() => WsService))
 		private wsService: WsService

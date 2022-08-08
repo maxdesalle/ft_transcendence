@@ -328,6 +328,15 @@ export class ChatController {
 		return this.chatService.get_convs(user);
 	}
 
+	@Get('banned/:room_id')
+	@ApiTags('chat - general(DM + groups)')
+	getBanned(
+		@Param('room_id', ParseIntPipe, ValidateRoomPipe) room_id: number,
+	) {
+		return this.chatService.listBannedUsers(room_id);
+	}
+
+
 
 	// ============ for compability ===========
 
