@@ -28,7 +28,7 @@ interface playerScoresInterface {
     p1Score: number,
     p2Score: number
 };
-const sockets: gameSocketsInterface[] = []; // array that will contain session objects
+export const sockets: gameSocketsInterface[] = []; // array that will contain session objects
 
 // keeps track of who is connected to /pong/ gateway (socket - user_id pairs)
 export const connected_users = new Map<WebSocket, number>();
@@ -179,6 +179,12 @@ export class PongGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
         const id = startSession(p1Socket, p2Socket);
 
+        // notify new game session
+        this.wsService.sendMsgToAll({
+            event: `pong: new_session`,
+            session_id: id
+        });
+
         // no longer waiting for a peer
         clearInviteWait(p1);
         clearInviteWait(p2);
@@ -205,13 +211,19 @@ export class PongGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
             // save score in match history (if complete)
             if (playerScores.p1Score === 10 || playerScores.p2Score === 10) {
-                this.statsService.insertMatch(
+                await this.statsService.insertMatch(
                     p1, p2, playerScores.p1Score, playerScores.p2Score);
                 // notify everyone about ladder change
                 this.wsService.sendMsgToAll({
                     event: `ladder_change`,
                     ladder: await this.statsService.ladder()
                 });
+                // notify everyone about end of session
+                this.wsService.sendMsgToAll({
+                    event: `pong: session_over`,
+                    session_id: id
+                });
+
             }
         });
     }

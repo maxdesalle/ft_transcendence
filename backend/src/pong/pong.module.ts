@@ -6,6 +6,7 @@ import { StatsService } from 'src/stats/stats.service';
 import { UsersModule } from 'src/users/users.module';
 import { WsModule } from 'src/ws/ws.module';
 import { PongGateway, PongViewerGateway } from './pong.gateway';
+import { PongController } from './pong.controller';
 
 @Module({
   providers: [PongGateway, PongViewerGateway],
@@ -14,6 +15,7 @@ import { PongGateway, PongViewerGateway } from './pong.gateway';
     UsersModule,
 		forwardRef(() => WsModule),
     StatsModule
-  ]
+  ],
+  controllers: [PongController]
 })
 export class PongModule {}
