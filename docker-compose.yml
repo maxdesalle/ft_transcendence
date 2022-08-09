@@ -11,7 +11,7 @@ services:
     build:
       context: .
       args:
-        - DB_HOSTNAME=${DB_HOSTNAME}
+        - DB_HOST=${DB_HOST}
         - APP_DIR=${APP_DIR}
         - PUBLIC_IP=${PUBLIC_IP}
     depends_on:
@@ -26,7 +26,7 @@ services:
   # database container
   db:
     container_name: db
-    hostname: ${DB_HOSTNAME}
+    hostname: ${DB_HOST}
     image: postgres
     environment:
       POSTGRES_PASSWORD: ${DB_PASSWORD}
