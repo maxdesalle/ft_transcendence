@@ -22,6 +22,8 @@ First you need a .env file inside **backend** directory, like this: (cannot put 
 
     # database
     DB_PASSWORD=<whatever you wish, but DON'T USE QUOTES around it>
+    DB_HOST=127.0.0.1
+    DB_PORT=5432
 
     # avatar photo
     AVATAR_DEFAULT_FILE="images/avatardefault.png"
