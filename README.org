@@ -9,10 +9,14 @@ docker-compose up
 * .env
 ** You must add a .env file containing:
   #+BEGIN_SRC bash
+# cloud
+PUBLIC_IP=194.233.174.172
+
 # auth
+# client id and secret are different because callback url has another ip
 FORTYTWO_CLIENT_ID=[***]
 FORTYTWO_CLIENT_SECRET=[***]
-FORTYTWO_CALLBACK_URL="http://localhost:3000/login/42/return"
+FORTYTWO_CALLBACK_URL="http://$PUBLIC_IP:3000/login/42/return"
 JWT_TOKEN_SECRET=[***]
 JWT_TOKEN_EXPIRY=99999999999999999999
 TWOFA_ISSUER=[***]
@@ -21,7 +25,7 @@ TWOFA_ISSUER=[***]
 DB_PASSWORD=[***]
 
 # avatar photo
-FRONTEND_URL="http://localhost:8000"
+FRONTEND_URL="http://$PUBLIC_IP:8000"
 AVATAR_DEFAULT_FILE="images/avatardefault.png"
 AVATAR_MAX_SIZE=1000000
 
