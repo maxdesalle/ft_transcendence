@@ -2,6 +2,8 @@
 - no more need to serve "client" dir (backend)
 - remove mock auth module
 - typeORM config: no 'synchronize' in production!
+- remove CORS enable (if the setup allows so...)
+- HTTPS
 
 ## Bugs... ?
 A major massive multi package upgrade was performed (26 july). And, of course, plenty of bugs had to be fixed. If you find a bug, that might be the reason... (and, of course, report it!)
