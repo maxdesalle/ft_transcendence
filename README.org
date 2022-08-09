@@ -22,6 +22,8 @@ TWOFA_ISSUER=[***]
 
 # database
 DB_PASSWORD=[***]
+DB_PORT=5432
+DB_HOST=db
 
 # avatar photo
 FRONTEND_URL="http://localhost:8000"
@@ -30,7 +32,6 @@ AVATAR_MAX_SIZE=1000000
 
 # additional stuff for docker
 APP_DIR=/usr/src/app
-DB_HOSTNAME=db
 #+END_SRC
 *** Note that:
 - =[***]= represents hidden content. You must replace it.
