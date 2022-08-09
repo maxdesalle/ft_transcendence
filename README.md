@@ -1,6 +1,7 @@
 ## TODO's before push
 - no more need to serve "client" dir (backend)
 - remove mock auth module
+- typeORM config: no 'synchronize' in production!
 
 ## Bugs... ?
 A major massive multi package upgrade was performed (26 july). And, of course, plenty of bugs had to be fixed. If you find a bug, that might be the reason... (and, of course, report it!)
