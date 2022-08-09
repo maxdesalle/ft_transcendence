@@ -11,7 +11,7 @@ RUN mkdir -p $APP_DIR && \
 WORKDIR $APP_DIR
 
 # then changing frontend bind-address
-    [ $(grep host ./frontend/vite.config.ts | wc -l) -eq 0 ] && \
+RUN [ $(grep host ./frontend/vite.config.ts | wc -l) -eq 0 ] && \
         sed -i "s/^\s*port:\s*8000,\s*$/    port: 8000,\n    host: true,/g" \
             ./frontend/vite.config.ts || \
         (echo "ERROR: host is already defined in vite.config.ts" 2>&1 && exit 1)
