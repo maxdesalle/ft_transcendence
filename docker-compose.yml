@@ -1,6 +1,6 @@
 version: '3.5'
 
-# DB_HOSTNAME and APP_DIR must be defined in
+# DB_HOSTNAME, APP_DIR and PUBLIC_IP must be defined in
 # .env (in same dir as this file)
 
 services:
@@ -19,7 +19,6 @@ services:
     ports:
       - 8000:8000
       - 3000:3000
-    # adding .env file (same dir as this file)
     volumes:
       - .env:${APP_DIR}/backend/.env
 
