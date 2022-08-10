@@ -13,6 +13,7 @@ services:
       args:
         - DB_HOST=${DB_HOST}
         - APP_DIR=${APP_DIR}
+        - PUBLIC_IP=${PUBLIC_IP}
     depends_on:
       - db
     ports:
