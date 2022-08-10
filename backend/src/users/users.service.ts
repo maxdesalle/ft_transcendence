@@ -3,7 +3,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { DatabaseFilesService } from 'src/database-files/database-files.service';
 import { StatsService } from 'src/stats/stats.service';
 import { WsService } from 'src/ws/ws.service';
-import { Connection, Repository } from 'typeorm';
+import { DataSource, Repository } from 'typeorm';
 import { User } from './entities/user.entity';
 
 @Injectable()
@@ -12,7 +12,7 @@ export class UsersService {
 		@InjectRepository(User)
 		private usersRepository: Repository<User>,
 		private readonly databaseFilesService: DatabaseFilesService,
-		private connection: Connection,
+		private dataSource: DataSource,
 		private statsService: StatsService,
 		private wsService: WsService
 	) {}
@@ -84,7 +84,7 @@ export class UsersService {
 	// changes file in database as transaction.
 	// old avatar is deleted.
 	async changeAvatar(userId: number, imageBuffer: Buffer, filename: string) {
-		const queryRunner = this.connection.createQueryRunner();
+		const queryRunner = this.dataSource.createQueryRunner();
 
 		await queryRunner.connect();
 		await queryRunner.startTransaction();

@@ -1,6 +1,9 @@
 ## TODO's before push
 - no more need to serve "client" dir (backend)
 - remove mock auth module
+- typeORM config: no 'synchronize' in production!
+- remove CORS enable (if the setup allows so...)
+- HTTPS ?
 
 ## Bugs... ?
 A major massive multi package upgrade was performed (26 july). And, of course, plenty of bugs had to be fixed. If you find a bug, that might be the reason... (and, of course, report it!)
@@ -19,6 +22,8 @@ First you need a .env file inside **backend** directory, like this: (cannot put 
 
     # database
     DB_PASSWORD=<whatever you wish, but DON'T USE QUOTES around it>
+    DB_HOST=127.0.0.1
+    DB_PORT=5432
 
     # avatar photo
     AVATAR_DEFAULT_FILE="images/avatardefault.png"
