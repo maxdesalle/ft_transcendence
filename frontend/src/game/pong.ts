@@ -13,7 +13,7 @@ let isDisconnected = false;
 let socketErrObject: any = undefined; // if not undefined, socket returned an error
 let ws: any; // webSocket
 let playerNumber = 0; // 0 if not set yet, otherwise 1 or 2
-let heightOffset: number = 88; // bar and play button heaight
+let heightOffset: number = 46; // top bar height
 let canvasWidth: number = Math.min(
   window.innerHeight - heightOffset,
   window.innerWidth,

@@ -12,7 +12,7 @@ const httpServerPort = 3000;
 const socketServerPath = 'pong_viewer';
 let socketErrObject: any = undefined;
 let ws: any; // webSocket
-let heightOffset: number = 54; // bar button height
+let heightOffset: number = 46; // bar button height
 let canvasWidth: number = Math.min(
   window.innerHeight - heightOffset,
   window.innerWidth,
