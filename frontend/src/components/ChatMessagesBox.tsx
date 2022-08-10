@@ -1,13 +1,20 @@
 import { compareAsc, parseISO } from 'date-fns';
-import { Component, createEffect, createSignal, Show } from 'solid-js';
+import {
+  Component,
+  createEffect,
+  createResource,
+  createSignal,
+  Show,
+} from 'solid-js';
 import MessageList from './MessageList';
 import { useStore } from '../store';
 import ChatForm from './ChatForm';
-import { Message } from '../types/chat.interface';
+import { Message, RoomInfo } from '../types/chat.interface';
 import PendingFriendReqCard from './PendingFriendReqCard';
 import { createTurboResource } from 'turbo-solid';
 import { routes } from '../api/utils';
 import toast from 'solid-toast';
+import { api } from '../utils/api';
 
 const ChatMessagesBox: Component<{
   onSendMessage: (message: string) => void;
@@ -15,17 +22,21 @@ const ChatMessagesBox: Component<{
 }> = (props) => {
   const [state, { loadMessages }] = useStore();
   const [currentUser] = createTurboResource(() => routes.currentUser);
-
+  const roomId = state.chat.roomId;
   const [message, setMessage] = createSignal('');
-  const [messages, { mutate }] = createTurboResource(
-    () => `${routes.roomMessages}/${room_id()}`,
+  const [currentRoom, { mutate }] = createResource(
+    roomId,
+    async (id: number) => {
+      const res = await api.get<RoomInfo>(`${routes.chat}/room_info/${id}`);
+      return res.data;
+    },
   );
 
   const room_id = () => state.chat.roomId;
 
   createEffect(() => {
-    if (loadMessages && state.chat.currentRoom) {
-      loadMessages(state.chat.currentRoom.room_id);
+    if (loadMessages && currentRoom()) {
+      loadMessages(currentRoom()!.room_id);
     }
   });
 

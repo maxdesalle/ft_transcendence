@@ -3,6 +3,7 @@ import {
   createEffect,
   createResource,
   Match,
+  onMount,
   Show,
   Switch,
 } from 'solid-js';
@@ -21,6 +22,7 @@ import { User } from '../types/user.interface';
 import Avatar from '../components/Avatar';
 import { generateImageUrl } from '../utils/helpers';
 import { AxiosError } from 'axios';
+import autoAnimate from '@formkit/auto-animate';
 
 const Chat: Component = () => {
   const [state] = useStore();
@@ -34,7 +36,11 @@ const Chat: Component = () => {
   const [blockedFriends, { refetch }] = createTurboResource<number[]>(
     () => routes.blocked,
   );
+  let ref: any;
 
+  onMount(() => {
+    autoAnimate(ref);
+  });
   const [friends] = createTurboResource<User[]>(() => routes.friends);
   const selectedFriend = () =>
     friends()?.find((friend) => friend.id === state.chat.friendId);
@@ -99,7 +105,7 @@ const Chat: Component = () => {
       <div class="flex row-span-4 flex-col col-span-1 border-x-header-menu border-x">
         <ChatSideBar />
       </div>
-      <div class="col-span-4 flex flex-col pl-1 pr-1 ">
+      <div class="col-span-4 flex flex-col pl-1 pr-1 h-full">
         <Switch>
           <Match when={state.chatUi.tab === TAB.ROOMS}>
             <ChatMessagesBox
@@ -116,7 +122,10 @@ const Chat: Component = () => {
         </Switch>
       </div>
       {/* TODO: adapt when it's on the friend tab or room tab */}
-      <div class="flex relative row-span-4 flex-col border-x shadow-md border-x-header-menu col-span-1">
+      <div
+        ref={ref}
+        class="flex relative row-span-4 flex-col border-x shadow-md border-x-header-menu col-span-1"
+      >
         <Switch>
           <Match when={state.chatUi.tab === TAB.ROOMS}>
             <ChatRightSideBar />
@@ -125,7 +134,7 @@ const Chat: Component = () => {
             <div class="pt-5 px-2 w-full">
               <Show when={selectedFriend()} fallback={<p>Select a friend</p>}>
                 <div class="flex flex-col">
-                  <div class="mb-2 mx-auto">
+                  <div class="mb-2 flex items-center text-white">
                     <Avatar
                       imgUrl={
                         selectedFriend()!.avatarId
@@ -133,6 +142,10 @@ const Chat: Component = () => {
                           : undefined
                       }
                     />
+                    <div class="flex flex-col pl-3">
+                      <h1 class="text-lg">{selectedFriend()!.display_name}</h1>
+                      <p class="text-sm">status: ...</p>
+                    </div>
                   </div>
                   <button
                     type="button"

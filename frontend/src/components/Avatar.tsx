@@ -5,7 +5,7 @@ type AvatarType = 'rounded' | 'rounded-full';
 
 const Avatar: Component<{
   imgUrl?: string;
-  type?: AvatarType;
+  color?: string;
 }> = (props) => {
   return (
     <>
@@ -19,10 +19,6 @@ const Avatar: Component<{
           d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z"
           clip-rule="evenodd"
         ></path>
-        <span
-          aria-hidden="true"
-          class="absolute top-0 right-0 w-2 h-2 bg-green-500 rounded-full ring ring-white"
-        ></span>
       </div>
     </>
   );

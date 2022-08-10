@@ -6,8 +6,6 @@ import './index.css';
 import App from './App';
 import { StoreProvider } from './store/index';
 
-console.warn = function () {};
-
 render(
   () => (
     <Router>

@@ -1,36 +1,52 @@
 import { Link } from 'solid-app-router';
 import { Component, createEffect, createSignal, Match, Switch } from 'solid-js';
-import { changeAvatar } from '../api/user';
+import {
+  activate2fa,
+  changeAvatar,
+  changeDisplayName,
+  deactivate2fa,
+} from '../api/user';
 import Modal from '../components/Modal';
 import { useStore } from '../store';
+import QRCode from 'qrcode';
+import { notifyError, notifySuccess } from '../utils/helpers';
+import { createTurboResource } from 'turbo-solid';
+import { routes } from '../api/utils';
+import { User } from '../types/user.interface';
 
 const EditProfile: Component = () => {
   const [newName, setNewName] = createSignal('');
   const [isOpen, setIsOpen] = createSignal(false);
   const [image, setImage] = createSignal<File | null>(null);
-  const [
-    state,
-    { changeUsername, activate2fa, deactivate2fa, updateAvatarId },
-  ] = useStore();
+  const [pathUrl, setPathUrl] = createSignal('');
+  const [state] = useStore();
+  const [currentUser] = createTurboResource<User>(() => routes.currentUser);
 
   const onChangeName = () => {
-    if (newName() && changeUsername) {
-      changeUsername(newName());
+    if (newName()) {
+      changeDisplayName(newName());
       setNewName('');
     }
   };
 
   const onActivate2fa = () => {
-    if (activate2fa) {
-      activate2fa();
-    }
+    activate2fa()
+      .then((res) => {
+        QRCode.toDataURL(res.otpauthUrl, (_, url) => {
+          setPathUrl(url);
+        });
+        notifySuccess('2fa activated please scan the qr code');
+      })
+      .catch((err) => {
+        notifyError(err.message);
+      });
     setIsOpen(true);
   };
 
   const onDeactivate2fa = () => {
-    if (deactivate2fa) {
-      deactivate2fa();
-    }
+    deactivate2fa()
+      .then(() => notifySuccess('2fa deactivated'))
+      .catch((err) => notifyError(err.message));
   };
 
   const onImageUpload = () => {
@@ -38,10 +54,10 @@ const EditProfile: Component = () => {
     const formData = new FormData();
     formData.append('file', image()!, image()!.name);
     changeAvatar(formData)
-      .then((e) => {
-        updateAvatarId();
+      .then(() => {
+        notifySuccess('Great success 🙂');
       })
-      .catch((e) => console.log(e));
+      .catch((e) => notifyError('error 😥'));
   };
 
   return (
@@ -64,23 +80,19 @@ const EditProfile: Component = () => {
       <div class="p-2">
         <h1 class="text-center">2 fa</h1>
         <Switch>
-          <Match
-            when={!state.currentUser.userData?.isTwoFactorAuthenticationEnabled}
-          >
+          <Match when={!currentUser()?.isTwoFactorAuthenticationEnabled}>
             <button onClick={onActivate2fa} class="btn-primary">
               Activate 2fa
             </button>
           </Match>
-          <Match
-            when={state.currentUser.userData?.isTwoFactorAuthenticationEnabled}
-          >
+          <Match when={currentUser()?.isTwoFactorAuthenticationEnabled}>
             <button class="btn-primary" onClick={onDeactivate2fa}>
               Deactivate 2fa
             </button>
           </Match>
         </Switch>
         <Modal isOpen={isOpen()} toggleModal={setIsOpen}>
-          <img src={state.currentUser.twoFaQrCode} alt="qr code" />
+          <img src={pathUrl()} alt="qr code" />
           <Link href="/login">Go back to login</Link>
         </Modal>
       </div>

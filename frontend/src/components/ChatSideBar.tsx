@@ -1,4 +1,12 @@
-import { Component, createSignal, For, Match, Show, Switch } from 'solid-js';
+import {
+  Component,
+  createSignal,
+  For,
+  Match,
+  onMount,
+  Show,
+  Switch,
+} from 'solid-js';
 import { HiSolidUserGroup } from 'solid-icons/hi';
 import { TAB, useStore } from '../store';
 import FriendList from './FriendList';
@@ -8,15 +16,22 @@ import Scrollbars from 'solid-custom-scrollbars';
 import { createTurboResource } from 'turbo-solid';
 import { routes } from '../api/utils';
 import { RoomInfo } from '../types/chat.interface';
+import autoAnimate from '@formkit/auto-animate';
 
 const ChatSideBar: Component = () => {
   const [keyword, setKeyword] = createSignal('');
-
   const [state, { setCurrentRoomId, changeTab, toggleShowMessages }] =
     useStore();
   const [rooms, { refetch }] = createTurboResource<RoomInfo[]>(
     () => routes.getRooms,
   );
+  const [ref, setRef] = createSignal<any>();
+  // let ref: any;
+
+  onMount(() => {
+    const el = document.getElementById('view');
+    autoAnimate(el as any);
+  });
 
   return (
     <>
@@ -34,7 +49,7 @@ const ChatSideBar: Component = () => {
           Friends
         </li>
       </ul>
-      <Scrollbars class="h-full">
+      <Scrollbars id="room_users" class="h-full">
         <Switch>
           <Match when={state.chatUi.tab == TAB.ROOMS}>
             <Search

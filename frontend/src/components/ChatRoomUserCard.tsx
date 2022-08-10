@@ -1,7 +1,9 @@
 import {
   Component,
   createEffect,
+  createResource,
   createSignal,
+  onMount,
   Show,
   Suspense,
 } from 'solid-js';
@@ -16,14 +18,29 @@ import { createTurboResource } from 'turbo-solid';
 import { routes } from '../api/utils';
 import { User } from '../types/user.interface';
 import toast from 'solid-toast';
+import { RoomInfo } from '../types/chat.interface';
+import { api } from '../utils/api';
+import { notifyError, notifySuccess } from '../utils/helpers';
+import { AxiosError } from 'axios';
+import autoAnimate from '@formkit/auto-animate';
 
-const ChatRoomUserCard: Component<{ user: RoomUser; ownerId: number }> = (
-  props,
-) => {
+const ChatRoomUserCard: Component<{
+  user: RoomUser;
+  ownerId: number;
+  refetch: () => void;
+}> = (props) => {
   const [isOpen, setIsOpen] = createSignal(false);
   const [state, { changeTab, setFriendId }] = useStore();
   const [currentUser] = createTurboResource<User>(() => routes.currentUser);
-
+  const roomId = () => state.chat.roomId;
+  let ref: any;
+  const [currentRoom, { mutate }] = createResource(
+    roomId,
+    async (id: number) => {
+      const res = await api.get<RoomInfo>(`${routes.chat}/room_info/${id}`);
+      return res.data;
+    },
+  );
   const notify = (msg: string) => toast.success(msg);
   const inviteUser = () => {
     const data = { event: 'invite', data: props.user.id };
@@ -32,66 +49,128 @@ const ChatRoomUserCard: Component<{ user: RoomUser; ownerId: number }> = (
   };
 
   const currentUserRole = () =>
-    state.chat.currentRoom?.users.find((user) => user.id === currentUser()?.id)
-      ?.role;
+    currentRoom()?.users.find((user) => user.id === currentUser()?.id)?.role;
 
   const onMuteUser = () => {
-    if (state.chat.currentRoom) {
-      chatApi.muteUser({
-        room_id: state.chat.currentRoom.room_id,
-        user_id: props.user.id,
-        time_minutes: 5,
-      });
+    if (currentRoom()) {
+      chatApi
+        .muteUser({
+          room_id: currentRoom()!.room_id,
+          user_id: props.user.id,
+          time_minutes: 5,
+        })
+        .then(() => {
+          notifySuccess(
+            `${props.user.display_name} muted from ${currentRoom()!.room_name}`,
+          );
+          props.refetch();
+        })
+        .catch((e: AxiosError<{ message: string }>) => {
+          notifyError(e.response?.data.message as string);
+        });
     }
-    notify('user muted');
   };
 
   const onUnmuteUser = () => {
-    chatApi.unmuteUser({
-      room_id: state.chat.currentRoom!.room_id,
-      user_id: props.user.id,
-    });
+    chatApi
+      .unmuteUser({
+        room_id: currentRoom()!.room_id,
+        user_id: props.user.id,
+      })
+      .then(() => {
+        notifySuccess(
+          `${props.user.display_name} unmuted from ${currentRoom()!.room_name}`,
+        );
+        props.refetch();
+      });
   };
 
   const onBanUser = () => {
-    chatApi.banUser({
-      room_id: state.chat.currentRoom!.room_id,
-      user_id: props.user.id,
-      time_minutes: 5,
-    });
-    notify('user banned');
+    chatApi
+      .banUser({
+        room_id: currentRoom()!.room_id,
+        user_id: props.user.id,
+        time_minutes: 5,
+      })
+      .then(() => {
+        notifySuccess(
+          `${props.user.display_name} banned from ${currentRoom()!.room_name}`,
+        );
+        props.refetch();
+      })
+      .catch((e: AxiosError<{ message: string }>) => {
+        notifyError(e.response?.data.message as string);
+      });
   };
 
   const onUnbanUser = () => {
-    chatApi.unbanUser({
-      room_id: state.chat.currentRoom!.room_id,
-      user_id: props.user.id,
-    });
+    chatApi
+      .unbanUser({
+        room_id: currentRoom()!.room_id,
+        user_id: props.user.id,
+      })
+      .then(() => {
+        notifySuccess(
+          `${props.user.display_name} unbanned from ${
+            currentRoom()!.room_name
+          }`,
+        );
+        props.refetch();
+      })
+      .catch((e: AxiosError<{ message: string }>) => {
+        notifyError(e.response?.data.message as string);
+      });
   };
 
   const onPromoteUser = () => {
-    chatApi.promoteUser({
-      room_id: state.chat.currentRoom!.room_id,
-      user_id: props.user.id,
-    });
-    notify('user promoted');
+    chatApi
+      .promoteUser({
+        room_id: currentRoom()!.room_id,
+        user_id: props.user.id,
+      })
+      .then(() => {
+        notifySuccess(
+          `${props.user.display_name} promoted as admin: ${
+            currentRoom()!.room_name
+          }`,
+        );
+        props.refetch();
+      })
+      .catch((e: AxiosError<{ message: string }>) => {
+        notifyError(e.response?.data.message as string);
+      });
   };
 
   const onDemoteUser = () => {
-    chatApi.demoteUser({
-      room_id: state.chat.currentRoom!.room_id,
-      user_id: props.user.id,
-    });
-    notify('user demoted');
+    chatApi
+      .demoteUser({
+        room_id: currentRoom()!.room_id,
+        user_id: props.user.id,
+      })
+      .then(() => {
+        notifySuccess(
+          `${props.user.display_name} demoted to participant: ${
+            currentRoom()!.room_name
+          }`,
+        );
+        props.refetch();
+      })
+      .catch((e: AxiosError<{ message: string }>) => {
+        notifyError(e.response?.data.message as string);
+      });
   };
 
+  onMount(() => {
+    autoAnimate(ref);
+  });
+
   return (
-    <Suspense>
+    <div ref={ref} class="w-5/6 rounded-lg shadow-md">
       <div
         class={
           props.user.role === 'admin'
-            ? 'bg-pink-700 flex items-center justify-between transition-all p-3 hover:opacity-100'
-            : `flex items-center justify-between transition-all p-3 opacity-50 hover:opacity-100`
+            ? 'bg-pink-700 hover:scale-110 flex items-center justify-between transition-all p-3'
+            : `flex items-center hover:scale-110 justify-between transition-all p-3`
         }
       >
         <div class="flex items-center">
@@ -103,14 +182,14 @@ const ChatRoomUserCard: Component<{ user: RoomUser; ownerId: number }> = (
       <Modal isOpen={isOpen()} toggleModal={setIsOpen}>
         <div class="flex flex-col p-3 w-40 border absolute shadow-md rounded-md bg-skin-page border-header-menu -top-6 right-1">
           <Link
-            class="text-start hover:bg-gray-600 px-3 rounded-sm transition-all"
+            class="text-start hover:bg-blue-600 px-3 rounded-sm transition-all"
             href={`/profile/${props.user.id}`}
           >
             Profile
           </Link>
           <button
             onClick={inviteUser}
-            class="text-start hover:bg-gray-600 px-3 rounded-sm transition-all"
+            class="text-start hover:bg-blue-600 px-3 rounded-sm transition-all"
           >
             Send invite
           </button>
@@ -119,7 +198,7 @@ const ChatRoomUserCard: Component<{ user: RoomUser; ownerId: number }> = (
               changeTab(TAB.FRIENDS);
               setFriendId(props.user.id);
             }}
-            class="text-start hover:bg-gray-600 px-3 rounded-sm transition-all"
+            class="text-start hover:bg-blue-600 px-3 rounded-sm transition-all"
           >
             Send message
           </button>
@@ -130,44 +209,44 @@ const ChatRoomUserCard: Component<{ user: RoomUser; ownerId: number }> = (
           >
             <button
               onClick={onMuteUser}
-              class="text-start hover:bg-gray-600 px-3 rounded-sm transition-all"
+              class="text-start hover:bg-blue-600 px-3 rounded-sm transition-all"
             >
               Mute
             </button>
             <button
               onClick={onUnmuteUser}
-              class="text-start hover:bg-gray-600 px-3 rounded-sm transition-all"
+              class="text-start hover:bg-blue-600 px-3 rounded-sm transition-all"
             >
               Unmute
             </button>
             <button
               onClick={onBanUser}
-              class="text-start hover:bg-gray-600 px-3 rounded-sm transition-all"
+              class="text-start hover:bg-blue-600 px-3 rounded-sm transition-all"
             >
               Ban
             </button>
             <button
               onClick={onUnbanUser}
-              class="text-start hover:bg-gray-600 px-3 rounded-sm transition-all"
+              class="text-start hover:bg-blue-600 px-3 rounded-sm transition-all"
             >
               Unban
             </button>
             <button
               onClick={onPromoteUser}
-              class="text-start hover:bg-gray-600 px-3 rounded-sm transition-all"
+              class="text-start hover:bg-blue-600 px-3 rounded-sm transition-all"
             >
               Promote
             </button>
             <button
               onClick={onDemoteUser}
-              class="text-start hover:bg-gray-600 px-3 rounded-sm transition-all"
+              class="text-start hover:bg-blue-600 px-3 rounded-sm transition-all"
             >
               Demote
             </button>
           </Show>
         </div>
       </Modal>
-    </Suspense>
+    </div>
   );
 };
 

@@ -13,13 +13,11 @@ import { createTurboResource, forget } from 'turbo-solid';
 
 const HeaderProfileMenu: Component<{ user: User }> = (props) => {
   const navigate = useNavigate();
-  const [state, { logout }] = useStore();
+  const [_, { setToken }] = useStore();
   const [currentUser] = createTurboResource<User>(() => routes.currentUser);
   const onLogout = () => {
-    if (logout) {
-      logout();
-      forget();
-    }
+    setToken(undefined);
+    forget();
     navigate('/login');
   };
 
@@ -29,7 +27,7 @@ const HeaderProfileMenu: Component<{ user: User }> = (props) => {
         <Avatar
           imgUrl={
             currentUser()!.avatarId
-              ? `${urls.backendUrl}/database-files/${state.currentUser.userData?.avatarId}`
+              ? `${urls.backendUrl}/database-files/${currentUser()!.avatarId}`
               : undefined
           }
         />

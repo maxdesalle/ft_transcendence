@@ -1,3 +1,4 @@
+import Cookies from 'js-cookie';
 import { useNavigate } from 'solid-app-router';
 import {
   Component,
@@ -14,7 +15,8 @@ import { useStore } from '../store';
 import { User } from '../types/user.interface';
 
 const Home: Component = () => {
-  const [state, { toggleMatchMaking, setFriendInvitation }] = useStore();
+  const [state, { toggleMatchMaking, setFriendInvitation, setToken }] =
+    useStore();
   const [ref, setRef] = createSignal<any>();
   const [id, setId] = createSignal(0);
   const [matchFound, setMatchFound] = createSignal<{
@@ -28,17 +30,8 @@ const Home: Component = () => {
   const navigate = useNavigate();
 
   onMount(() => {
-    // user is authenticated and is redirected home
-    state.pong.ws.addEventListener('message', (e) => {
-      const res = JSON.parse(e.data);
-      if (res.event === 'pong: invitation') {
-        setMatchFound(res);
-      }
-    });
-  });
-
-  createEffect(() => {
-    console.log('selected friend: ', id());
+    const token = Cookies.get('jwt_token');
+    setToken(token);
   });
 
   onCleanup(() => {

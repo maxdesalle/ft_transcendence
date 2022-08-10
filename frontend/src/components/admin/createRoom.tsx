@@ -1,12 +1,10 @@
 import { Component, createSignal } from 'solid-js';
 import { chatApi } from '../../api/chat';
-import { useStore } from '../../store';
 
 const CreateRoom: Component<{ refetch: () => void }> = (props) => {
   const [roomName, setRoomName] = createSignal('');
   const [password, setPassword] = createSignal('');
   const [isPrivate, setIsPrivate] = createSignal(false);
-  const [_, { updateRooms }] = useStore();
 
   const onCreateRoom = () => {
     if (!roomName().length) return;

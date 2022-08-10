@@ -1,6 +1,15 @@
 import autoAnimate from '@formkit/auto-animate';
 import Scrollbars from 'solid-custom-scrollbars';
-import { Component, createEffect, createSignal, For, Show } from 'solid-js';
+import {
+  Component,
+  createEffect,
+  createSignal,
+  For,
+  onMount,
+  Show,
+} from 'solid-js';
+import { createTurboResource } from 'turbo-solid';
+import { routes } from '../api/utils';
 import { useStore } from '../store';
 import { Friend, User } from '../types/user.interface';
 import AddFriend from './AddFriend';
@@ -18,9 +27,20 @@ const FriendList: Component = () => {
       }
     }
   };
+  const [friends] = createTurboResource<Friend[]>(() => routes.friends);
+  const filteredFriends = () =>
+    friends()?.filter((user) => {
+      return user.display_name.toLowerCase().includes(keyword().toLowerCase());
+    });
+
+  let ref: any;
+
+  onMount(() => {
+    autoAnimate(ref);
+  });
 
   return (
-    <div class="h-full">
+    <div ref={ref} class="h-full">
       <Search
         setKeyword={setKeyword}
         popperMsg="Add friend"
@@ -28,10 +48,10 @@ const FriendList: Component = () => {
       >
         <AddFriend />
       </Search>
-      <Show when={state.currentUser.friends}>
-        <For each={state.currentUser.friends}>
+      <Show when={filteredFriends()}>
+        <For each={filteredFriends()}>
           {(friend) => (
-            <div class="flex p-1 border shadow-md border-slate-800">
+            <div class="flex p-1 px-2 transition-all hover:scale-105 border shadow-md border-slate-800">
               <FriendCard
                 onClick={() => onLoadFriendMessages(friend)}
                 friend={friend}

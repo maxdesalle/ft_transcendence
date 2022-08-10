@@ -1,3 +1,4 @@
+import autoAnimate from '@formkit/auto-animate';
 import { AiOutlinePlusCircle } from 'solid-icons/ai';
 import { BiSearch } from 'solid-icons/bi';
 import { Component, createSignal, JSXElement, onMount, Setter } from 'solid-js';
@@ -14,6 +15,7 @@ const Search: Component<{
   const [isOpen, setIsOpen] = createSignal(false);
   const [anchor, setAnchor] = createSignal<any>();
   const [popper, setPopper] = createSignal<any>();
+  let ref: any;
   const popperInstance = usePopper(anchor, popper, {
     placement: 'right',
     modifiers: [
@@ -25,7 +27,6 @@ const Search: Component<{
       },
     ],
   });
-  let ref: any;
   const showEvents = ['mouseenter', 'focus'];
   const hideEvents = ['mouseleave', 'blur'];
   const show = () => {
@@ -38,13 +39,14 @@ const Search: Component<{
   };
 
   onMount(() => {
-    showEvents.forEach((event) => {
-      ref.addEventListener(event, show);
-    });
+    autoAnimate(anchor());
+    // showEvents.forEach((event) => {
+    //   ref.addEventListener(event, show);
+    // });
 
-    hideEvents.forEach((event) => {
-      ref.addEventListener(event, hide);
-    });
+    // hideEvents.forEach((event) => {
+    //   ref.addEventListener(event, hide);
+    // });
   });
 
   return (

@@ -13,22 +13,13 @@ import EditProfile from './pages/EditProfile';
 import TwoFactorAuth from './pages/TwoFactorAuth';
 import { Message, WsNotificationEvent } from './types/chat.interface';
 import LeaderBoard from './pages/LeaderBoard';
-import { TurboContext } from 'turbo-solid';
 import { api } from './utils/api';
 import { Toaster } from 'solid-toast';
+import { TurboContext } from 'turbo-solid';
 
 const App: Component = () => {
-  const [
-    state,
-    {
-      loadPendingFriendReq,
-      mutateFriendMsgs,
-      mutateRoomMsgs,
-      addPendingFriendReq,
-      refetchFriends,
-      setFriendInvitation,
-    },
-  ] = useStore();
+  const [state, { mutateFriendMsgs, mutateRoomMsgs, setFriendInvitation }] =
+    useStore();
   const navigate = useNavigate();
 
   onMount(() => {
@@ -58,36 +49,27 @@ const App: Component = () => {
           }
           break;
         case 'friends: new_request':
+          console.log(`${res.event}: `, res);
           // if it's a fresh user might not find him in users and also might be null
-          const pendigUser = state.users?.find(
-            (user) => user.id == res.friend_request?.requesting_user?.id,
-          );
-          if (pendigUser) {
-            addPendingFriendReq({
-              user: pendigUser,
-              status: res.friend_request!.status,
-            });
-          }
+          // mutate(routes.receivedFriendReq, {
+          //   req_user_id: res.friend_request?.requesting_user?.id,
+          //   status: 0,
+          // });
           break;
         case 'friends: request_accepted':
-          if (refetchFriends) refetchFriends();
+          console.log(`${res.event}: `, res);
           break;
         case 'friends: request_rejected':
-          console.log(res);
+          console.log(`${res.event}: `, res);
           break;
         case 'status: friend_offline':
-          console.log(res);
+          console.log(`${res.event}: `, res);
           break;
         case 'status: friend_online':
-          const friend = state.currentUser.friends.find(
-            (friend) => friend.id === res.user_id,
-          );
-          if (friend) {
-            console.log('friend online: ', friend);
-          }
+          console.log(`${res.event}: `, res);
           break;
         case 'status: friend_online':
-          console.log(res);
+          console.log(`${res.event}: `, res);
           break;
         case 'pong: player_joined':
           navigate('/pong');
@@ -102,7 +84,7 @@ const App: Component = () => {
           navigate('/login');
           break;
         default:
-          console.log('default: ', res);
+          console.log(`${res.event}: `, res);
           break;
       }
     });

@@ -103,7 +103,7 @@ const demoteUser = async (data: ChatPostBody) => {
 };
 
 const unmuteUser = async (data: { room_id: number; user_id: number }) => {
-  return await api.post<RoomInfo>(routes.muteUser, data);
+  return await api.post<RoomInfo>(routes.unmuteUser, data);
 };
 
 export const chatApi = {

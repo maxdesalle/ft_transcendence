@@ -1,5 +1,5 @@
 import { Link, useNavigate } from 'solid-app-router';
-import { Component, createEffect, createSignal, For, Show } from 'solid-js';
+import { Component, createSignal, For, onMount, Show } from 'solid-js';
 import logo from '../assets/logo.png';
 import { BiSearchAlt2 } from 'solid-icons/bi';
 import HeaderProfileMenu from './HeaderProfileMenu';
@@ -13,19 +13,20 @@ import { routes } from '../api/utils';
 import { User } from '../types/user.interface';
 import { api } from '../utils/api';
 import toast from 'solid-toast';
+import autoAnimate from '@formkit/auto-animate';
 
-const LINKS = ['pong', 'viewer', 'chat'];
+const LINKS = ['chat', 'leaderboard'];
 
 const Header: Component = () => {
   const [keyword, setKeyword] = createSignal<string>('');
-  const [state, { sendFriendReq, setFriendInvitation }] = useStore();
+  const [state, { setFriendInvitation }] = useStore();
   const [users] = createTurboResource<User[]>(() => routes.users);
   const [currentUser] = createTurboResource<User>(() => routes.currentUser);
   const navigate = useNavigate();
-
   const notifySuccess = (msg: string) => toast.success(msg);
   const notifyError = (msg: string) => toast.error(msg);
   const [isOpen, setIsOpen] = createSignal(false);
+  const [uRef, setUref] = createSignal<any>();
   let ref: any;
 
   const onSendFriendReq = (userId: number, userName: string) => {
@@ -49,8 +50,13 @@ const Header: Component = () => {
     setFriendInvitation(null);
   };
 
+  onMount(() => {
+    autoAnimate(ref);
+    autoAnimate(uRef());
+  });
+
   return (
-    <Show when={currentUser()}>
+    <>
       <header class="flex items-center relative z-20 bg-skin-header-background py-1 px-6 justify-between">
         <div class="flex items-center">
           <Link href="/">
@@ -82,7 +88,7 @@ const Header: Component = () => {
             </li>
           </Show>
         </ul>
-        <div class="relative">
+        <div ref={ref} class="relative">
           <button onClick={() => setIsOpen(!isOpen())}>
             <Avatar
               imgUrl={
@@ -101,8 +107,8 @@ const Header: Component = () => {
           </Modal>
         </div>
       </header>
-      <Show when={keyword()}>
-        <div class="relative">
+      <div ref={setUref} class="relative">
+        <Show when={keyword()}>
           <div class="absolute top-0 z-10 ml-16">
             <For
               each={users()
@@ -115,7 +121,7 @@ const Header: Component = () => {
                 .slice(0, 15)}
             >
               {(user) => (
-                <div ref={ref} class="w-60">
+                <div class="w-60">
                   <SearchUserCard
                     onClick={() => {
                       onSendFriendReq(user.id, user.display_name);
@@ -126,9 +132,9 @@ const Header: Component = () => {
               )}
             </For>
           </div>
-        </div>
-      </Show>
-    </Show>
+        </Show>
+      </div>
+    </>
   );
 };
 
