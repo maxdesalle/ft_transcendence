@@ -1,3 +1,5 @@
+# file used in launch.sh
+.pid_list
 # compiled output
 /dist
 /backend/dist/
