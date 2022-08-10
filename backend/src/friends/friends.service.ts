@@ -63,8 +63,14 @@ export class FriendsService {
 			where: {id: my_id},
 			relations: ['requested_friendships']
 		});
-		return me.requested_friendships;
-
+		const requests = []
+		for (let rf of me.requested_friendships) {
+			requests.push({
+				recv_user: await this.usersRepository.findOneBy({ id: rf.recv_user_id}),
+				status: rf.status
+			});
+		}
+		return requests;
 	} 
 
 	async recvdRequests(my_id: number): Promise<any> {
@@ -72,7 +78,14 @@ export class FriendsService {
 			where: {id: my_id},
 			relations: ['received_friendships']
 		});
-		return me.received_friendships;
+		const requests = []
+		for (let rf of me.received_friendships) {
+			requests.push({
+				req_user: await this.usersRepository.findOneBy({ id: rf.req_user_id }),
+				status: rf.status
+			});
+		}
+		return requests;
 	}
 
 	async pendingSentRequests(my_id: number): Promise<FriendshipRecvUser[]> {
