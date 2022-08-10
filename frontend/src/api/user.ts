@@ -38,6 +38,10 @@ export const acceptFriendReq = async (user_id: number) => {
   });
 };
 
+export const rejectFriendReq = async (user_id: number) => {
+  return await api.post(routes.rejectFriendReq, { user_id });
+};
+
 export const sendFriendReq = async (user_id: number) => {
   return await api.post(routes.sendFriendReq, { user_id });
 };
