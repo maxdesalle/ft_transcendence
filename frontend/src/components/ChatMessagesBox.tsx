@@ -44,7 +44,6 @@ const ChatMessagesBox: Component<{
     <>
       <Show
         when={state.chatUi.showMessages}
-        fallback={<PendingFriendReqCard />}
       >
         <MessageList
           messages={props.messages

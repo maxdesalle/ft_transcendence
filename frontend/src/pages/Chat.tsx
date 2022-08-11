@@ -1,6 +1,5 @@
 import {
   Component,
-  createEffect,
   createResource,
   Match,
   onMount,
@@ -23,6 +22,7 @@ import Avatar from '../components/Avatar';
 import { generateImageUrl } from '../utils/helpers';
 import { AxiosError } from 'axios';
 import autoAnimate from '@formkit/auto-animate';
+import { Link } from 'solid-app-router';
 
 const Chat: Component = () => {
   const [state] = useStore();
@@ -153,6 +153,9 @@ const Chat: Component = () => {
                   >
                     Invite to play
                   </button>
+                  <Link class='text-white bg-gradient-to-r from-blue-500 via-blue-600 to-blue-700 hover:bg-gradient-to-br focus:ring-4 focus:outline-none focus:ring-blue-300 dark:focus:ring-blue-800 font-medium rounded-sm text-sm px-2 py-1 text-center mr-2 mb-2' href={`/profile/${selectedFriend()?.id}`}>
+                    Profile
+                  </Link>
                   <Show when={isBlocked() === false}>
                     <button
                       onClick={onBlockFriend}

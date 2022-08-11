@@ -22,11 +22,14 @@ const ChatSideBar: Component = () => {
   const [keyword, setKeyword] = createSignal('');
   const [state, { setCurrentRoomId, changeTab, toggleShowMessages }] =
     useStore();
-  const [rooms, { refetch }] = createTurboResource<RoomInfo[]>(
+  const [rooms, { refetch, mutate }] = createTurboResource<RoomInfo[]>(
     () => routes.getRooms,
   );
-  const [ref, setRef] = createSignal<any>();
   // let ref: any;
+
+  const mutateRooms = (room: RoomInfo) => {
+    mutate([...rooms()!, room]);
+  }
 
   onMount(() => {
     const el = document.getElementById('view');
@@ -57,7 +60,7 @@ const ChatSideBar: Component = () => {
               placeHolder="Search for room"
               popperMsg="Create new room"
             >
-              <CreateRoom refetch={refetch} />
+              <CreateRoom mutate={mutateRooms} />
             </Search>
             <Show when={rooms()}>
               <For

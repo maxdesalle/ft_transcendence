@@ -14,7 +14,8 @@ import { User } from '../types/user.interface';
 import { api } from '../utils/api';
 import toast from 'solid-toast';
 import autoAnimate from '@formkit/auto-animate';
-
+import { IoNotificationsSharp } from 'solid-icons/io';
+import PendingFriendReqCard from './PendingFriendReqCard';
 const LINKS = ['chat', 'leaderboard'];
 
 const Header: Component = () => {
@@ -26,6 +27,7 @@ const Header: Component = () => {
   const notifySuccess = (msg: string) => toast.success(msg);
   const notifyError = (msg: string) => toast.error(msg);
   const [isOpen, setIsOpen] = createSignal(false);
+  const [isNotifOpen, setIsNotifOpen] = createSignal(false);
   const [uRef, setUref] = createSignal<any>();
   let ref: any;
 
@@ -72,7 +74,7 @@ const Header: Component = () => {
             />
           </span>
         </div>
-        <ul class="flex p-1 justify-between w-64">
+        <ul class="flex p-1 justify-between w-64 items-center">
           <For each={LINKS}>
             {(link) => (
               <li class="text-white first-letter:capitalize">
@@ -80,6 +82,14 @@ const Header: Component = () => {
               </li>
             )}
           </For>
+          <li>
+            <button onClick={() => setIsNotifOpen(true)}>
+              <IoNotificationsSharp color="#2564eb" />
+            </button>
+            <Modal isOpen={isNotifOpen()} toggleModal={setIsNotifOpen}>
+              <PendingFriendReqCard />
+            </Modal>
+          </li>
           <Show when={state.pong.friendInvitation}>
             <li>
               <button onClick={onAcceptInvite} class="btn-primary">

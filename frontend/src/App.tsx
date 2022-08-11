@@ -1,4 +1,4 @@
-import { Component, createEffect, onCleanup, onMount, Show } from 'solid-js';
+import { Component, createEffect, createResource, onCleanup, onMount, Show } from 'solid-js';
 import { Route, Routes, useNavigate } from 'solid-app-router';
 import Chat from './pages/Chat';
 import Pong from './pages/Pong';
@@ -15,12 +15,16 @@ import { Message, WsNotificationEvent } from './types/chat.interface';
 import LeaderBoard from './pages/LeaderBoard';
 import { api } from './utils/api';
 import { Toaster } from 'solid-toast';
-import { TurboContext } from 'turbo-solid';
+import { createTurboResource, mutate, TurboContext } from 'turbo-solid';
+import { routes } from './api/utils';
+import { User } from './types/user.interface';
+import { fetchUsers } from './api/user';
 
 const App: Component = () => {
   const [state, { mutateFriendMsgs, mutateRoomMsgs, setFriendInvitation }] =
     useStore();
   const navigate = useNavigate();
+  const [users, { refetch }] = createResource<User[]>(fetchUsers);
 
   onMount(() => {
     state.ws.addEventListener('message', (e) => {
@@ -51,10 +55,9 @@ const App: Component = () => {
         case 'friends: new_request':
           console.log(`${res.event}: `, res);
           // if it's a fresh user might not find him in users and also might be null
-          // mutate(routes.receivedFriendReq, {
-          //   req_user_id: res.friend_request?.requesting_user?.id,
-          //   status: 0,
-          // });
+          const reqUser = users()?.find(
+            (user) => user.id === res.friend_request!.requesting_user!.id,
+          );
           break;
         case 'friends: request_accepted':
           console.log(`${res.event}: `, res);
@@ -82,6 +85,9 @@ const App: Component = () => {
           break;
         case 'ws_auth_fail':
           navigate('/login');
+          break;
+        case 'users: new_user':
+          refetch();
           break;
         default:
           console.log(`${res.event}: `, res);

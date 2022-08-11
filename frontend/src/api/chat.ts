@@ -25,7 +25,7 @@ export const createRoomResource = () => {
 };
 
 const createRoom = async (data: CreateRoomType) => {
-  const res = await api.post<RoomInfo[]>(routes.createGroup, data);
+  const res = await api.post<RoomInfo>(routes.createGroup, data);
   return res;
 };
 
