@@ -22,7 +22,7 @@ kill_subprocesses() {
         kill $proc
     done
     # so that kill_all does not kill again the processes
-    [[ -f "$ROOT_DIR/$PID_FILE_NAME" ]] && rm "$ROOT_DIR/$PID_FILE_NAME"
+    [[ -f "$ROOT_DIR/$PID_FILE_NAME" ]] && rm "$ROOT_DIR/$PID_FILE_NAME" || return 0
 }
 # cleaning everything if ^C is pressed
 trap kill_subprocesses SIGINT
