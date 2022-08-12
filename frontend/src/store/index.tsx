@@ -1,10 +1,6 @@
 import Cookies from 'js-cookie';
 import { createContext, createResource, Resource, useContext } from 'solid-js';
-import {
-  Message,
-  RoomInfo,
-  WsNotificationEvent,
-} from '../types/chat.interface';
+import { Message, WsNotificationEvent } from '../types/chat.interface';
 import { Friend, User } from '../types/user.interface';
 import { createStore, produce } from 'solid-js/store';
 import { createFriendMsg, createMessageById } from './storeActions';
@@ -45,6 +41,7 @@ export interface ActionsType {
   setCurrentRoomId: (id: number) => void;
   setFriendId: (id: number | undefined) => void;
   setPendigFriendReq: (req: { status: number; req_user: User }[]) => void;
+  setFriendReqCount: (val: number) => void;
 }
 
 export type Status = 'idle' | 'loading' | 'success' | 'failed';
@@ -69,6 +66,7 @@ export interface StoreState {
   currentUser: {
     status: Status;
     readonly pendingFriendReq: { req_user: User; status: number }[];
+    friendReqCount: number;
     error?: any;
     twoFaQrCode: string;
     twoFaConfirmed: boolean;
@@ -120,6 +118,7 @@ export function StoreProvider(props: any) {
       status: 'idle',
       twoFaQrCode: '',
       pendingFriendReq: [],
+      friendReqCount: 0,
       //actions: change name, update avatar
     },
     get users() {
@@ -164,6 +163,9 @@ export function StoreProvider(props: any) {
     },
     setPendigFriendReq(req) {
       setState('currentUser', 'pendingFriendReq', req);
+    },
+    setFriendReqCount(val) {
+      setState('currentUser', 'friendReqCount', val);
     },
   };
   const store: [StoreState, ActionsType] = [state, actions];

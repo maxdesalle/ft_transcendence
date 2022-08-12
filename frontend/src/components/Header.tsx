@@ -95,9 +95,9 @@ const Header: Component = () => {
             >
               <IoNotificationsSharp color="#000" />
               <span class="text-sm">
-                {state.currentUser.pendingFriendReq.length < 2
-                  ? state.currentUser.pendingFriendReq.length
-                  : `${state.currentUser.pendingFriendReq.length}+`}
+                {state.currentUser.friendReqCount < 2
+                  ? state.currentUser.friendReqCount
+                  : `${state.currentUser.friendReqCount}+`}
               </span>
             </button>
             <Modal isOpen={isNotifOpen()} toggleModal={setIsNotifOpen}>

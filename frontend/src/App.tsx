@@ -1,11 +1,4 @@
-import {
-  Component,
-  createEffect,
-  createResource,
-  onCleanup,
-  onMount,
-  Show,
-} from 'solid-js';
+import { Component, createEffect, onCleanup, onMount, Show } from 'solid-js';
 import { Route, Routes, useNavigate } from 'solid-app-router';
 import Chat from './pages/Chat';
 import Pong from './pages/Pong';
@@ -20,32 +13,10 @@ import TwoFactorAuth from './pages/TwoFactorAuth';
 import { Message, WsNotificationEvent } from './types/chat.interface';
 import LeaderBoard from './pages/LeaderBoard';
 import { Toaster } from 'solid-toast';
-import { createTurboResource } from 'turbo-solid';
-import { routes } from './api/utils';
-import { User } from './types/user.interface';
-import { fetchUsers } from './api/user';
 
 const App: Component = () => {
-  const [
-    state,
-    {
-      mutateFriendMsgs,
-      mutateRoomMsgs,
-      loadMessages,
-      setFriendInvitation,
-      addPendingFriendReq,
-      setPendigFriendReq,
-    },
-  ] = useStore();
+  const [state, { setFriendInvitation }] = useStore();
   const navigate = useNavigate();
-  const [users, { refetch }] = createResource<User[]>(fetchUsers);
-  const [pendingFriendReq] = createTurboResource<
-    {
-      req_user: User;
-      status: number;
-    }[]
-  >(() => routes.receivedFriendReq);
-
   onMount(() => {
     state.ws.addEventListener('message', (e) => {
       let res: {
@@ -105,8 +76,8 @@ const App: Component = () => {
           break;
       }
     });
-    state.ws.addEventListener('open', (e) => { });
-    state.ws.addEventListener('close', (e) => { });
+    state.ws.addEventListener('open', (e) => {});
+    state.ws.addEventListener('close', (e) => {});
   });
 
   createEffect(() => {
