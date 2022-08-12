@@ -20,31 +20,18 @@ const ChatMessagesBox: Component<{
   onSendMessage: (message: string) => void;
   messages: Message[];
 }> = (props) => {
-  const [state, { loadMessages }] = useStore();
+  const [state] = useStore();
   const [currentUser] = createTurboResource(() => routes.currentUser);
   const roomId = state.chat.roomId;
   const [message, setMessage] = createSignal('');
-  const [currentRoom, { mutate }] = createResource(
-    roomId,
-    async (id: number) => {
-      const res = await api.get<RoomInfo>(`${routes.chat}/room_info/${id}`);
-      return res.data;
-    },
-  );
-
-  const room_id = () => state.chat.roomId;
-
-  createEffect(() => {
-    if (loadMessages && currentRoom()) {
-      loadMessages(currentRoom()!.room_id);
-    }
+  const [currentRoom] = createResource(roomId, async (id: number) => {
+    const res = await api.get<RoomInfo>(`${routes.chat}/room_info/${id}`);
+    return res.data;
   });
 
   return (
     <>
-      <Show
-        when={state.chatUi.showMessages}
-      >
+      <Show when={state.chatUi.showMessages}>
         <MessageList
           messages={props.messages
             .slice()

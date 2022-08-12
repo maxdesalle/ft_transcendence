@@ -5,8 +5,8 @@ import { sockets } from './pong.gateway';
 @Controller('pong')
 @ApiTags('pong')
 export class PongController {
-	@Get('sessions')
-	getSessions() {
-		return sockets.map(ob => ob.id);
-	}
+  @Get('sessions')
+  getSessions() {
+    return sockets.map((ob) => ob.id);
+  }
 }

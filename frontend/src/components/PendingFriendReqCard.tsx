@@ -1,19 +1,24 @@
 import { AxiosError } from 'axios';
-import { Component, createEffect, createSignal, For, on, Show } from 'solid-js';
+import { Component, createEffect, For, onMount, Show } from 'solid-js';
 import { createTurboResource } from 'turbo-solid';
 import { acceptFriendReq, rejectFriendReq } from '../api/user';
 import { routes } from '../api/utils';
+import { useStore } from '../store';
+import { Message, WsNotificationEvent } from '../types/chat.interface';
 import { User } from '../types/user.interface';
 import { notifyError, notifySuccess } from '../utils/helpers';
 
 const PendingFriendReqCard: Component = () => {
+  const [state, { addPendingFriendReq, setPendigFriendReq }] = useStore();
   const onAcceptFriendReq = (id: number) => {
     acceptFriendReq(id)
       .then(() => {
         notifySuccess('success');
-        mutate([
-          ...pendingFriendReq()!.filter((user) => user.req_user.id !== id),
-        ]);
+        setPendigFriendReq(
+          state.currentUser.pendingFriendReq.filter((req) => {
+            req.req_user.id !== id;
+          }),
+        );
       })
       .catch((err) => notifyError(err.message));
   };
@@ -22,25 +27,31 @@ const PendingFriendReqCard: Component = () => {
     rejectFriendReq(id)
       .then(() => {
         notifySuccess('success: friend request rejected');
-        mutate([
-          ...pendingFriendReq()!.filter((user) => user.req_user.id !== id),
-        ]);
+        setPendigFriendReq(
+          state.currentUser.pendingFriendReq.filter((req) => {
+            req.req_user.id !== id;
+          }),
+        );
       })
       .catch((err: AxiosError<{ message: string }>) =>
         notifyError(err.response?.data.message as string),
       );
   };
-  const [pendingFriendReq, { mutate }] = createTurboResource<
-    {
-      req_user: User;
-      status: number;
-    }[]
-  >(() => routes.receivedFriendReq);
 
   return (
-    <Show when={pendingFriendReq() && pendingFriendReq()?.length} fallback={<p class='bg-red-600 p-3 border-1 text-white shadow-md border-red-600'>No friend req for now</p>}>
-      <div class="border border-header-menu p-2 pt-4 shadow-md bg-skin-menu-background">
-        <For each={pendingFriendReq()}>
+    <Show
+      when={
+        state.currentUser.pendingFriendReq &&
+        state.currentUser.pendingFriendReq.length
+      }
+      fallback={
+        <p class="bg-gray-700 p-3 border-1 text-white shadow-md border-red-600">
+          No friend requests 🥲
+        </p>
+      }
+    >
+      <div class="border border-header-menu p-2 pt-4 shadow-md rounded-md bg-skin-menu-background">
+        <For each={state.currentUser.pendingFriendReq}>
           {(user) => (
             <div class="grid grid-cols-2">
               <h1 class="text-white pr-2 text-lg">

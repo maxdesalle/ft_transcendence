@@ -10,7 +10,7 @@ import {
   Show,
 } from 'solid-js';
 import { createTurboResource } from 'turbo-solid';
-import { routes } from '../api/utils';
+import { routes, urls } from '../api/utils';
 import { useStore } from '../store';
 import { User } from '../types/user.interface';
 
@@ -26,12 +26,19 @@ const Home: Component = () => {
   const [buttonText, setButtonText] = createSignal('Play');
   const [currentUser] = createTurboResource<User>(() => routes.currentUser);
   const [friends] = createTurboResource<User[]>(() => routes.friends);
+  const [gameSessions] = createTurboResource<number[]>(
+    () => `${urls.backendUrl}/pong/sessions`,
+  );
 
   const navigate = useNavigate();
 
   onMount(() => {
     const token = Cookies.get('jwt_token');
     setToken(token);
+  });
+
+  createEffect(() => {
+    console.log('game sessions: ', gameSessions());
   });
 
   onCleanup(() => {

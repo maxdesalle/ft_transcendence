@@ -23,6 +23,7 @@ import { api } from '../utils/api';
 import { notifyError, notifySuccess } from '../utils/helpers';
 import { AxiosError } from 'axios';
 import autoAnimate from '@formkit/auto-animate';
+import { sendFriendReq } from '../api/user';
 
 const ChatRoomUserCard: Component<{
   user: RoomUser;
@@ -34,14 +35,13 @@ const ChatRoomUserCard: Component<{
   const [currentUser] = createTurboResource<User>(() => routes.currentUser);
   const roomId = () => state.chat.roomId;
   let ref: any;
-  const [currentRoom, { mutate }] = createResource(
-    roomId,
-    async (id: number) => {
-      const res = await api.get<RoomInfo>(`${routes.chat}/room_info/${id}`);
-      return res.data;
-    },
-  );
+  const [currentRoom] = createResource(roomId, async (id: number) => {
+    const res = await api.get<RoomInfo>(`${routes.chat}/room_info/${id}`);
+    return res.data;
+  });
+  const [friends] = createTurboResource<number[]>(() => `${routes.friends}/id`);
   const notify = (msg: string) => toast.success(msg);
+  const [isFriend, setIsFriend] = createSignal(false);
   const inviteUser = () => {
     const data = { event: 'invite', data: props.user.id };
     state.pong.ws.send(JSON.stringify(data));
@@ -69,6 +69,16 @@ const ChatRoomUserCard: Component<{
           notifyError(e.response?.data.message as string);
         });
     }
+  };
+
+  const onSendFriendReq = () => {
+    sendFriendReq(props.user.id)
+      .then(() => {
+        notifySuccess(`friend request sent to ${props.user.display_name}`);
+      })
+      .catch((err: AxiosError<{ message: string }>) => {
+        notifyError(err.response?.data.message as string);
+      });
   };
 
   const onUnmuteUser = () => {
@@ -164,20 +174,25 @@ const ChatRoomUserCard: Component<{
     autoAnimate(ref);
   });
 
+  createEffect(() => {
+    if (friends()) {
+      setIsFriend(friends()!.includes(props.user.id));
+    }
+  });
+
   return (
     <div ref={ref} class="w-5/6 rounded-lg shadow-md">
       <div
         class={
           props.user.role === 'admin'
-            ? 'bg-pink-700 hover:scale-110 flex items-center justify-between transition-all p-3'
-            : `flex items-center hover:scale-110 justify-between transition-all p-3`
+            ? 'bg-pink-700 hover:bg-pink-900 flex items-center justify-between transition-all p-3'
+            : `flex items-center hover:bg-gray-900 justify-between transition-all p-3`
         }
       >
-        <div class="flex items-center">
+        <div onClick={() => setIsOpen(true)} class="flex items-center">
           <Avatar />
           <h1 class="pl-3">{props.user.display_name}</h1>
         </div>
-        <AiOutlineMore onClick={() => setIsOpen(true)} />
       </div>
       <Modal isOpen={isOpen()} toggleModal={setIsOpen}>
         <div class="flex flex-col p-3 w-40 border absolute shadow-md rounded-md bg-skin-page border-header-menu -top-6 right-1">
@@ -193,15 +208,28 @@ const ChatRoomUserCard: Component<{
           >
             Send invite
           </button>
-          <button
-            onClick={() => {
-              changeTab(TAB.FRIENDS);
-              setFriendId(props.user.id);
-            }}
-            class="text-start hover:bg-blue-600 px-3 rounded-sm transition-all"
+          <Show
+            when={isFriend() === true}
+            fallback={
+              <button
+                onClick={onSendFriendReq}
+                class="text-start hover:bg-blue-600 px-3 rounded-sm transition-all"
+              >
+                Add friend
+              </button>
+            }
           >
-            Send message
-          </button>
+            <button
+              onClick={() => {
+                changeTab(TAB.FRIENDS);
+                setFriendId(props.user.id);
+              }}
+              class="text-start hover:bg-blue-600 px-3 rounded-sm transition-all"
+            >
+              Send message
+            </button>
+          </Show>
+
           <Show
             when={
               currentUserRole() === 'admin' || currentUserRole() === 'owner'

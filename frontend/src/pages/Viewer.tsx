@@ -1,6 +1,6 @@
-import { Component, onCleanup, onMount } from "solid-js";
-import { initViewerSocket, viewerSketch } from "../game/viewer";
-import p5Type from "p5";
+import { Component, createEffect, onCleanup, onMount } from 'solid-js';
+import { initViewerSocket, viewerSketch } from '../game/viewer';
+import p5Type from 'p5';
 
 const Viewer: Component = () => {
   let ref: any;
@@ -15,6 +15,11 @@ const Viewer: Component = () => {
   onCleanup(() => {
     p5.remove();
     ws.close();
+  });
+
+  createEffect(() => {
+    const input = document.getElementById('user_id');
+    console.log(input);
   });
 
   return (

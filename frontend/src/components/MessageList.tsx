@@ -15,7 +15,6 @@ import MessageCard from './MessageCard';
 const MessageList: Component<{ messages?: Message[]; id?: number }> = (
   props,
 ) => {
-  let scrollbarRef: any;
   createEffect(() => {
     props.messages;
     //TODO: Srool bottom

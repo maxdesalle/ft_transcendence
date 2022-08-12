@@ -1,5 +1,6 @@
 import {
   Component,
+  createEffect,
   createSignal,
   For,
   Match,
@@ -23,17 +24,16 @@ const ChatSideBar: Component = () => {
   const [state, { setCurrentRoomId, changeTab, toggleShowMessages }] =
     useStore();
   const [rooms, { refetch, mutate }] = createTurboResource<RoomInfo[]>(
-    () => routes.getRooms,
+    () => routes.publicRooms,
   );
   // let ref: any;
 
   const mutateRooms = (room: RoomInfo) => {
     mutate([...rooms()!, room]);
-  }
+  };
 
-  onMount(() => {
-    const el = document.getElementById('view');
-    autoAnimate(el as any);
+  createEffect(() => {
+    console.log('public groups: ', rooms());
   });
 
   return (

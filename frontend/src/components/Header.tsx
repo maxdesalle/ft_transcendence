@@ -16,6 +16,7 @@ import toast from 'solid-toast';
 import autoAnimate from '@formkit/auto-animate';
 import { IoNotificationsSharp } from 'solid-icons/io';
 import PendingFriendReqCard from './PendingFriendReqCard';
+import { AxiosError } from 'axios';
 const LINKS = ['chat', 'leaderboard'];
 
 const Header: Component = () => {
@@ -30,6 +31,7 @@ const Header: Component = () => {
   const [isNotifOpen, setIsNotifOpen] = createSignal(false);
   const [uRef, setUref] = createSignal<any>();
   let ref: any;
+  let notifRef: any;
 
   const onSendFriendReq = (userId: number, userName: string) => {
     api
@@ -37,8 +39,8 @@ const Header: Component = () => {
       .then(() => {
         notifySuccess(`friend request sent to ${userName}`);
       })
-      .catch(() => {
-        notifyError('failed to send friend request');
+      .catch((err: AxiosError<{ message: string }>) => {
+        notifyError(err.response?.data.message as string);
       });
   };
 
@@ -54,6 +56,7 @@ const Header: Component = () => {
 
   onMount(() => {
     autoAnimate(ref);
+    autoAnimate(notifRef);
     autoAnimate(uRef());
   });
 
@@ -82,9 +85,20 @@ const Header: Component = () => {
               </li>
             )}
           </For>
-          <li>
-            <button onClick={() => setIsNotifOpen(true)}>
-              <IoNotificationsSharp color="#2564eb" />
+          <li
+            class="items-center justify-center px-2 py-1 text-xs leading-none text-red-100 bg-blue-600 rounded-full"
+            ref={notifRef}
+          >
+            <button
+              class="flex items-center text-black"
+              onClick={() => setIsNotifOpen(!isNotifOpen())}
+            >
+              <IoNotificationsSharp color="#000" />
+              <span class="text-sm">
+                {state.currentUser.pendingFriendReq.length < 2
+                  ? state.currentUser.pendingFriendReq.length
+                  : `${state.currentUser.pendingFriendReq.length}+`}
+              </span>
             </button>
             <Modal isOpen={isNotifOpen()} toggleModal={setIsNotifOpen}>
               <PendingFriendReqCard />

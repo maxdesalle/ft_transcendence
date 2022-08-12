@@ -34,7 +34,7 @@ export interface ActionsType {
   toggleShowMessages: () => void;
   toggleMatchMaking: (val: boolean) => void;
   refetchFriends?: () => Promise<Friend[]>;
-  addPendingFriendReq: (pendigUser: { user: User; status: number }) => void;
+  addPendingFriendReq: (pendigUser: { req_user: User; status: number }) => void;
   setFriendInvitation: (
     data: {
       event: WsNotificationEvent;
@@ -44,6 +44,7 @@ export interface ActionsType {
   setToken: (token: string | undefined) => void;
   setCurrentRoomId: (id: number) => void;
   setFriendId: (id: number | undefined) => void;
+  setPendigFriendReq: (req: { status: number; req_user: User }[]) => void;
 }
 
 export type Status = 'idle' | 'loading' | 'success' | 'failed';
@@ -67,7 +68,7 @@ export interface StoreState {
   };
   currentUser: {
     status: Status;
-    readonly pendingFriendReq: { user: User; status: number }[];
+    readonly pendingFriendReq: { req_user: User; status: number }[];
     error?: any;
     twoFaQrCode: string;
     twoFaConfirmed: boolean;
@@ -160,6 +161,9 @@ export function StoreProvider(props: any) {
     },
     setFriendId(id) {
       setState('chat', 'friendId', id);
+    },
+    setPendigFriendReq(req) {
+      setState('currentUser', 'pendingFriendReq', req);
     },
   };
   const store: [StoreState, ActionsType] = [state, actions];

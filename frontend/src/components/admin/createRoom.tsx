@@ -1,5 +1,4 @@
 import { Component, createSignal } from 'solid-js';
-import { mutate } from 'turbo-solid';
 import { chatApi } from '../../api/chat';
 import { RoomInfo } from '../../types/chat.interface';
 
@@ -10,10 +9,17 @@ const CreateRoom: Component<{ mutate: (room: RoomInfo) => void }> = (props) => {
 
   const onCreateRoom = () => {
     if (!roomName().length) return;
-    chatApi.createRoom({ name: roomName(), private: isPrivate(), password: password() }).then((res) => {
-      // props.refetch();
-      props.mutate(res.data);
-    });
+    chatApi
+      .createRoom({
+        name: roomName(),
+        private: isPrivate(),
+        password: password(),
+      })
+      .then((res) => {
+        // props.refetch();
+        props.mutate(res.data);
+        console.log('new room: ', res.data);
+      });
     setRoomName('');
   };
 

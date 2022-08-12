@@ -1,4 +1,11 @@
-import { Component, createEffect, createResource, onCleanup, onMount, Show } from 'solid-js';
+import {
+  Component,
+  createEffect,
+  createResource,
+  onCleanup,
+  onMount,
+  Show,
+} from 'solid-js';
 import { Route, Routes, useNavigate } from 'solid-app-router';
 import Chat from './pages/Chat';
 import Pong from './pages/Pong';
@@ -21,10 +28,25 @@ import { User } from './types/user.interface';
 import { fetchUsers } from './api/user';
 
 const App: Component = () => {
-  const [state, { mutateFriendMsgs, mutateRoomMsgs, setFriendInvitation }] =
-    useStore();
+  const [
+    state,
+    {
+      mutateFriendMsgs,
+      mutateRoomMsgs,
+      loadMessages,
+      setFriendInvitation,
+      addPendingFriendReq,
+      setPendigFriendReq,
+    },
+  ] = useStore();
   const navigate = useNavigate();
   const [users, { refetch }] = createResource<User[]>(fetchUsers);
+  const [pendingFriendReq] = createTurboResource<
+    {
+      req_user: User;
+      status: number;
+    }[]
+  >(() => routes.receivedFriendReq);
 
   onMount(() => {
     state.ws.addEventListener('message', (e) => {
@@ -54,10 +76,12 @@ const App: Component = () => {
           break;
         case 'friends: new_request':
           console.log(`${res.event}: `, res);
-          // if it's a fresh user might not find him in users and also might be null
           const reqUser = users()?.find(
             (user) => user.id === res.friend_request!.requesting_user!.id,
           );
+          if (reqUser) {
+            addPendingFriendReq({ status: 0, req_user: reqUser });
+          }
           break;
         case 'friends: request_accepted':
           console.log(`${res.event}: `, res);
@@ -99,8 +123,17 @@ const App: Component = () => {
   });
 
   createEffect(() => {
+    if (loadMessages && state.chat.roomId) {
+      loadMessages(state.chat.roomId);
+    }
     if (!state.token) {
       navigate('/login');
+    }
+    if (pendingFriendReq()) {
+      setPendigFriendReq([]);
+      pendingFriendReq()!.forEach((req) => {
+        addPendingFriendReq(req);
+      });
     }
   });
 
@@ -109,15 +142,8 @@ const App: Component = () => {
     state.pong.ws.close();
   });
 
-  const configuration = {
-    async fetcher(key: string) {
-      const response = await api.get(key);
-      return response.data;
-    },
-  };
-
   return (
-    <TurboContext.Provider value={configuration}>
+    <>
       <Show when={state.token}>
         <Header />
       </Show>
@@ -136,7 +162,7 @@ const App: Component = () => {
         </Routes>
       </div>
       <Toaster />
-    </TurboContext.Provider>
+    </>
   );
 };
 
