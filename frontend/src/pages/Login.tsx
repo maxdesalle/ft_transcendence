@@ -25,8 +25,8 @@ const Login: Component = () => {
         const token = Cookies.get('jwt_token');
         if (token) {
           setToken(token);
+          navigate('/');
         }
-        navigate('/');
       })
       .catch((err) => {
         notify(err.message);

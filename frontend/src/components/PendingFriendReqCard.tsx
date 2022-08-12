@@ -1,15 +1,21 @@
 import { AxiosError } from 'axios';
-import { Component, createEffect, For, onMount, Show } from 'solid-js';
+import { Component, For, onMount, Show } from 'solid-js';
 import { createTurboResource } from 'turbo-solid';
 import { acceptFriendReq, rejectFriendReq } from '../api/user';
 import { routes } from '../api/utils';
 import { useStore } from '../store';
-import { Message, WsNotificationEvent } from '../types/chat.interface';
+import { WsNotificationEvent } from '../types/chat.interface';
 import { User } from '../types/user.interface';
 import { notifyError, notifySuccess } from '../utils/helpers';
 
 const PendingFriendReqCard: Component = () => {
-  const [state, { addPendingFriendReq, setPendigFriendReq }] = useStore();
+  const [state, { setPendigFriendReq }] = useStore();
+  const [pendingFriendReq, { refetch }] = createTurboResource<
+    {
+      req_user: User;
+      status: number;
+    }[]
+  >(() => routes.receivedFriendReq);
   const onAcceptFriendReq = (id: number) => {
     acceptFriendReq(id)
       .then(() => {
@@ -38,11 +44,21 @@ const PendingFriendReqCard: Component = () => {
       );
   };
 
+  onMount(() => {
+    state.ws.addEventListener('message', (e) => {
+      let res: { event: WsNotificationEvent }
+      res = JSON.parse(e.data);
+      if (res.event === "friends: new_request") {
+        refetch()
+      }
+    })
+  })
+
+
   return (
     <Show
       when={
-        state.currentUser.pendingFriendReq &&
-        state.currentUser.pendingFriendReq.length
+        pendingFriendReq()
       }
       fallback={
         <p class="bg-gray-700 p-3 border-1 text-white shadow-md border-red-600">

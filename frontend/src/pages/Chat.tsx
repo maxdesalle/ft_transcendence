@@ -1,5 +1,6 @@
 import {
   Component,
+  createEffect,
   createResource,
   Match,
   onMount,
@@ -14,7 +15,7 @@ import { blockUser, chatApi } from '../api/chat';
 import { TAB, useStore } from '../store/index';
 import toast from 'solid-toast';
 import { routes } from '../api/utils';
-import { RoomInfo } from '../types/chat.interface';
+import { RoomInfo, WsNotificationEvent } from '../types/chat.interface';
 import { api } from '../utils/api';
 import { createTurboResource } from 'turbo-solid';
 import { User } from '../types/user.interface';
@@ -23,12 +24,14 @@ import { generateImageUrl } from '../utils/helpers';
 import { AxiosError } from 'axios';
 import autoAnimate from '@formkit/auto-animate';
 import { Link } from 'solid-app-router';
+import { Message } from 'postcss';
 
 const Chat: Component = () => {
   const [state] = useStore();
   const notifyError = (msg: string) => toast.error(msg);
   const notifySuccess = (msg: string) => toast.success(msg);
   const roomId = () => state.chat.roomId;
+  const friendId = () => state.chat.friendId;
   const [currentRoom] = createResource(roomId, async (id: number) => {
     const res = await api.get<RoomInfo>(`${routes.chat}/room_info/${id}`);
     return res.data;
@@ -44,6 +47,9 @@ const Chat: Component = () => {
   const [friends] = createTurboResource<User[]>(() => routes.friends);
   const selectedFriend = () =>
     friends()?.find((friend) => friend.id === state.chat.friendId);
+
+  const [roomMessages, { refetch: updateRoomMessages }] = createResource(roomId, chatApi.getMessagesByRoomId);
+  const [friendMessages, { refetch: updateFriendMessages }] = createResource(friendId, chatApi.getFriendMessages);
 
   const onSendMessageToRoom = (message: string) => {
     if (!currentRoom()) return;
@@ -100,6 +106,18 @@ const Chat: Component = () => {
       });
   };
 
+  onMount(() => {
+    state.ws.addEventListener('message', (e) => {
+      let res: { event: WsNotificationEvent, message: Message }
+      res = JSON.parse(e.data);
+      if (res.event === 'chat_room_msg') {
+        updateRoomMessages();
+      } else if (res.event === 'chat_dm') {
+        updateFriendMessages();
+      }
+    })
+  })
+
   return (
     <div class="grid grid-cols-6 h-full">
       <div class="flex row-span-4 flex-col col-span-1 border-x-header-menu border-x">
@@ -109,13 +127,13 @@ const Chat: Component = () => {
         <Switch>
           <Match when={state.chatUi.tab === TAB.ROOMS}>
             <ChatMessagesBox
-              messages={state.chat.roomMsgs!}
+              messages={roomMessages()!}
               onSendMessage={onSendMessageToRoom}
             />
           </Match>
           <Match when={state.chatUi.tab === TAB.FRIENDS}>
             <ChatMessagesBox
-              messages={state.chat.friendMsgs!}
+              messages={friendMessages()!}
               onSendMessage={onSendMessageToFriend}
             />
           </Match>

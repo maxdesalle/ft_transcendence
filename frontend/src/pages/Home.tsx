@@ -41,12 +41,6 @@ const Home: Component = () => {
     console.log('game sessions: ', gameSessions());
   });
 
-  onCleanup(() => {
-    state.pong.ws.removeEventListener('message', (e) => {
-      console.log('removing event: ', e);
-    });
-  });
-
   const onPlay = () => {
     const message = { event: 'play' };
     state.pong.ws.send(JSON.stringify(message));
@@ -100,7 +94,7 @@ const Home: Component = () => {
         </Show>
       </div>
       <div class="flex flex-col">
-        <label for="friends" class="text-2xl">
+        <label for="friends" class="text-2xl mt-3">
           Invite a friend
         </label>
         <select

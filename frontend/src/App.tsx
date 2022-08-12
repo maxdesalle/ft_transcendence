@@ -9,7 +9,6 @@ import {
 import { Route, Routes, useNavigate } from 'solid-app-router';
 import Chat from './pages/Chat';
 import Pong from './pages/Pong';
-import Admin from './pages/Admin';
 import Viewer from './pages/Viewer';
 import Header from './components/Header';
 import Home from './pages/Home';
@@ -20,9 +19,8 @@ import EditProfile from './pages/EditProfile';
 import TwoFactorAuth from './pages/TwoFactorAuth';
 import { Message, WsNotificationEvent } from './types/chat.interface';
 import LeaderBoard from './pages/LeaderBoard';
-import { api } from './utils/api';
 import { Toaster } from 'solid-toast';
-import { createTurboResource, mutate, TurboContext } from 'turbo-solid';
+import { createTurboResource } from 'turbo-solid';
 import { routes } from './api/utils';
 import { User } from './types/user.interface';
 import { fetchUsers } from './api/user';
@@ -64,25 +62,14 @@ const App: Component = () => {
       };
       res = JSON.parse(e.data);
       switch (res.event) {
-        case 'chat_room_msg':
-          if (mutateRoomMsgs) {
-            mutateRoomMsgs(res.message as Message);
-          }
-          break;
-        case 'chat_dm':
-          if (mutateFriendMsgs) {
-            mutateFriendMsgs(res.message as Message);
-          }
-          break;
-        case 'friends: new_request':
-          console.log(`${res.event}: `, res);
-          const reqUser = users()?.find(
-            (user) => user.id === res.friend_request!.requesting_user!.id,
-          );
-          if (reqUser) {
-            addPendingFriendReq({ status: 0, req_user: reqUser });
-          }
-          break;
+        // case 'friends: new_request':
+        //   const reqUser = users()?.find(
+        //     (user) => user.id === res.friend_request!.requesting_user!.id,
+        //   );
+        //   if (reqUser) {
+        //     addPendingFriendReq({ status: 0, req_user: reqUser });
+        //   }
+        //   break;
         case 'friends: request_accepted':
           console.log(`${res.event}: `, res);
           break;
@@ -118,23 +105,20 @@ const App: Component = () => {
           break;
       }
     });
-    state.ws.addEventListener('open', (e) => {});
-    state.ws.addEventListener('close', (e) => {});
+    state.ws.addEventListener('open', (e) => { });
+    state.ws.addEventListener('close', (e) => { });
   });
 
   createEffect(() => {
-    if (loadMessages && state.chat.roomId) {
-      loadMessages(state.chat.roomId);
-    }
-    if (!state.token) {
-      navigate('/login');
-    }
-    if (pendingFriendReq()) {
-      setPendigFriendReq([]);
-      pendingFriendReq()!.forEach((req) => {
-        addPendingFriendReq(req);
-      });
-    }
+    // if (loadMessages && state.chat.roomId) {
+    //   loadMessages(state.chat.roomId);
+    // }
+    // if (pendingFriendReq()) {
+    //   setPendigFriendReq([]);
+    //   pendingFriendReq()!.forEach((req) => {
+    //     addPendingFriendReq(req);
+    //   });
+    // }
   });
 
   onCleanup(() => {
@@ -152,7 +136,6 @@ const App: Component = () => {
           <Route path="/" element={<Home />} />
           <Route path="/chat" element={<Chat />} />
           <Route path="/pong" element={<Pong />} />
-          <Route path="/admin" element={<Admin />} />
           <Route path="/viewer" element={<Viewer />} />
           <Route path="/profile/:id" element={<Profile />} />
           <Route path="/edit_profile" element={<EditProfile />} />

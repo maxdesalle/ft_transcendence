@@ -31,7 +31,7 @@ const ChatMessagesBox: Component<{
 
   return (
     <>
-      <Show when={state.chatUi.showMessages}>
+      <Show when={props.messages}>
         <MessageList
           messages={props.messages
             .slice()

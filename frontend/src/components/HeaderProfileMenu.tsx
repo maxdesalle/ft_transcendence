@@ -10,6 +10,7 @@ import { Link, useNavigate } from 'solid-app-router';
 import { useStore } from '../store';
 import { routes, urls } from '../api/utils';
 import { createTurboResource, forget } from 'turbo-solid';
+import Cookies from 'js-cookie';
 
 const HeaderProfileMenu: Component<{ user: User }> = (props) => {
   const navigate = useNavigate();
@@ -17,6 +18,7 @@ const HeaderProfileMenu: Component<{ user: User }> = (props) => {
   const [currentUser] = createTurboResource<User>(() => routes.currentUser);
   const onLogout = () => {
     setToken(undefined);
+    Cookies.remove('jwt_token');
     forget();
     navigate('/login');
   };

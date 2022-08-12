@@ -1,5 +1,3 @@
-import autoAnimate from '@formkit/auto-animate';
-import Scrollbars from 'solid-custom-scrollbars';
 import {
   Component,
   createEffect,
@@ -20,6 +18,8 @@ const MessageList: Component<{ messages?: Message[]; id?: number }> = (
     //TODO: Srool bottom
   });
 
+  const [roomId, setRoomId] = createSignal(0);
+
   onMount(() => {
     document.addEventListener(
       'mousedown',
@@ -33,7 +33,7 @@ const MessageList: Component<{ messages?: Message[]; id?: number }> = (
   });
 
   onCleanup(() => {
-    document.removeEventListener('mousedown', () => {});
+    document.removeEventListener('mousedown', () => { });
   });
 
   return (
