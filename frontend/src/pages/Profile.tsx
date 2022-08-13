@@ -41,11 +41,6 @@ const Profile: Component = () => {
     state.pong.ws.send(JSON.stringify(data));
   };
 
-  createEffect(() => {
-    console.log('matches: ', matches());
-    console.log('user: ', user());
-  });
-
   return (
     <Show when={user()}>
       <div class="flex justify-evenly">

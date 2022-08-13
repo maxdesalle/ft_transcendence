@@ -43,12 +43,9 @@ const ChatRightSideBar: Component<{}> = () => {
     setOwner(currentRoom()?.users.find((user) => user.role === 'owner'));
   });
 
-  onMount(() => {
-    autoAnimate(addRef);
-  });
-
   return (
-    <>
+    // TODO: user is in group or not
+    <Show when={state.chat.roomId}>
       <div class="text-white">
         <h4 class="text-center p-2 bg-skin-menu-background">Owner</h4>
         <Show when={owner()}>
@@ -97,7 +94,7 @@ const ChatRightSideBar: Component<{}> = () => {
           </Show>
         </div>
       </div>
-    </>
+    </Show>
   );
 };
 

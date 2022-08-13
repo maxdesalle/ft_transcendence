@@ -61,7 +61,6 @@ export const createCurrentUser = (
             pendingFriendReq.push({ user: pendingUser, status: elem.status });
           }
         });
-        setState('currentUser', 'pendingFriendReq', [...pendingFriendReq]);
       } catch (e) {}
     },
   });

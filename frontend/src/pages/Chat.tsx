@@ -48,8 +48,20 @@ const Chat: Component = () => {
   const selectedFriend = () =>
     friends()?.find((friend) => friend.id === state.chat.friendId);
 
-  const [roomMessages, { refetch: updateRoomMessages }] = createResource(roomId, chatApi.getMessagesByRoomId);
-  const [friendMessages, { refetch: updateFriendMessages }] = createResource(friendId, chatApi.getFriendMessages);
+  const [roomMessages, { refetch: updateRoomMessages }] = createResource(
+    roomId,
+    async (id: number) => {
+      try {
+        return await chatApi.getMessagesByRoomId(id);
+      } catch (err) {
+        console.log(err);
+      }
+    },
+  );
+  const [friendMessages, { refetch: updateFriendMessages }] = createResource(
+    friendId,
+    chatApi.getFriendMessages,
+  );
 
   const onSendMessageToRoom = (message: string) => {
     if (!currentRoom()) return;
@@ -108,15 +120,15 @@ const Chat: Component = () => {
 
   onMount(() => {
     state.ws.addEventListener('message', (e) => {
-      let res: { event: WsNotificationEvent, message: Message }
+      let res: { event: WsNotificationEvent; message: Message };
       res = JSON.parse(e.data);
       if (res.event === 'chat_room_msg') {
         updateRoomMessages();
       } else if (res.event === 'chat_dm') {
         updateFriendMessages();
       }
-    })
-  })
+    });
+  });
 
   return (
     <div class="grid grid-cols-6 h-full">
@@ -171,7 +183,10 @@ const Chat: Component = () => {
                   >
                     Invite to play
                   </button>
-                  <Link class='text-white bg-gradient-to-r from-blue-500 via-blue-600 to-blue-700 hover:bg-gradient-to-br focus:ring-4 focus:outline-none focus:ring-blue-300 dark:focus:ring-blue-800 font-medium rounded-sm text-sm px-2 py-1 text-center mr-2 mb-2' href={`/profile/${selectedFriend()?.id}`}>
+                  <Link
+                    class="text-white bg-gradient-to-r from-blue-500 via-blue-600 to-blue-700 hover:bg-gradient-to-br focus:ring-4 focus:outline-none focus:ring-blue-300 dark:focus:ring-blue-800 font-medium rounded-sm text-sm px-2 py-1 text-center mr-2 mb-2"
+                    href={`/profile/${selectedFriend()?.id}`}
+                  >
                     Profile
                   </Link>
                   <Show when={isBlocked() === false}>

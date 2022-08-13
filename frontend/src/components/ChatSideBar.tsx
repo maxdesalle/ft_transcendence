@@ -17,7 +17,6 @@ import Scrollbars from 'solid-custom-scrollbars';
 import { createTurboResource } from 'turbo-solid';
 import { routes } from '../api/utils';
 import { RoomInfo } from '../types/chat.interface';
-import autoAnimate from '@formkit/auto-animate';
 
 const ChatSideBar: Component = () => {
   const [keyword, setKeyword] = createSignal('');
@@ -26,15 +25,10 @@ const ChatSideBar: Component = () => {
   const [rooms, { refetch, mutate }] = createTurboResource<RoomInfo[]>(
     () => routes.publicRooms,
   );
-  // let ref: any;
 
   const mutateRooms = (room: RoomInfo) => {
     mutate([...rooms()!, room]);
   };
-
-  createEffect(() => {
-    console.log('public groups: ', rooms());
-  });
 
   return (
     <>

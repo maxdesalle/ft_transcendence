@@ -45,11 +45,6 @@ const PendingFriendReqCard: Component = () => {
       }
     });
   });
-  createEffect(() => {
-    if (pendingFriendReq()) {
-      setFriendReqCount(pendingFriendReq()!.length);
-    }
-  });
 
   return (
     <Show

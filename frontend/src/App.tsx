@@ -13,10 +13,20 @@ import TwoFactorAuth from './pages/TwoFactorAuth';
 import { Message, WsNotificationEvent } from './types/chat.interface';
 import LeaderBoard from './pages/LeaderBoard';
 import { Toaster } from 'solid-toast';
+import { User } from './types/user.interface';
+import { createTurboResource } from 'turbo-solid';
+import { routes } from './api/utils';
 
 const App: Component = () => {
-  const [state, { setFriendInvitation }] = useStore();
+  const [state, { setFriendInvitation, setFriendReqCount }] = useStore();
   const navigate = useNavigate();
+
+  const [pendingFriendReq] = createTurboResource<
+    {
+      req_user: User;
+      status: number;
+    }[]
+  >(() => routes.receivedFriendReq);
   onMount(() => {
     state.ws.addEventListener('message', (e) => {
       let res: {
@@ -33,14 +43,6 @@ const App: Component = () => {
       };
       res = JSON.parse(e.data);
       switch (res.event) {
-        // case 'friends: new_request':
-        //   const reqUser = users()?.find(
-        //     (user) => user.id === res.friend_request!.requesting_user!.id,
-        //   );
-        //   if (reqUser) {
-        //     addPendingFriendReq({ status: 0, req_user: reqUser });
-        //   }
-        //   break;
         case 'friends: request_accepted':
           console.log(`${res.event}: `, res);
           break;
@@ -69,7 +71,6 @@ const App: Component = () => {
           navigate('/login');
           break;
         case 'users: new_user':
-          refetch();
           break;
         default:
           console.log(`${res.event}: `, res);
@@ -81,17 +82,10 @@ const App: Component = () => {
   });
 
   createEffect(() => {
-    // if (loadMessages && state.chat.roomId) {
-    //   loadMessages(state.chat.roomId);
-    // }
-    // if (pendingFriendReq()) {
-    //   setPendigFriendReq([]);
-    //   pendingFriendReq()!.forEach((req) => {
-    //     addPendingFriendReq(req);
-    //   });
-    // }
+    if (pendingFriendReq()) {
+      setFriendReqCount(pendingFriendReq()!.length);
+    }
   });
-
   onCleanup(() => {
     state.ws.close();
     state.pong.ws.close();
