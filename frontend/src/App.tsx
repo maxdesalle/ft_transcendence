@@ -1,4 +1,11 @@
-import { Component, createEffect, onCleanup, onMount, Show } from 'solid-js';
+import {
+  Component,
+  createEffect,
+  createResource,
+  onCleanup,
+  onMount,
+  Show,
+} from 'solid-js';
 import { Route, Routes, useNavigate } from 'solid-app-router';
 import Chat from './pages/Chat';
 import Pong from './pages/Pong';
@@ -14,19 +21,20 @@ import { Message, WsNotificationEvent } from './types/chat.interface';
 import LeaderBoard from './pages/LeaderBoard';
 import { Toaster } from 'solid-toast';
 import { User } from './types/user.interface';
-import { createTurboResource } from 'turbo-solid';
 import { routes } from './api/utils';
+import { api } from './utils/api';
 
 const App: Component = () => {
   const [state, { setFriendInvitation, setFriendReqCount }] = useStore();
   const navigate = useNavigate();
+  const token = () => state.token;
 
-  const [pendingFriendReq] = createTurboResource<
-    {
-      req_user: User;
-      status: number;
-    }[]
-  >(() => routes.receivedFriendReq);
+  const [pendingFriendReq] = createResource(token, async () => {
+    const res = await api.get<{ req_user: User; status: number }[]>(
+      routes.receivedFriendReq,
+    );
+    return res.data;
+  });
   onMount(() => {
     state.ws.addEventListener('message', (e) => {
       let res: {

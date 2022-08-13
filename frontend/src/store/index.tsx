@@ -81,8 +81,6 @@ export interface StoreState {
     ws: WebSocket;
     friendInvitation: { event: WsNotificationEvent; user_id?: number } | null;
   };
-  readonly users: User[] | undefined;
-  test: User[];
 }
 
 export function StoreProvider(props: any) {
@@ -119,12 +117,7 @@ export function StoreProvider(props: any) {
       twoFaQrCode: '',
       pendingFriendReq: [],
       friendReqCount: 0,
-      //actions: change name, update avatar
     },
-    get users() {
-      return users();
-    },
-    test: [],
   });
 
   const actions: ActionsType = {
@@ -142,7 +135,6 @@ export function StoreProvider(props: any) {
         }),
       );
     },
-    //TODO: get the actoual id from the request
     toggleMatchMaking(val) {
       setState('pong', 'inMatchMaking', val);
     },
@@ -169,8 +161,6 @@ export function StoreProvider(props: any) {
     },
   };
   const store: [StoreState, ActionsType] = [state, actions];
-  roomMsg = createMessageById(actions, state, setState);
-  friendMsg = createFriendMsg(actions, state, setState);
   return (
     <StoreContext.Provider value={store}>
       {props.children}

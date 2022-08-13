@@ -47,22 +47,7 @@ export const createCurrentUser = (
     },
 
     //friends
-    async loadPendingFriendReq() {
-      try {
-        const res = await api.get<{ req_user_id: number; status: number }[]>(
-          routes.receivedFriendReq,
-        );
-        const pendingFriendReq: { user: User; status: number }[] = [];
-        res.data.map((elem) => {
-          const pendingUser = state.users?.find(
-            (user) => user.id == elem.req_user_id,
-          );
-          if (pendingUser) {
-            pendingFriendReq.push({ user: pendingUser, status: elem.status });
-          }
-        });
-      } catch (e) {}
-    },
+    async loadPendingFriendReq() {},
   });
 
   return user;
