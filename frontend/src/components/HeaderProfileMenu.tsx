@@ -11,10 +11,11 @@ import { useStore } from '../store';
 import { routes, urls } from '../api/utils';
 import { createTurboResource, forget } from 'turbo-solid';
 import Cookies from 'js-cookie';
+import { useAuth } from '../Providers/AuthProvider';
 
 const HeaderProfileMenu: Component<{ user: User }> = (props) => {
   const navigate = useNavigate();
-  const [_, { setToken }] = useStore();
+  const [_, { setToken }] = useAuth();
   const [currentUser] = createTurboResource<User>(() => routes.currentUser);
   const onLogout = () => {
     setToken(undefined);

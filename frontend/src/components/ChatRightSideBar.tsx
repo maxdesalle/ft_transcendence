@@ -19,8 +19,6 @@ import { createTurboResource } from 'turbo-solid';
 import { routes } from '../api/utils';
 import { RoomInfo } from '../types/chat.interface';
 import { api } from '../utils/api';
-import autoAnimate from '@formkit/auto-animate';
-import Loader from './Loader';
 
 const ChatRightSideBar: Component<{}> = () => {
   const [isOpen, setIsOpen] = createSignal(false);
@@ -80,7 +78,7 @@ const ChatRightSideBar: Component<{}> = () => {
           <Show when={currentRoom() && owner() && currentUser()}>
             <For
               each={currentRoom()?.users.filter(
-                (user) => user.id !== currentUser()!.id,
+                (user) => user.id !== owner()!.id,
               )}
             >
               {(user) => (

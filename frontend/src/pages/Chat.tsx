@@ -84,6 +84,7 @@ const Chat: Component = () => {
       if (friend) {
         chatApi
           .sendDm({ user_id: friend.id, message: message })
+          .then(() => {})
           .catch((err: AxiosError<{ message: string }>) => {
             notifyError(err.response?.data.message as string);
           });

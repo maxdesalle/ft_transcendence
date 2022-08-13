@@ -6,6 +6,7 @@ import App from './App';
 import { StoreProvider } from './store/index';
 import { TurboContext } from 'turbo-solid';
 import { api } from './utils/api';
+import { AuthProvider } from './Providers/AuthProvider';
 
 const configuration = {
   async fetcher(key: string) {
@@ -15,13 +16,15 @@ const configuration = {
 };
 render(
   () => (
-    <TurboContext.Provider value={configuration}>
-      <Router>
-        <StoreProvider>
-          <App />
-        </StoreProvider>
-      </Router>
-    </TurboContext.Provider>
+    <AuthProvider>
+      <TurboContext.Provider value={configuration}>
+        <Router>
+          <StoreProvider>
+            <App />
+          </StoreProvider>
+        </Router>
+      </TurboContext.Provider>
+    </AuthProvider>
   ),
   document.getElementById('root') as HTMLElement,
 );

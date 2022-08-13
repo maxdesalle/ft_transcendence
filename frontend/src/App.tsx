@@ -2,6 +2,7 @@ import {
   Component,
   createEffect,
   createResource,
+  createSignal,
   onCleanup,
   onMount,
   Show,
@@ -11,7 +12,7 @@ import Chat from './pages/Chat';
 import Pong from './pages/Pong';
 import Viewer from './pages/Viewer';
 import Header from './components/Header';
-import Home from './pages/Home';
+import Matchmaking from './pages/Matchmaking';
 import Profile from './pages/Profile';
 import Login from './pages/Login';
 import { useStore } from './store/index';
@@ -23,11 +24,22 @@ import { Toaster } from 'solid-toast';
 import { User } from './types/user.interface';
 import { routes } from './api/utils';
 import { api } from './utils/api';
+import { useAuth } from './Providers/AuthProvider';
+import Protected from './components/Protected';
+import Layout from './components/Layout';
 
 const App: Component = () => {
   const [state, { setFriendInvitation, setFriendReqCount }] = useStore();
   const navigate = useNavigate();
-  const token = () => state.token;
+  const [auth] = useAuth();
+  const token = () => auth.token;
+  const [me, setMe] = createSignal<User>({
+    display_name: '',
+    avatarId: 0,
+    isTwoFactorAuthenticationEnabled: false,
+    login42: '',
+    id: 0,
+  });
 
   const [pendingFriendReq] = createResource(token, async () => {
     const res = await api.get<{ req_user: User; status: number }[]>(
@@ -35,6 +47,7 @@ const App: Component = () => {
     );
     return res.data;
   });
+
   onMount(() => {
     state.ws.addEventListener('message', (e) => {
       let res: {
@@ -76,7 +89,7 @@ const App: Component = () => {
           setFriendInvitation(res);
           break;
         case 'ws_auth_fail':
-          navigate('/login');
+          // navigate('/login');
           break;
         case 'users: new_user':
           break;
@@ -101,20 +114,28 @@ const App: Component = () => {
 
   return (
     <>
-      <Show when={state.token}>
-        <Header />
-      </Show>
-      <div class="container h-90 bg-skin-page">
+      <div class="h-90 bg-skin-page">
         <Routes>
-          <Route path="/" element={<Home />} />
-          <Route path="/chat" element={<Chat />} />
-          <Route path="/pong" element={<Pong />} />
-          <Route path="/viewer" element={<Viewer />} />
-          <Route path="/profile/:id" element={<Profile />} />
-          <Route path="/edit_profile" element={<EditProfile />} />
+          <Route
+            path=""
+            element={
+              <Protected>
+                <Header />
+              </Protected>
+            }
+          >
+            <Route path="" element={<Layout />}>
+              <Route path="/matchmaking" element={<Matchmaking />} />
+              <Route path="/chat" element={<Chat />} />
+              <Route path="/pong" element={<Pong />} />
+              <Route path="/viewer" element={<Viewer />} />
+              <Route path="/profile/:id" element={<Profile />} />
+              <Route path="/edit_profile" element={<EditProfile />} />
+              <Route path="/2fa" element={<TwoFactorAuth />} />
+              <Route path="/leaderboard" element={<LeaderBoard />} />
+            </Route>
+          </Route>
           <Route path="/login" element={<Login />} />
-          <Route path="/2fa" element={<TwoFactorAuth />} />
-          <Route path="/leaderboard" element={<LeaderBoard />} />
         </Routes>
       </div>
       <Toaster />

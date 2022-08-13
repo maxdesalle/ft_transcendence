@@ -20,7 +20,7 @@ import { User } from '../types/user.interface';
 import toast from 'solid-toast';
 import { RoomInfo } from '../types/chat.interface';
 import { api } from '../utils/api';
-import { notifyError, notifySuccess } from '../utils/helpers';
+import { generateImageUrl, notifyError, notifySuccess } from '../utils/helpers';
 import { AxiosError } from 'axios';
 import autoAnimate from '@formkit/auto-animate';
 import { sendFriendReq } from '../api/user';
@@ -190,7 +190,13 @@ const ChatRoomUserCard: Component<{
         }
       >
         <div onClick={() => setIsOpen(true)} class="flex items-center">
-          <Avatar />
+          <Avatar
+            imgUrl={
+              props.user.avatarId
+                ? generateImageUrl(props.user.avatarId)
+                : undefined
+            }
+          />
           <h1 class="pl-3">{props.user.display_name}</h1>
         </div>
       </div>

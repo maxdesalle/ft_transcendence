@@ -18,13 +18,11 @@ import Search from './Search';
 
 const FriendList: Component = () => {
   const [keyword, setKeyword] = createSignal('');
-  const [state, { loadFriendMessages, toggleShowMessages }] = useStore();
+  const [state, { setFriendId, toggleShowMessages }] = useStore();
   const onLoadFriendMessages = (friend: Friend) => {
-    if (loadFriendMessages) {
-      loadFriendMessages(friend.id);
-      if (!state.chatUi.showMessages) {
-        toggleShowMessages();
-      }
+    setFriendId(friend.id);
+    if (!state.chatUi.showMessages) {
+      toggleShowMessages();
     }
   };
   const [friends] = createTurboResource<Friend[]>(() => routes.friends);
@@ -37,6 +35,10 @@ const FriendList: Component = () => {
 
   onMount(() => {
     autoAnimate(ref);
+  });
+
+  createEffect(() => {
+    console.log('user id', state.chat.friendId);
   });
 
   return (

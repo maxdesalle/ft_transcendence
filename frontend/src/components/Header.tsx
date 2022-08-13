@@ -17,7 +17,7 @@ import autoAnimate from '@formkit/auto-animate';
 import { IoNotificationsSharp } from 'solid-icons/io';
 import PendingFriendReqCard from './PendingFriendReqCard';
 import { AxiosError } from 'axios';
-const LINKS = ['chat', 'leaderboard'];
+const LINKS = ['chat', 'leaderboard', 'viewer'];
 
 const Header: Component = () => {
   const [keyword, setKeyword] = createSignal<string>('');
@@ -64,7 +64,7 @@ const Header: Component = () => {
     <>
       <header class="flex items-center relative z-20 bg-skin-header-background py-1 px-6 justify-between">
         <div class="flex items-center">
-          <Link href="/">
+          <Link href="/matchmaking">
             <img class="w-9 rounded-xl mr-2 h-8" src={logo} alt="logo" />
           </Link>
           <span class="flex items-center rounded-md bg-inherit text-slate-300 h-8 border shadow-md p-1 border-header-menu">

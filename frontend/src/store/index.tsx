@@ -1,9 +1,8 @@
 import Cookies from 'js-cookie';
-import { createContext, createResource, Resource, useContext } from 'solid-js';
+import { createContext, Resource, useContext } from 'solid-js';
 import { Message, WsNotificationEvent } from '../types/chat.interface';
 import { Friend, User } from '../types/user.interface';
 import { createStore, produce } from 'solid-js/store';
-import { createFriendMsg, createMessageById } from './storeActions';
 import { urls } from '../api/utils';
 import { initSocket } from '../game/pong';
 

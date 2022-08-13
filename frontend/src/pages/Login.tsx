@@ -1,9 +1,10 @@
 import Cookies from 'js-cookie';
 import { useNavigate } from 'solid-app-router';
-import { Component, createRenderEffect, createSignal } from 'solid-js';
+import { Component, createRenderEffect, createSignal, onMount } from 'solid-js';
 import toast from 'solid-toast';
 import { loginFromMockApi } from '../api/mock';
 import { routes } from '../api/utils';
+import { useAuth } from '../Providers/AuthProvider';
 import { useStore } from '../store';
 
 function model(el: any, accessor: any) {
@@ -15,7 +16,8 @@ function model(el: any, accessor: any) {
 const Login: Component = () => {
   const [username, setUsername] = createSignal<string>('');
   const navigate = useNavigate();
-  const [_, { setToken }] = useStore();
+  const [state, { setToken }] = useStore();
+  const [auth, { setToken: setAuthToken, setIsAuth }] = useAuth();
   const notify = (msg: string) => toast.error(msg);
 
   const onLogin = () => {
@@ -25,7 +27,9 @@ const Login: Component = () => {
         const token = Cookies.get('jwt_token');
         if (token) {
           setToken(token);
-          navigate('/');
+          setAuthToken(token);
+          setIsAuth(true);
+          navigate('/matchmaking');
         }
       })
       .catch((err) => {
@@ -33,6 +37,10 @@ const Login: Component = () => {
       });
     setUsername('');
   };
+
+  onMount(() => {
+    if (auth.token) navigate('/matchmaking');
+  });
 
   return (
     <div class="flex flex-col items-center h-screen">
