@@ -1,6 +1,6 @@
-import { format, parseISO } from "date-fns";
-import { Component, Show } from "solid-js";
-import { Message } from "../types/chat.interface";
+import { format, parseISO } from 'date-fns';
+import { Component, Show } from 'solid-js';
+import { Message } from '../types/chat.interface';
 
 const MessageCard: Component<{
   message: Message;
@@ -10,15 +10,12 @@ const MessageCard: Component<{
 }> = ({ title, message, position, color }) => {
   return (
     <>
-      <Show when={title}>
-        <p>{title}</p>
-      </Show>
       <div
         class={`opacity-90 text-right border ${color} max-w-xs rounded-md w-full ${position}`}
       >
         <p class="p-1">{message.message}</p>
         <p class="p-1">
-          {format(parseISO(message.timestamp.toString()), "pp")}
+          {format(parseISO(message.timestamp.toString()), 'pp')}
         </p>
       </div>
     </>

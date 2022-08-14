@@ -589,8 +589,7 @@ export const sketch = (myP5: typeof p5): P5Type => {
     heightOffset = newHeightOffset;
   }
 
-  myP5.setup = (ref) => {
-    myP5.ref = ref;
+  myP5.setup = () => {
     myP5.createCanvas(canvasWidth, canvasHeight);
     myP5.noStroke();
     initSliders();

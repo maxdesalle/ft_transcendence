@@ -243,7 +243,7 @@ export const p5: {
   resizeCanvas: (width: number, height: number) => void;
   background: (b: number) => void;
   // functions that need to be defined by user
-  setup: (ref: any) => void;
+  setup: () => void;
   draw: () => void;
   deleteAll: () => void;
   setRef: (ref: any) => void;
@@ -371,7 +371,7 @@ export const p5: {
     ctx.fillStyle = oldFill;
   },
   // functions that need to be defined by user
-  setup(ref: any) {},
+  setup() {},
   draw() {},
   //for my love, david banziziki <3
   deleteAll() {
