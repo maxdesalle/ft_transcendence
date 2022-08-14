@@ -9,7 +9,7 @@ const Pong: Component = () => {
   onMount(() => {
     const game = sketch(p5);
     game.setRef(ref);
-    game.setup(ref);
+    game.setup();
     setInterval(() => game.draw(), 0);
   });
 

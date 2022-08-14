@@ -166,7 +166,7 @@ export const p5: {
   resizeCanvas: (width: number, height: number) => void;
   background: (b: number) => void;
   // functions that need to be defined by user
-  setup: (ref: any) => void;
+  setup: () => void;
   draw: () => void;
   setRef: (ref: any) => void;
   ref: null | any;
@@ -279,6 +279,6 @@ export const p5: {
     ctx.fillStyle = oldFill;
   },
   // functions that need to be defined by user
-  setup(ref: any) {},
+  setup() {},
   draw() {},
 };

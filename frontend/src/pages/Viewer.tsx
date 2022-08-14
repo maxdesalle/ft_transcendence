@@ -1,10 +1,4 @@
-import {
-  Component,
-  createEffect,
-  createSignal,
-  onCleanup,
-  onMount,
-} from 'solid-js';
+import { Component, createSignal, onCleanup, onMount } from 'solid-js';
 import { initViewerSocket, viewerSketch } from '../game/viewer';
 import { p5 } from '../game/newPong';
 
@@ -16,7 +10,7 @@ const Viewer: Component = () => {
     ws = initViewerSocket();
     const game = viewerSketch(p5);
     game.setRef(ref());
-    game.setup(ref());
+    game.setup();
     setInterval(() => game.draw(), 0);
   });
 
