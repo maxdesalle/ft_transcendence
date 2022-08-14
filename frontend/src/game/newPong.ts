@@ -12,6 +12,9 @@ const textAttributes = {
 // index -> keycode of held key, value -> true; if empty -> no key held
 const heldKeys: boolean[] = [];
 
+//used for the deleteAll function
+let elementList: any[] = [];
+
 class buttonClass {
   private readonly buttonElement: HTMLButtonElement;
   private x: number = 0;
@@ -126,6 +129,7 @@ left: ${this.x}px; top: ${this.y}px;`,
     this.update();
   }
   remove(): void {
+    elementList = elementList.filter(item => !(item === this.sliderElement));
     this.sliderElement.parentNode?.removeChild(this.sliderElement);
   }
 }
@@ -182,6 +186,7 @@ left: ${this.x}px; top: ${this.y}px;`,
     this.update();
   }
   remove(): void {
+    elementList = elementList.filter(item => !(item === this.inputElement));
     this.inputElement.parentNode?.removeChild(this.inputElement);
   }
   id(s: string): void {
@@ -240,6 +245,7 @@ export const p5: {
   // functions that need to be defined by user
   setup: (ref: any) => void;
   draw: () => void;
+  deleteAll: () => void;
   setRef: (ref: any) => void;
   ref: null | any;
 } = {
@@ -261,6 +267,7 @@ export const p5: {
 
   createSlider(min: number, max: number, value: number, step: number) {
     const slider = document.createElement('input');
+    elementList.push(slider);
     //specifying slider category
     slider.type = 'range';
 
@@ -273,6 +280,7 @@ export const p5: {
   },
   createInput() {
     const input = document.createElement('input');
+    elementList.push(input);
     //specifying slider category
     input.type = 'text';
 
@@ -291,6 +299,7 @@ export const p5: {
 
   createButton(s: string): buttonClass {
     const button = document.createElement('button');
+    elementList.push(button);
     button.innerText = s;
     document.body.appendChild(button);
     return new buttonClass(button);
@@ -364,4 +373,13 @@ export const p5: {
   // functions that need to be defined by user
   setup(ref: any) {},
   draw() {},
+  //for my love, david banziziki <3
+  deleteAll() {
+    console.log('deletting everything');
+    elementList.forEach((e) => e.parentNode?.removeChild(e));
+    elementList = [];
+    canvasElement.parentNode.removeChild(canvasElement);
+    canvasElement = undefined;
+    ctx = undefined;
+  }
 };

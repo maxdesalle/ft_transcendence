@@ -620,6 +620,7 @@ export const sketch = (myP5: typeof p5): P5Type => {
     drawBall();
     drawScore();
     handleInput();
+    myP5.deleteAll();
   };
   return p5;
 };
