@@ -27,10 +27,6 @@ const Protected: Component<{ children: JSXElement }> = (props) => {
     }
   });
 
-  createEffect(() => {
-    console.log('is auth: ', state.isAuth);
-    console.log('user: ', state.user);
-  });
   return (
     <Show when={state.token} fallback={<Navigate href="/login" />}>
       {props.children}

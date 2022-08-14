@@ -1,4 +1,4 @@
-import { RoomUser, User } from './user.interface';
+import { RoomUser } from './user.interface';
 
 export interface RoomConfig {
   name: string;
@@ -48,4 +48,4 @@ export type WsNotificationEvent =
   | 'pong: invitation_accepted'
   | 'pong: player_joined'
   | 'ladder_change'
-  | 'users: new_user'
+  | 'users: new_user';

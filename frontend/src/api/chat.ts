@@ -1,3 +1,4 @@
+import { ro } from 'date-fns/locale';
 import { createResource } from 'solid-js';
 import { Message, RoomInfo } from '../types/chat.interface';
 import { api } from '../utils/api';
@@ -106,6 +107,22 @@ const unmuteUser = async (data: { room_id: number; user_id: number }) => {
   return await api.post<RoomInfo>(routes.unmuteUser, data);
 };
 
+const joinGroup = async (data: { room_id: number; password: string }) => {
+  return await api.post<RoomInfo>(routes.joinGroup, data);
+};
+
+const setRoomPassword = async (data: { room_id: number; password: string }) => {
+  return await api.post<RoomInfo>(routes.setRoomPassword, data);
+};
+
+const setPrivate = async (data: { room_id: number; private: boolean }) => {
+  return await api.post<RoomInfo>(routes.setPrivate, data);
+};
+
+const setOwner = async (data: { room_id: number; user_id: number }) => {
+  return await api.post<RoomInfo>(routes.setOwner, data);
+};
+
 export const chatApi = {
   createRoom,
   getRooms,
@@ -121,4 +138,8 @@ export const chatApi = {
   promoteUser,
   demoteUser,
   unblockUser,
+  joinGroup,
+  setRoomPassword,
+  setPrivate,
+  setOwner,
 };

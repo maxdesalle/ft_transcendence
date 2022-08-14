@@ -178,14 +178,11 @@ const Chat: Component = () => {
                       <p class="text-sm">status: ...</p>
                     </div>
                   </div>
-                  <button
-                    type="button"
-                    class="text-white bg-gradient-to-r from-blue-500 via-blue-600 to-blue-700 hover:bg-gradient-to-br focus:ring-4 focus:outline-none focus:ring-blue-300 dark:focus:ring-blue-800 font-medium rounded-sm text-sm px-2 py-1 text-center mr-2 mb-2"
-                  >
+                  <button type="button" class="btn-primary">
                     Invite to play
                   </button>
                   <Link
-                    class="text-white bg-gradient-to-r from-blue-500 via-blue-600 to-blue-700 hover:bg-gradient-to-br focus:ring-4 focus:outline-none focus:ring-blue-300 dark:focus:ring-blue-800 font-medium rounded-sm text-sm px-2 py-1 text-center mr-2 mb-2"
+                    class="btn-primary"
                     href={`/profile/${selectedFriend()?.id}`}
                   >
                     Profile
@@ -194,7 +191,7 @@ const Chat: Component = () => {
                     <button
                       onClick={onBlockFriend}
                       type="button"
-                      class="text-white bg-gradient-to-r from-red-400 via-red-500 to-red-600 hover:bg-gradient-to-br focus:ring-4 focus:outline-none focus:ring-red-300 dark:focus:ring-red-800 font-medium rounded-sm text-sm px-2 py-1 text-center mr-2 mb-2"
+                      class="btn-secondary"
                     >
                       Block
                     </button>
@@ -203,7 +200,7 @@ const Chat: Component = () => {
                     <button
                       onClick={onUnblockFriend}
                       type="button"
-                      class="text-white bg-gradient-to-r from-cyan-500 to-blue-500 hover:bg-gradient-to-bl focus:ring-4 focus:outline-none focus:ring-cyan-300 dark:focus:ring-cyan-800 font-medium rounded-sm text-sm px-2 py-1 text-center mr-2 mb-2"
+                      class="btn-primary"
                     >
                       Unblock
                     </button>

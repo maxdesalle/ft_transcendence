@@ -1,30 +1,32 @@
-import { Component, createEffect, onCleanup, onMount } from 'solid-js';
+import {
+  Component,
+  createEffect,
+  createSignal,
+  onCleanup,
+  onMount,
+} from 'solid-js';
 import { initViewerSocket, viewerSketch } from '../game/viewer';
-import p5Type from 'p5';
+import { p5 } from '../game/newPong';
 
 const Viewer: Component = () => {
-  let ref: any;
+  const [ref, setRef] = createSignal<any>();
   let ws: WebSocket;
-  let p5: p5Type;
 
   onMount(() => {
     ws = initViewerSocket();
-    p5 = new p5Type(viewerSketch, ref);
+    const game = viewerSketch(p5);
+    game.setRef(ref());
+    game.setup(ref());
+    setInterval(() => game.draw(), 0);
   });
 
   onCleanup(() => {
-    p5.remove();
     ws.close();
-  });
-
-  createEffect(() => {
-    const input = document.getElementById('user_id');
-    console.log(input);
   });
 
   return (
     <div class="flex flex-col items-center pt-3">
-      <div ref={ref}></div>
+      <canvas ref={setRef}></canvas>
     </div>
   );
 };

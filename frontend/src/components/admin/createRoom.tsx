@@ -2,7 +2,7 @@ import { Component, createSignal } from 'solid-js';
 import { chatApi } from '../../api/chat';
 import { RoomInfo } from '../../types/chat.interface';
 
-const CreateRoom: Component<{ mutate: (room: RoomInfo) => void }> = (props) => {
+const CreateRoom: Component<{ refetch: () => void }> = (props) => {
   const [roomName, setRoomName] = createSignal('');
   const [password, setPassword] = createSignal('');
   const [isPrivate, setIsPrivate] = createSignal(false);
@@ -16,8 +16,7 @@ const CreateRoom: Component<{ mutate: (room: RoomInfo) => void }> = (props) => {
         password: password(),
       })
       .then((res) => {
-        // props.refetch();
-        props.mutate(res.data);
+        props.refetch();
         console.log('new room: ', res.data);
       });
     setRoomName('');
@@ -59,10 +58,7 @@ const CreateRoom: Component<{ mutate: (room: RoomInfo) => void }> = (props) => {
         />
       </div>
       <div class="mt-2">
-        <button
-          onClick={onCreateRoom}
-          class="px-6 py-2 text-sm text-blue-100 transition-colors duration-300 bg-blue-600 rounded-full shadow-xl hover:bg-blue-900 shadow-blue-400/30"
-        >
+        <button onClick={onCreateRoom} class="btn-primary">
           Create Room
         </button>
       </div>

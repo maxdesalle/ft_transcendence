@@ -47,6 +47,7 @@ export type Status = 'idle' | 'loading' | 'success' | 'failed';
 
 export enum TAB {
   ROOMS,
+  PUBLICROOM,
   FRIENDS,
 }
 
@@ -107,7 +108,7 @@ export function StoreProvider(props: any) {
       friendId: undefined,
     },
     chatUi: {
-      tab: TAB.ROOMS,
+      tab: TAB.PUBLICROOM,
       showMessages: false,
     },
     currentUser: {

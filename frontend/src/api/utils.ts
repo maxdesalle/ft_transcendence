@@ -38,4 +38,8 @@ export const routes = {
   demoteUser: `${urls.backendUrl}/chat/demote_group_user`,
   blocked: `${urls.backendUrl}/chat/blocked`,
   publicRooms: `${urls.backendUrl}/chat/public_groups`,
+  joinGroup: `${urls.backendUrl}/chat/join_group`,
+  setRoomPassword: `${urls.backendUrl}/chat/set_password`,
+  setPrivate: `${urls.backendUrl}/chat/set_private`,
+  setOwner: `${urls.backendUrl}/chat/set_owner`,
 };

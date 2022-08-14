@@ -16,28 +16,65 @@ import CreateRoom from './admin/createRoom';
 import Scrollbars from 'solid-custom-scrollbars';
 import { createTurboResource } from 'turbo-solid';
 import { routes } from '../api/utils';
-import { RoomInfo } from '../types/chat.interface';
+import { RoomInfo, WsNotificationEvent } from '../types/chat.interface';
+import RoomList from './RoomList';
+import { useAuth } from '../Providers/AuthProvider';
+import JoinableRoomList from './JoinableRoomList';
 
 const ChatSideBar: Component = () => {
   const [keyword, setKeyword] = createSignal('');
-  const [state, { setCurrentRoomId, changeTab, toggleShowMessages }] =
-    useStore();
-  const [rooms, { refetch, mutate }] = createTurboResource<RoomInfo[]>(
-    () => routes.publicRooms,
+  const [auth] = useAuth();
+  const [state, { changeTab }] = useStore();
+  const [publicRooms, { refetch: refetchPublicRooms }] = createTurboResource<
+    RoomInfo[]
+  >(() => routes.publicRooms);
+  const [rooms, { refetch: refetchRooms }] = createTurboResource<RoomInfo[]>(
+    () => routes.getRooms,
   );
 
-  const mutateRooms = (room: RoomInfo) => {
-    mutate([...rooms()!, room]);
-  };
+  const joinableRooms = () =>
+    publicRooms()?.filter((rooms) => {
+      const b = rooms.users.find((user) => user.id === auth.user.id);
+      if (b) return false;
+      return true;
+    });
+
+  const myRooms = () =>
+    rooms()?.filter((rooms) => {
+      const b = rooms.users.find((user) => user.id === auth.user.id);
+      if (b) return true;
+      return false;
+    });
+
+  onMount(() => {
+    state.ws.addEventListener('message', (e) => {
+      let res: { event: WsNotificationEvent };
+      res = JSON.parse(e.data);
+      if (res.event === 'chat_new_group') {
+        refetchPublicRooms();
+        refetchRooms();
+      } else if (res.event === 'chat_new_user_in_group') {
+        refetchPublicRooms();
+        refetchRooms();
+      }
+    });
+  });
 
   return (
     <>
-      <ul class="flex text-white">
-        <li
-          onClick={() => changeTab(TAB.ROOMS)}
-          class="p-2 hover:text-gray-400 transition-all"
-        >
-          Rooms
+      <ul class="flex text-white items-center">
+        <li class="p-2 hover:text-gray-400 transition-all">
+          <select
+            onInput={(e) => {
+              changeTab(parseInt(e.currentTarget.value));
+            }}
+            class="bg-skin-menu-background p-1 rounded-md"
+          >
+            <option selected value={TAB.PUBLICROOM}>
+              Public rooms
+            </option>
+            <option value={TAB.ROOMS}>Rooms</option>
+          </select>
         </li>
         <li
           onClick={() => changeTab(TAB.FRIENDS)}
@@ -48,43 +85,35 @@ const ChatSideBar: Component = () => {
       </ul>
       <Scrollbars id="room_users" class="h-full">
         <Switch>
-          <Match when={state.chatUi.tab == TAB.ROOMS}>
+          <Match when={state.chatUi.tab == TAB.PUBLICROOM}>
             <Search
               setKeyword={setKeyword}
               placeHolder="Search for room"
               popperMsg="Create new room"
             >
-              <CreateRoom mutate={mutateRooms} />
+              <CreateRoom refetch={refetchPublicRooms} />
             </Search>
-            <Show when={rooms()}>
-              <For
-                each={rooms()!.filter(
-                  (room) =>
-                    room.room_name
-                      .toLocaleLowerCase()
-                      .includes(keyword().toLocaleLowerCase()) &&
-                    room.type === 'group',
-                )}
-              >
-                {(room) => (
-                  <div
-                    onClick={() => {
-                      setCurrentRoomId(room.room_id);
-                      if (!state.chatUi.showMessages) {
-                        toggleShowMessages();
-                      }
-                    }}
-                    class="flex p-2 items-center"
-                  >
-                    <HiSolidUserGroup color="#2564eb" size={24} />
-                    <div class="pl-2 text-white hover:text-slate-400 transition-all">
-                      <p class="font-bold first-letter:capitalize">
-                        {room.room_name}
-                      </p>
-                    </div>
-                  </div>
-                )}
-              </For>
+            <Show when={publicRooms()}>
+              <JoinableRoomList
+                keyword={keyword()}
+                refetch={() => {
+                  refetchPublicRooms();
+                  refetchRooms();
+                }}
+                rooms={joinableRooms()!}
+              />
+            </Show>
+          </Match>
+          <Match when={state.chatUi.tab === TAB.ROOMS}>
+            <Search
+              setKeyword={setKeyword}
+              placeHolder="Search for room"
+              popperMsg="Create new room"
+            >
+              <CreateRoom refetch={refetchRooms} />
+            </Search>
+            <Show when={publicRooms()}>
+              <RoomList room={myRooms()!} keyword={keyword()} />
             </Show>
           </Match>
           <Match when={state.chatUi.tab === TAB.FRIENDS}>

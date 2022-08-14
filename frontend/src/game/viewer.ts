@@ -1,9 +1,5 @@
 import { Slider } from './slider';
-import * as p5Type from 'p5';
-import '../utils/p5soundfix';
-import 'p5/lib/addons/p5.sound';
-import soundScore from '../assets/client_music_score.mp3';
-import soundImpact from '../assets/client_music_impact.mp3';
+import { p5 } from './newPong';
 
 const socketServerIP = 'localhost';
 const socketServerPort = 3000;
@@ -108,21 +104,10 @@ export function initViewerSocket() {
   return ws;
 }
 
-export const viewerSketch = (p5: p5Type) => {
+type MyP5 = typeof p5;
+
+export const viewerSketch = (p5: MyP5) => {
   let sliders = [
-    new Slider(
-      p5,
-      'volume',
-      3 * (canvasWidth / 7),
-      canvasHeight / 20,
-      canvasWidth / 7,
-      canvasHeight / 10,
-      0,
-      1,
-      1,
-      0,
-      false,
-    ),
     new Slider(
       p5,
       'color',
@@ -142,30 +127,32 @@ export const viewerSketch = (p5: p5Type) => {
   //else returns false
   function handlePlayerWon() {
     if (df.playerWon == 0) return false;
-    p5.textAlign(p5.CENTER, p5.CENTER);
-    const col = p5.color(
+    p5.textAlign('center', 'center');
+
+    p5.fill(
       colors[colorIndex].r,
       colors[colorIndex].g,
       colors[colorIndex].b,
+      255,
     );
-    p5.fill(col);
     p5.text(`Player ${df.playerWon} won!`, canvasWidth / 2, canvasHeight / 2);
     return true;
   }
 
   // handles socket errors
   function handleSocketError() {
-    p5.textStyle(p5.BOLD);
+    p5.textStyle('bold');
     p5.textSize(canvasHeight * 0.03);
-    const col = p5.color(
-      colors[colorIndex].r,
-      colors[colorIndex].g,
-      colors[colorIndex].b,
-    );
+
     if (socketErrObject) {
       sliders.forEach((s) => s.p5Slider.remove());
-      p5.textAlign(p5.CENTER, p5.CENTER);
-      p5.fill(col);
+      p5.textAlign('center', 'center');
+      p5.fill(
+        colors[colorIndex].r,
+        colors[colorIndex].g,
+        colors[colorIndex].b,
+        255,
+      );
       p5.text(
         `socket error: ${socketErrObject}`,
         canvasWidth / 4,
@@ -178,12 +165,12 @@ export const viewerSketch = (p5: p5Type) => {
 
   /* === draw functions === */
   function drawMiddleLine() {
-    const col = p5.color(
+    p5.fill(
       colors[colorIndex].r,
       colors[colorIndex].g,
       colors[colorIndex].b,
+      255,
     );
-    p5.fill(col);
     const x = (0.5 - df.middleLineThickness / 2) * canvasWidth;
     for (let i = 0; i < 1; i += df.middleLineLength * 2) {
       const y = (i - df.middleLineLength / 2) * canvasHeight;
@@ -198,12 +185,13 @@ export const viewerSketch = (p5: p5Type) => {
 
   function drawPlayer1() {
     //left racket
-    const col = p5.color(
+
+    p5.fill(
       colors[colorIndex].r,
       colors[colorIndex].g,
       colors[colorIndex].b,
+      255,
     );
-    p5.fill(col);
     let elTime = (Date.now() - df.sendTime) / 1000;
     const xPos = df.p1X - df.racketThickness / 2;
     let yPos =
@@ -220,12 +208,13 @@ export const viewerSketch = (p5: p5Type) => {
 
   function drawPlayer2() {
     //right racket
-    const col = p5.color(
+
+    p5.fill(
       colors[colorIndex].r,
       colors[colorIndex].g,
       colors[colorIndex].b,
+      255,
     );
-    p5.fill(col);
     let elTime = (Date.now() - df.sendTime) / 1000;
     const xPos = df.p2X - df.racketThickness / 2;
     let yPos =
@@ -241,12 +230,12 @@ export const viewerSketch = (p5: p5Type) => {
   }
 
   function drawBall() {
-    const col = p5.color(
+    p5.fill(
       colors[colorIndex].r,
       colors[colorIndex].g,
       colors[colorIndex].b,
+      255,
     );
-    p5.fill(col);
     const elTime = (Date.now() - df.sendTime) / 1000;
     const xPos = (df.ballX - df.ballRad + elTime * df.ballSpeedX) * canvasWidth;
     const yPos =
@@ -260,15 +249,15 @@ export const viewerSketch = (p5: p5Type) => {
   }
 
   function drawScore() {
-    const col = p5.color(
+    p5.fill(
       colors[colorIndex].r,
       colors[colorIndex].g,
       colors[colorIndex].b,
+      255,
     );
-    p5.fill(col);
-    p5.textStyle(p5.BOLD);
+    p5.textStyle('bold');
     p5.textSize(canvasHeight * 0.1);
-    p5.textAlign(p5.CENTER, p5.TOP);
+    p5.textAlign('center', 'top');
     p5.text(
       `${df.p1Score}   ${df.p2Score}`,
       canvasWidth / 2,
@@ -280,13 +269,13 @@ export const viewerSketch = (p5: p5Type) => {
     powerUpsMap.forEach((yAndType, x) => {
       switch (yAndType.type) {
         case 'wall':
-          p5.fill(255);
+          p5.fill(255, 255, 255, 255);
           break;
         case 'upSpeed':
-          p5.fill(255, 0, 0);
+          p5.fill(255, 0, 0, 255);
           break;
         case 'downSpeed':
-          p5.fill(0, 255, 0);
+          p5.fill(0, 255, 0, 255);
           break;
       }
       p5.rect(
@@ -299,65 +288,53 @@ export const viewerSketch = (p5: p5Type) => {
   }
   /* === */
 
-  /* === music and sounds === */
-  function playSounds() {
-    if (playScore) {
-      scoreSound.play();
-      playScore = false;
-    }
-    if (playImpact) {
-      impactSound.play();
-      playImpact = false;
-    }
-  }
-  /* === */
-
-  let input: any, button: any; // text box for input of id and submit button
+  //   let input: any, button: any; // text box for input of id and submit button
   let idListOpacity = 1; // opacity of id list test
   let doneChoosing = false; // false if viewer still did not choose first session to watch
   function handleSubmit() {
-    const idText = input.value();
-    input.value(''); // empty box
-    if (
-      idText === '' ||
-      isNaN(idText) ||
-      !sessionIdsArray.includes(p5.int(idText))
-    ) {
-      console.log(`${idText} is an invalid id`);
-      document.getElementById('user_id')!.placeholder = 'Invalid id';
-      return;
-    }
-    ws.send(JSON.stringify({ id: p5.int(idText) }));
-    doneChoosing = true;
-    gameStarted = false;
-    gameFinished = false;
-    document.getElementById('user_id')!.placeholder = 'Enter id';
+    // const idText = input.value();
+    // input.value(''); // empty box
+    // if (
+    //   idText === '' ||
+    //   isNaN(idText) ||
+    //   !sessionIdsArray.includes(parseInt(idText))
+    // ) {
+    //   console.log(`${idText} is an invalid id`);
+    //   document.getElementById('user_id')!.placeholder = 'Invalid id';
+    //   return;
+    // }
+    // ws.send(JSON.stringify({ id: p5.int(idText) }));
+    // //
+    // doneChoosing = true;
+    // gameStarted = false;
+    // gameFinished = false;
+    // document.getElementById('user_id')!.placeholder = 'Enter id';
   }
 
   //blocks user from displaying game if nothing chosen and handles box transparency
   function handleChooseSession() {
-    if (doneChoosing) {
-      let op = '0.3';
-      if (p5.mouseY / canvasHeight < 0.25) op = '1';
-      input.style('opacity', op);
-      button.style('opacity', op);
-      idListOpacity = parseFloat(op);
-      sliders.forEach((s) => s.setOpacity(parseFloat(op) * 255));
-      return false;
-    }
-    input.style('opacity', '1');
-    button.style('opacity', '1');
-    idListOpacity = 1;
-    sliders.forEach((s) => s.setOpacity(255));
+    // if (doneChoosing) {
+    //   let op = '0.3';
+    //   if (p5.mouseY / canvasHeight < 0.25) op = '1';
+    //   input.style('opacity', op);
+    //   button.style('opacity', op);
+    //   idListOpacity = parseFloat(op);
+    //   sliders.forEach((s) => s.setOpacity(parseFloat(op) * 255));
+    //   return false;
+    // }
+    // input.style('opacity', '1');
+    // button.style('opacity', '1');
+    // idListOpacity = 1;
+    // sliders.forEach((s) => s.setOpacity(255));
     return true;
   }
 
   // menu to diplay if p1 or p2 is not ready yet
   function handleGameNotStarted() {
     if (gameStarted) return false;
-    p5.textAlign(p5.CENTER, p5.CENTER);
+    p5.textAlign('center', 'center');
     const col = colors[colorIndex];
-    p5.fill(col.r, col.g, col.b);
+    p5.fill(col.r, col.g, col.b, 255);
     p5.textSize(canvasWidth / 50);
     p5.text('waiting for game to start...', canvasWidth / 2, canvasHeight / 2);
     return true;
@@ -366,9 +343,9 @@ export const viewerSketch = (p5: p5Type) => {
   // displays corresponding message if game stopped
   function handleGameFinished() {
     if (!gameFinished) return false;
-    p5.textAlign(p5.CENTER, p5.CENTER);
+    p5.textAlign('center', 'center');
     const col = colors[colorIndex];
-    p5.fill(col.r, col.g, col.b);
+    p5.fill(col.r, col.g, col.b, 255);
     p5.textSize(canvasWidth / 30);
     let msg;
     if (df.playerWon === 0) msg = 'the game session was interrupted';
@@ -380,21 +357,21 @@ export const viewerSketch = (p5: p5Type) => {
   let timeBeforeSendRequest = 1;
   // sends requestSessions: true every second + diplays the 10 first ones
   function getAndDisplayIds() {
-    timeBeforeSendRequest -= 1 / (p5.frameRate() + 2); // + 2 to avoid divion by zero or by one on the first frame
-    if (timeBeforeSendRequest <= 0) {
-      ws.send(JSON.stringify({ requestSessions: true }));
-      timeBeforeSendRequest = 1;
-    }
-    // displaying the 20 first sessions
-    p5.fill(255, 255, 255, idListOpacity * 255);
-    p5.textAlign(p5.CENTER, p5.TOP);
-    p5.textSize(canvasWidth / 50);
-    const max = Math.min(20, sessionIdsArray.length);
-    for (let i = 0; i < max; i++)
-      p5.text(`${sessionIdsArray[i]}`, (i + 1) * (canvasWidth / 40) * 1.8, 0);
-    //display '...' if more than 20 sessions
-    if (sessionIdsArray.length > max)
-      p5.text('...', (max + 1) * (canvasWidth / 40) * 1.8, 0);
+    // timeBeforeSendRequest -= 1 / (p5.frameRate() + 2); // + 2 to avoid divion by zero or by one on the first frame
+    // if (timeBeforeSendRequest <= 0) {
+    //   ws.send(JSON.stringify({ requestSessions: true }));
+    //   timeBeforeSendRequest = 1;
+    // }
+    // // displaying the 20 first sessions
+    // p5.fill(255, 255, 255, idListOpacity * 255);
+    // p5.textAlign('center', 'top');
+    // p5.textSize(canvasWidth / 50);
+    // const max = Math.min(20, sessionIdsArray.length);
+    // for (let i = 0; i < max; i++)
+    //   p5.text(`${sessionIdsArray[i]}`, (i + 1) * (canvasWidth / 40) * 1.8, 0);
+    // //display '...' if more than 20 sessions
+    // if (sessionIdsArray.length > max)
+    //   p5.text('...', (max + 1) * (canvasWidth / 40) * 1.8, 0);
   }
 
   /* === sliders === */
@@ -414,7 +391,7 @@ export const viewerSketch = (p5: p5Type) => {
     sliders.forEach((s) => {
       switch (s.text) {
         case 'color':
-          const c = colors[colorIndex]
+          const c = colors[colorIndex];
           s.drawCell(c.r, c.g, c.b);
           colorIndex = s.p5Slider.value();
           break;
@@ -451,11 +428,11 @@ export const viewerSketch = (p5: p5Type) => {
     });
 
     //updating input box
-    input.position(newWidthOffset, newCanvasHeight / 20 + newHeightOffset);
-    input.size(newCanvasWidth / 7, newCanvasHeight / 25);
+    // input.position(newWidthOffset, newCanvasHeight / 20 + newHeightOffset);
+    // input.size(newCanvasWidth / 7, newCanvasHeight / 25);
     //updating submit button box
-    button.position(input.x + input.width, input.y);
-    button.size(input.width / 1.5, input.height);
+    // button.position(input.x + input.width, input.y);
+    // button.size(input.width / 1.5, input.height);
 
     p5.resizeCanvas(newCanvasWidth, newCanvasHeight);
     p5.background(0);
@@ -466,31 +443,26 @@ export const viewerSketch = (p5: p5Type) => {
   }
 
   /* === p5.js main functions === */
-  p5.preload = () => {
-    //loading sound
-    impactSound = p5.loadSound(soundImpact);
-    scoreSound = p5.loadSound(soundScore);
-  };
 
   p5.setup = () => {
+    initSliders();
     p5.createCanvas(canvasWidth, canvasHeight);
     p5.noStroke();
     // create input box
-    input = p5.createInput();
-    input.position(widthOffset, canvasHeight / 20 + heightOffset);
-    input.size(canvasWidth / 7, canvasHeight / 25);
-    input.id('user_id');
-    document.getElementById('user_id')!.placeholder = 'Enter id';
+    // input = p5.createInput();
+    // input.position(widthOffset, canvasHeight / 20 + heightOffset);
+    // input.size(canvasWidth / 7, canvasHeight / 25);
+    // input.id('user_id');
+    // document.getElementById('user_id')!.placeholder = 'Enter id';
     // create submit button
-    button = p5.createButton('submit');
-    button.position(input.x + input.width, input.y);
-    button.mousePressed(handleSubmit);
-    button.size(input.width / 1.5, input.height);
-    button.style('color', 'white');
-    button.style('background-color', '#555555');
+    // button = p5.createButton('submit');
+    // button.position(input.x + input.width, input.y);
+    // button.mousePressed(handleSubmit);
+    // button.size(input.width / 1.5, input.height);
+    // button.style('color', 'white');
+    // button.style('background-color', '#555555');
     // sliders
-    initSliders();
-    p5.fill(255);
+    p5.fill(255, 255, 255, 255);
     sliders.forEach((s) => s.p5Slider.show());
   };
 
@@ -499,11 +471,10 @@ export const viewerSketch = (p5: p5Type) => {
     handleWindowResize();
     if (handleSocketError()) return; //check if we are connected to server
     drawAndGetSliderValues();
-    getAndDisplayIds();
-    if (handleChooseSession()) return;
+    // getAndDisplayIds();
+    // if (handleChooseSession()) return;
     if (handleGameFinished()) return;
     if (handleGameNotStarted()) return;
-    playSounds();
     drawMiddleLine();
     drawPlayer1();
     drawPlayer2();
@@ -511,5 +482,6 @@ export const viewerSketch = (p5: p5Type) => {
     drawBall();
     drawScore();
   };
+  return p5;
   /* === */
 };

@@ -27,6 +27,7 @@ import { api } from './utils/api';
 import { useAuth } from './Providers/AuthProvider';
 import Protected from './components/Protected';
 import Layout from './components/Layout';
+import Cookies from 'js-cookie';
 
 const App: Component = () => {
   const [state, { setFriendInvitation, setFriendReqCount }] = useStore();
@@ -80,9 +81,11 @@ const App: Component = () => {
           console.log(`${res.event}: `, res);
           break;
         case 'pong: player_joined':
+          console.log(res);
           navigate('/pong');
           break;
         case 'pong: invitation_accepted':
+          console.log(res);
           navigate('/pong');
           break;
         case 'pong: invitation':
@@ -100,6 +103,7 @@ const App: Component = () => {
     });
     state.ws.addEventListener('open', (e) => {});
     state.ws.addEventListener('close', (e) => {});
+    // if (Cookies.get('jwt_token')) navigate('/matchmaking');
   });
 
   createEffect(() => {

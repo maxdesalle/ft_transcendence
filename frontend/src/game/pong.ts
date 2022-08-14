@@ -1,9 +1,6 @@
-import p5Type from 'p5';
+import { p5 } from '../game/newPong';
+
 import { Slider } from './slider';
-import '../utils/p5soundfix';
-import soundScore from '../assets/client_music_score.mp3';
-import soundImpact from '../assets/client_music_impact.mp3';
-import 'p5/lib/addons/p5.sound';
 import { useStore } from '../store';
 
 const socketServerIP = 'localhost';
@@ -116,25 +113,13 @@ export function initSocket(): WebSocket {
   return ws;
 }
 
-export const sketch = (p5: p5Type) => {
+type P5Type = typeof p5;
+
+export const sketch = (myP5: typeof p5): P5Type => {
   const [state, { toggleMatchMaking }] = useStore();
-  p5.disableFriendlyErrors = true;
   let sliders = [
     new Slider(
-      p5,
-      'volume',
-      2 * (canvasWidth / 7),
-      (canvasHeight / 5) * 3,
-      canvasWidth / 7,
-      canvasHeight / 10,
-      0,
-      1,
-      1,
-      0,
-      false,
-    ),
-    new Slider(
-      p5,
+      myP5,
       'color',
       4 * (canvasWidth / 7),
       (canvasHeight / 5) * 3,
@@ -147,7 +132,7 @@ export const sketch = (p5: p5Type) => {
       false,
     ),
     new Slider(
-      p5,
+      myP5,
       'power ups',
       3 * (canvasWidth / 7),
       (canvasHeight / 5) * 1,
@@ -216,14 +201,16 @@ export const sketch = (p5: p5Type) => {
   //else returns false
   function handlePlayerWon() {
     if (df.playerWon == 0) return false;
-    p5.textAlign(p5.CENTER, p5.CENTER);
-    const col = p5.color(
+    myP5.textAlign('center', 'center');
+
+    myP5.fill(
       colors[colorIndex].r,
       colors[colorIndex].g,
       colors[colorIndex].b,
+      255,
     );
-    p5.fill(col);
-    p5.text(`Player ${df.playerWon} won!`, canvasWidth / 2, canvasHeight / 2);
+
+    myP5.text(`Player ${df.playerWon} won!`, canvasWidth / 2, canvasHeight / 2);
     displayOkButton();
     handleOkButtonPressed();
     return true;
@@ -233,18 +220,19 @@ export const sketch = (p5: p5Type) => {
   //  -> display the corresponding message and return true
   //else return false
   function handleClientNotConnected() {
-    p5.textStyle(p5.BOLD);
-    p5.textSize(canvasHeight * 0.03);
-    const col = p5.color(
-      colors[colorIndex].r,
-      colors[colorIndex].g,
-      colors[colorIndex].b,
-    );
+    myP5.textStyle('bold');
+    myP5.textSize(canvasHeight * 0.03);
+
     if (socketErrObject) {
       sliders.forEach((s) => s.p5Slider.remove());
-      p5.textAlign(p5.CENTER, p5.CENTER);
-      p5.fill(col);
-      p5.text(
+      myP5.textAlign('center', 'center');
+      myP5.fill(
+        colors[colorIndex].r,
+        colors[colorIndex].g,
+        colors[colorIndex].b,
+        255,
+      );
+      myP5.text(
         `Socket error: ${socketErrObject}`,
         canvasWidth / 4,
         canvasHeight / 4,
@@ -254,9 +242,14 @@ export const sketch = (p5: p5Type) => {
     }
     if (isDisconnected) {
       sliders.forEach((s) => s.p5Slider.remove());
-      p5.textAlign(p5.CENTER, p5.CENTER);
-      p5.fill(col);
-      p5.text(
+      myP5.textAlign('center', 'center');
+      myP5.fill(
+        colors[colorIndex].r,
+        colors[colorIndex].g,
+        colors[colorIndex].b,
+        255,
+      );
+      myP5.text(
         'The other player has been disconnected.',
         canvasWidth / 2,
         canvasHeight / 2,
@@ -265,17 +258,31 @@ export const sketch = (p5: p5Type) => {
       return true;
     }
     if (state.pong.inMatchMaking && sessionId === -1) {
-      p5.textAlign(p5.CENTER, p5.CENTER);
-      p5.fill(col);
-      p5.text(
+      myP5.textAlign('center', 'center');
+      myP5.fill(
+        colors[colorIndex].r,
+        colors[colorIndex].g,
+        colors[colorIndex].b,
+        255,
+      );
+      myP5.text(
         'Waiting for the other player...',
         canvasWidth / 2,
         canvasHeight / 2,
       );
     } else if (sessionId === -1) {
-      p5.textAlign(p5.CENTER, p5.CENTER);
-      p5.fill(col);
-      p5.text('Press play to start a game.', canvasWidth / 2, canvasHeight / 2);
+      myP5.textAlign('center', 'center');
+      myP5.fill(
+        colors[colorIndex].r,
+        colors[colorIndex].g,
+        colors[colorIndex].b,
+        255,
+      );
+      myP5.text(
+        'Press play to start a game.',
+        canvasWidth / 2,
+        canvasHeight / 2,
+      );
     }
     if (playerNumber === 0) {
       return true;
@@ -285,16 +292,16 @@ export const sketch = (p5: p5Type) => {
 
   /* === draw functions === */
   function drawMiddleLine() {
-    const col = p5.color(
+    myP5.fill(
       colors[colorIndex].r,
       colors[colorIndex].g,
       colors[colorIndex].b,
+      255,
     );
-    p5.fill(col);
     const x = (0.5 - df.middleLineThickness / 2) * canvasWidth;
     for (let i = 0; i < 1; i += df.middleLineLength * 2) {
       const y = (i - df.middleLineLength / 2) * canvasHeight;
-      p5.rect(
+      myP5.rect(
         x,
         y,
         df.middleLineThickness * canvasWidth,
@@ -305,12 +312,12 @@ export const sketch = (p5: p5Type) => {
 
   function drawPlayer1() {
     //left racket
-    const col = p5.color(
+    myP5.fill(
       colors[colorIndex].r,
       colors[colorIndex].g,
       colors[colorIndex].b,
+      255,
     );
-    p5.fill(col);
     let elTime = (Date.now() - df.sendTime) / 1000;
     if (playerNumber === 1)
       elTime = (Date.now() - Math.max(df.sendTime, sendTimeStamp)) / 1000;
@@ -319,7 +326,7 @@ export const sketch = (p5: p5Type) => {
       df.p1Y - df.racketLength / 2 + elTime * df.racketSpeed * df.p1Press;
     if (yPos < 0) yPos = 0;
     if (yPos + df.racketLength > 1) yPos = 1 - df.racketLength;
-    p5.rect(
+    myP5.rect(
       xPos * canvasWidth,
       yPos * canvasHeight,
       df.racketThickness * canvasWidth,
@@ -329,12 +336,12 @@ export const sketch = (p5: p5Type) => {
 
   function drawPlayer2() {
     //right racket
-    const col = p5.color(
+    myP5.fill(
       colors[colorIndex].r,
       colors[colorIndex].g,
       colors[colorIndex].b,
+      255,
     );
-    p5.fill(col);
     let elTime = (Date.now() - df.sendTime) / 1000;
     if (playerNumber === 2)
       elTime = (Date.now() - Math.max(df.sendTime, sendTimeStamp)) / 1000;
@@ -343,7 +350,7 @@ export const sketch = (p5: p5Type) => {
       df.p2Y - df.racketLength / 2 + elTime * df.racketSpeed * df.p2Press;
     if (yPos < 0) yPos = 0;
     if (yPos + df.racketLength > 1) yPos = 1 - df.racketLength;
-    p5.rect(
+    myP5.rect(
       xPos * canvasWidth,
       yPos * canvasHeight,
       df.racketThickness * canvasWidth,
@@ -352,17 +359,17 @@ export const sketch = (p5: p5Type) => {
   }
 
   function drawBall() {
-    const col = p5.color(
+    myP5.fill(
       colors[colorIndex].r,
       colors[colorIndex].g,
       colors[colorIndex].b,
+      255,
     );
-    p5.fill(col);
     const elTime = (Date.now() - df.sendTime) / 1000;
     const xPos = (df.ballX - df.ballRad + elTime * df.ballSpeedX) * canvasWidth;
     const yPos =
       (df.ballY - df.ballRad + elTime * df.ballSpeedY) * canvasHeight;
-    p5.rect(
+    myP5.rect(
       xPos,
       yPos,
       df.ballRad * 2 * canvasWidth,
@@ -371,16 +378,16 @@ export const sketch = (p5: p5Type) => {
   }
 
   function drawScore() {
-    const col = p5.color(
+    myP5.fill(
       colors[colorIndex].r,
       colors[colorIndex].g,
       colors[colorIndex].b,
+      255,
     );
-    p5.fill(col);
-    p5.textStyle(p5.BOLD);
-    p5.textSize(canvasHeight * 0.1);
-    p5.textAlign(p5.CENTER, p5.TOP);
-    p5.text(
+    myP5.textStyle('bold');
+    myP5.textSize(canvasHeight * 0.1);
+    myP5.textAlign('center', 'top');
+    myP5.text(
       `${df.p1Score}   ${df.p2Score}`,
       canvasWidth / 2,
       canvasHeight * 0.1,
@@ -391,16 +398,16 @@ export const sketch = (p5: p5Type) => {
     powerUpsMap.forEach((yAndType, x) => {
       switch (yAndType.type) {
         case 'wall':
-          p5.fill(255);
+          myP5.fill(255, 255, 255, 255);
           break;
         case 'upSpeed':
-          p5.fill(255, 0, 0);
+          myP5.fill(255, 0, 0, 255);
           break;
         case 'downSpeed':
-          p5.fill(0, 255, 0);
+          myP5.fill(0, 255, 0, 255);
           break;
       }
-      p5.rect(
+      myP5.rect(
         x * canvasWidth,
         yAndType.y * canvasHeight,
         df.powerUpsSize * canvasWidth,
@@ -411,10 +418,10 @@ export const sketch = (p5: p5Type) => {
 
   // little text at the top-left corner
   function drawSessionId() {
-    p5.textAlign(p5.LEFT, p5.TOP);
-    p5.fill(255, 255, 255, 100);
-    p5.textSize(canvasWidth / 45);
-    p5.text(`session id: ${sessionId}`, 0, 0);
+    myP5.textAlign('left', 'top');
+    myP5.fill(255, 255, 255, 100);
+    myP5.textSize(canvasWidth / 45);
+    myP5.text(`session id: ${sessionId}`, 0, 0);
   }
   /* === */
 
@@ -422,15 +429,15 @@ export const sketch = (p5: p5Type) => {
   function handleInput() {
     const pPressTmp = playerNumber == 1 ? df.p1Press : df.p2Press;
     if (playerNumber == 1) {
-      if (p5.keyIsPressed) {
-        if (p5.keyIsDown(p5.UP_ARROW)) df.p1Press = -1;
-        else if (p5.keyIsDown(p5.DOWN_ARROW)) df.p1Press = 1;
+      if (myP5.keyIsPressed) {
+        if (myP5.keyIsDown(myP5.UP_ARROW)) df.p1Press = -1;
+        else if (myP5.keyIsDown(myP5.DOWN_ARROW)) df.p1Press = 1;
         else df.p1Press = 0;
       } else df.p1Press = 0;
     } else {
-      if (p5.keyIsPressed) {
-        if (p5.keyIsDown(p5.UP_ARROW)) df.p2Press = -1;
-        else if (p5.keyIsDown(p5.DOWN_ARROW)) df.p2Press = 1;
+      if (myP5.keyIsPressed) {
+        if (myP5.keyIsDown(myP5.UP_ARROW)) df.p2Press = -1;
+        else if (myP5.keyIsDown(myP5.DOWN_ARROW)) df.p2Press = 1;
         else df.p2Press = 0;
       } else df.p2Press = 0;
     }
@@ -458,7 +465,7 @@ export const sketch = (p5: p5Type) => {
   function initSliders() {
     sliders.forEach((s) =>
       s.setP5Slider(
-        p5.createSlider(s.s1, s.s2, s.s3, s.s4),
+        myP5.createSlider(s.s1, s.s2, s.s3, s.s4),
         widthOffset,
         heightOffset,
       ),
@@ -473,9 +480,9 @@ export const sketch = (p5: p5Type) => {
     }
     if (isReady) {
       const c = colors[colorIndex];
-      p5.fill(c.r, c.g, c.b);
-      p5.textAlign(p5.CENTER, p5.CENTER);
-      p5.text(
+      myP5.fill(c.r, c.g, c.b, 255);
+      myP5.textAlign('center', 'center');
+      myP5.text(
         `waiting for player ${-playerNumber + 3}`,
         canvasWidth / 2,
         canvasHeight / 2,
@@ -492,22 +499,17 @@ export const sketch = (p5: p5Type) => {
         case 'color':
           colorIndex = s.p5Slider.value();
           break;
-        case 'volume':
-          const volumeLevel = s.p5Slider.value();
-          impactSound.setVolume(volumeLevel);
-          scoreSound.setVolume(volumeLevel);
-          break;
       }
     });
-    p5.textStyle(p5.ITALIC);
-    p5.fill(100);
-    p5.textSize(canvasHeight / 25);
-    p5.textAlign(p5.CENTER, p5.TOP);
-    p5.text('local settings', canvasWidth / 2, canvasHeight / 2);
+    myP5.textStyle('italic');
+    myP5.fill(100, 100, 100, 255);
+    myP5.textSize(canvasHeight / 25);
+    myP5.textAlign('center', 'top');
+    myP5.text('local settings', canvasWidth / 2, canvasHeight / 2);
     if (playerNumber == 1)
-      p5.text('global settings', canvasWidth / 2, canvasHeight * 0.01);
+      myP5.text('global settings', canvasWidth / 2, canvasHeight * 0.01);
     else
-      p5.text(
+      myP5.text(
         'player 1 chooses\nthe global settings',
         canvasWidth / 2,
         canvasHeight * 0.2,
@@ -527,12 +529,12 @@ export const sketch = (p5: p5Type) => {
       }
     });
 
-    p5.fill(50, 240, 42);
-    p5.textStyle(p5.NORMAL);
-    p5.textSize(canvasHeight / 20);
-    p5.textAlign(p5.CENTER, p5.BOTTOM);
-    p5.text('press enter to continue', canvasWidth / 2, canvasHeight * 0.9);
-    if (p5.keyIsPressed && p5.keyIsDown(p5.ENTER)) {
+    myP5.fill(50, 240, 42, 255);
+    myP5.textStyle('normal');
+    myP5.textSize(canvasHeight / 20);
+    myP5.textAlign('center', 'bottom');
+    myP5.text('press enter to continue', canvasWidth / 2, canvasHeight * 0.9);
+    if (myP5.keyIsPressed && myP5.keyIsDown(myP5.ENTER)) {
       isReady = true;
       sliders.forEach((s) => s.p5Slider.remove());
       if (playerNumber === 1) {
@@ -549,17 +551,6 @@ export const sketch = (p5: p5Type) => {
         );
     }
     return true;
-  }
-
-  function playSounds() {
-    if (playScore) {
-      scoreSound.play();
-      playScore = false;
-    }
-    if (playImpact) {
-      impactSound.play();
-      playImpact = false;
-    }
   }
 
   // function that adapts the screen to its current size
@@ -590,25 +581,20 @@ export const sketch = (p5: p5Type) => {
     );
     okButton.size(newCanvasWidth / 10, newCanvasHeight / 25);
 
-    p5.resizeCanvas(newCanvasWidth, newCanvasHeight);
-    p5.background(0);
+    myP5.resizeCanvas(newCanvasWidth, newCanvasHeight);
+    myP5.background(0);
     canvasWidth = newCanvasWidth;
     canvasHeight = newCanvasHeight;
     widthOffset = newWidthOffset;
     heightOffset = newHeightOffset;
   }
 
-  p5.preload = () => {
-    //loading sound
-    impactSound = p5.loadSound(soundImpact);
-    scoreSound = p5.loadSound(soundScore);
-  };
-
-  p5.setup = () => {
-    p5.createCanvas(canvasWidth, canvasHeight);
-    p5.noStroke();
+  myP5.setup = (ref) => {
+    myP5.ref = ref;
+    myP5.createCanvas(canvasWidth, canvasHeight);
+    myP5.noStroke();
     initSliders();
-    okButton = p5.createButton('Ok');
+    okButton = myP5.createButton('Ok');
     okButton.position(
       widthOffset + canvasWidth / 2,
       heightOffset + canvasHeight / 1.5,
@@ -620,14 +606,13 @@ export const sketch = (p5: p5Type) => {
     okButton.hide();
   };
 
-  p5.draw = () => {
-    p5.background(0);
+  myP5.draw = () => {
+    myP5.background(0);
     handleWindowResize();
     if (handleClientNotConnected()) return; //check if we are connected to server
     drawSessionId();
     if (handleSettings()) return;
     if (handlePlayerWon()) return;
-    playSounds();
     drawMiddleLine();
     drawPlayer1();
     drawPlayer2();
@@ -636,4 +621,5 @@ export const sketch = (p5: p5Type) => {
     drawScore();
     handleInput();
   };
+  return p5;
 };
