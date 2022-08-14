@@ -97,7 +97,7 @@ export function initViewerSocket() {
       playScore = true;
     if (
       (df.ballSpeedX !== 0 || df.ballSpeedY !== 0) &&
-      (ballSpeedTmp[0] !== df.ballSpeedX || ballSpeedTmp[1] !== df.ballSpeedY)
+        (ballSpeedTmp[0] !== df.ballSpeedX || ballSpeedTmp[1] !== df.ballSpeedY)
     )
       playImpact = true;
   });
@@ -288,44 +288,46 @@ export const viewerSketch = (p5: MyP5) => {
   }
   /* === */
 
-  //   let input: any, button: any; // text box for input of id and submit button
+  let input: any, button: any; // text box for input of id and submit button
   let idListOpacity = 1; // opacity of id list test
   let doneChoosing = false; // false if viewer still did not choose first session to watch
   function handleSubmit() {
-    // const idText = input.value();
-    // input.value(''); // empty box
-    // if (
-    //   idText === '' ||
-    //   isNaN(idText) ||
-    //   !sessionIdsArray.includes(parseInt(idText))
-    // ) {
-    //   console.log(`${idText} is an invalid id`);
-    //   document.getElementById('user_id')!.placeholder = 'Invalid id';
-    //   return;
-    // }
-    // ws.send(JSON.stringify({ id: p5.int(idText) }));
-    // //
-    // doneChoosing = true;
-    // gameStarted = false;
-    // gameFinished = false;
-    // document.getElementById('user_id')!.placeholder = 'Enter id';
+    const idText = input.value();
+    input.value(''); // empty box
+    if (
+      idText === '' ||
+        isNaN(idText) ||
+        !sessionIdsArray.includes(parseInt(idText))
+    ) {
+      console.log(`${idText} is an invalid id`);
+      document.getElementById('user_id')!.placeholder = 'Invalid id';
+      document.getElementById('user_id')!.value = '';
+      return;
+    }
+    ws.send(JSON.stringify({ id: p5.int(idText) }));
+    //
+    doneChoosing = true;
+    gameStarted = false;
+    gameFinished = false;
+    document.getElementById('user_id')!.placeholder = 'Enter id';
+    document.getElementById('user_id')!.value = '';
   }
 
   //blocks user from displaying game if nothing chosen and handles box transparency
   function handleChooseSession() {
-    // if (doneChoosing) {
-    //   let op = '0.3';
-    //   if (p5.mouseY / canvasHeight < 0.25) op = '1';
-    //   input.style('opacity', op);
-    //   button.style('opacity', op);
-    //   idListOpacity = parseFloat(op);
-    //   sliders.forEach((s) => s.setOpacity(parseFloat(op) * 255));
-    //   return false;
-    // }
-    // input.style('opacity', '1');
-    // button.style('opacity', '1');
-    // idListOpacity = 1;
-    // sliders.forEach((s) => s.setOpacity(255));
+    if (doneChoosing) {
+      let op = '0.3';
+      if (p5.mouseY / canvasHeight < 0.25) op = '1';
+      input.style('opacity', op);
+      button.style('opacity', op);
+      idListOpacity = parseFloat(op);
+      sliders.forEach((s) => s.setOpacity(parseFloat(op) * 255));
+      return false;
+    }
+    input.style('opacity', '1');
+    button.style('opacity', '1');
+    idListOpacity = 1;
+    sliders.forEach((s) => s.setOpacity(255));
     return true;
   }
 
@@ -354,24 +356,29 @@ export const viewerSketch = (p5: MyP5) => {
     return true;
   }
 
+  // for framerate
+  let lastLoop: number = new Date().getTime();
   let timeBeforeSendRequest = 1;
   // sends requestSessions: true every second + diplays the 10 first ones
   function getAndDisplayIds() {
-    // timeBeforeSendRequest -= 1 / (p5.frameRate() + 2); // + 2 to avoid divion by zero or by one on the first frame
-    // if (timeBeforeSendRequest <= 0) {
-    //   ws.send(JSON.stringify({ requestSessions: true }));
-    //   timeBeforeSendRequest = 1;
-    // }
-    // // displaying the 20 first sessions
-    // p5.fill(255, 255, 255, idListOpacity * 255);
-    // p5.textAlign('center', 'top');
-    // p5.textSize(canvasWidth / 50);
-    // const max = Math.min(20, sessionIdsArray.length);
-    // for (let i = 0; i < max; i++)
-    //   p5.text(`${sessionIdsArray[i]}`, (i + 1) * (canvasWidth / 40) * 1.8, 0);
-    // //display '...' if more than 20 sessions
-    // if (sessionIdsArray.length > max)
-    //   p5.text('...', (max + 1) * (canvasWidth / 40) * 1.8, 0);
+    const newLoop: number = new Date().getTime();
+    const frameRate: number = 1 / ((newLoop - lastLoop) / 1000.);
+    lastLoop = newLoop;
+    timeBeforeSendRequest -= 1 / (frameRate + 2); // + 2 to avoid divion by zero or by one on the first frame
+    if (timeBeforeSendRequest <= 0) {
+      ws.send(JSON.stringify({ requestSessions: true }));
+      timeBeforeSendRequest = 1;
+    }
+    // displaying the 20 first sessions
+    p5.fill(255, 255, 255, idListOpacity * 255);
+    p5.textAlign('center', 'top');
+    p5.textSize(canvasWidth / 50);
+    const max = Math.min(20, sessionIdsArray.length);
+    for (let i = 0; i < max; i++)
+      p5.text(`${sessionIdsArray[i]}`, (i + 1) * (canvasWidth / 40) * 1.8, 0);
+    //display '...' if more than 20 sessions
+    if (sessionIdsArray.length > max)
+      p5.text('...', (max + 1) * (canvasWidth / 40) * 1.8, 0);
   }
 
   /* === sliders === */
@@ -383,7 +390,7 @@ export const viewerSketch = (p5: MyP5) => {
         widthOffset,
         heightOffset,
       ),
-    );
+                   );
   }
 
   // called each frame. calls drawcell on every sliders and gets their values
@@ -394,12 +401,6 @@ export const viewerSketch = (p5: MyP5) => {
           const c = colors[colorIndex];
           s.drawCell(c.r, c.g, c.b);
           colorIndex = s.p5Slider.value();
-          break;
-        case 'volume':
-          const volumeLevel = s.p5Slider.value();
-          impactSound.setVolume(volumeLevel);
-          scoreSound.setVolume(volumeLevel);
-          s.drawCell();
           break;
       }
     });
@@ -428,11 +429,11 @@ export const viewerSketch = (p5: MyP5) => {
     });
 
     //updating input box
-    // input.position(newWidthOffset, newCanvasHeight / 20 + newHeightOffset);
-    // input.size(newCanvasWidth / 7, newCanvasHeight / 25);
+    input.position(newWidthOffset, newCanvasHeight / 20 + newHeightOffset);
+    input.size(newCanvasWidth / 7, newCanvasHeight / 25);
     //updating submit button box
-    // button.position(input.x + input.width, input.y);
-    // button.size(input.width / 1.5, input.height);
+    button.position(input.x + input.width, input.y);
+    button.size(input.width / 1.5, input.height);
 
     p5.resizeCanvas(newCanvasWidth, newCanvasHeight);
     p5.background(0);
@@ -449,18 +450,19 @@ export const viewerSketch = (p5: MyP5) => {
     p5.createCanvas(canvasWidth, canvasHeight);
     p5.noStroke();
     // create input box
-    // input = p5.createInput();
-    // input.position(widthOffset, canvasHeight / 20 + heightOffset);
-    // input.size(canvasWidth / 7, canvasHeight / 25);
-    // input.id('user_id');
-    // document.getElementById('user_id')!.placeholder = 'Enter id';
+    input = p5.createInput();
+    input.position(widthOffset, canvasHeight / 20 + heightOffset);
+    input.size(canvasWidth / 7, canvasHeight / 25);
+    input.id('user_id');
+    document.getElementById('user_id')!.placeholder = 'Enter id';
+    document.getElementById('user_id')!.value = '';
     // create submit button
-    // button = p5.createButton('submit');
-    // button.position(input.x + input.width, input.y);
-    // button.mousePressed(handleSubmit);
-    // button.size(input.width / 1.5, input.height);
-    // button.style('color', 'white');
-    // button.style('background-color', '#555555');
+    button = p5.createButton('submit');
+    button.position(input.x + input.width, input.y);
+    button.mousePressed(handleSubmit);
+    button.size(input.width / 1.5, input.height);
+    button.style('color', 'white');
+    button.style('background-color', '#555555');
     // sliders
     p5.fill(255, 255, 255, 255);
     sliders.forEach((s) => s.p5Slider.show());
@@ -471,8 +473,8 @@ export const viewerSketch = (p5: MyP5) => {
     handleWindowResize();
     if (handleSocketError()) return; //check if we are connected to server
     drawAndGetSliderValues();
-    // getAndDisplayIds();
-    // if (handleChooseSession()) return;
+    getAndDisplayIds();
+    if (handleChooseSession()) return;
     if (handleGameFinished()) return;
     if (handleGameNotStarted()) return;
     drawMiddleLine();

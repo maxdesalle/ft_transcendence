@@ -128,6 +128,65 @@ left: ${this.x}px; top: ${this.y}px;`,
     this.sliderElement.parentNode?.removeChild(this.sliderElement);
   }
 }
+
+class inputClass {
+  private readonly inputElement: HTMLInputElement;
+  x: number = 0;
+  y: number = 0;
+  width: number = 100;
+  height: number = 100;
+  private opacity: number = 1;
+
+  constructor(inputElement: HTMLInputElement) {
+    this.inputElement = inputElement;
+    this.update();
+  }
+  //to call each time one of the used-in-style values are changed
+  private update(): void {
+    this.inputElement.setAttribute(
+      'style',
+      `opacity: ${this.opacity};\
+width: ${this.width}px; height ${this.height}px;\
+position: absolute;\
+left: ${this.x}px; top: ${this.y}px;`,
+    );
+  }
+  value(): number {
+    return Number(this.inputElement.value);
+  }
+  position(x: number, y: number) {
+    this.x = x;
+    this.y = y;
+    this.update();
+  }
+  size(w: number, h: number) {
+    this.width = w;
+    this.height = h;
+    this.update();
+  }
+  hide() {
+    this.inputElement.style.display = 'none';
+  }
+  show() {
+    this.inputElement.style.display = 'block';
+  }
+  style(key: string, value: string) {
+    switch (key) {
+      case 'opacity':
+        this.opacity = Number(value);
+        break;
+      default:
+        console.error(`${key} is invalid for buttonClass.style()`);
+    }
+    this.update();
+  }
+  remove(): void {
+    this.inputElement.parentNode?.removeChild(this.inputElement);
+  }
+  id(s: string): void {
+    this.inputElement.setAttribute("id", s);
+  }
+}
 /* === */
 
 //watching keyboard events
@@ -140,17 +199,29 @@ window.addEventListener('keyup', (e: any) => {
   p5.keyIsPressed = heldKeys.length !== 0;
 });
 
+//watching mouse events
+window.addEventListener('mousemove', (evt) => {
+  if (canvasElement === undefined)
+    return;
+  const rect = canvasElement.getBoundingClientRect();
+  p5.mouseX = evt.clientX - rect.left;
+  p5.mouseY = evt.clientY - rect.top;
+}, false);
+
 export const p5: {
   keyIsPressed: boolean;
   UP_ARROW: number;
   DOWN_ARROW: number;
   ENTER: number;
+  mouseX: number,
+  mouseY: number,
   createSlider: (
     min: number,
     mac: number,
     value: number,
     step: number,
   ) => sliderClass;
+  createInput: () => inputClass;
   noStroke: () => void;
   stroke: (r: number, g: number, b: number, a: number) => void;
   createButton: (s: string) => buttonClass;
@@ -183,6 +254,9 @@ export const p5: {
   UP_ARROW: 38,
   DOWN_ARROW: 40,
   ENTER: 13,
+  // mouse vars
+  mouseX: 0,
+  mouseY: 0,
 
   createSlider(min: number, max: number, value: number, step: number) {
     const slider = document.createElement('input');
@@ -195,6 +269,14 @@ export const p5: {
     slider.step = String(step);
     document.body.appendChild(slider);
     return new sliderClass(slider);
+  },
+  createInput() {
+    const input = document.createElement('input');
+    //specifying slider category
+    input.type = 'text';
+
+    document.body.appendChild(input);
+    return new inputClass(input);
   },
 
   noStroke() {
