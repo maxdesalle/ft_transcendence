@@ -1,13 +1,14 @@
 import {
   Component,
   createEffect,
+  createMemo,
   createResource,
   createSignal,
   onCleanup,
   onMount,
   Show,
 } from 'solid-js';
-import { Route, Routes, useNavigate } from 'solid-app-router';
+import { Route, Routes, useLocation, useNavigate } from 'solid-app-router';
 import Chat from './pages/Chat';
 import Pong from './pages/Pong';
 import Viewer from './pages/Viewer';
@@ -41,6 +42,9 @@ const App: Component = () => {
     login42: '',
     id: 0,
   });
+  const location = useLocation();
+
+  const pathname = createMemo(() => location.pathname);
 
   const [pendingFriendReq] = createResource(token, async () => {
     const res = await api.get<{ req_user: User; status: number }[]>(
@@ -103,13 +107,17 @@ const App: Component = () => {
     });
     state.ws.addEventListener('open', (e) => {});
     state.ws.addEventListener('close', (e) => {});
-    if (Cookies.get('jwt_token')) navigate('/matchmaking');
   });
 
   createEffect(() => {
     if (pendingFriendReq()) {
       setFriendReqCount(pendingFriendReq()!.length);
     }
+    if (location.pathname === '/' && Cookies.get('jwt_token')) {
+      console.log(location.pathname);
+      navigate('/matchmaking');
+    }
+    if (!Cookies.get('jwt_token')) navigate('/login', { replace: true });
   });
   onCleanup(() => {
     state.ws.close();
