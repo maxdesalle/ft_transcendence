@@ -5,17 +5,21 @@ import { p5 } from '../game/newPong';
 const Viewer: Component = () => {
   const [ref, setRef] = createSignal<any>();
   let ws: WebSocket;
+  let game: typeof p5;
+  let id: any;
 
   onMount(() => {
     ws = initViewerSocket();
-    const game = viewerSketch(p5);
+    game = viewerSketch(p5);
     game.setRef(ref());
     game.setup();
-    setInterval(() => game.draw(), 0);
+    id = setInterval(() => game.draw(), 0);
   });
 
   onCleanup(() => {
     ws.close();
+    game.deleteAll();
+    clearInterval(id);
   });
 
   return (

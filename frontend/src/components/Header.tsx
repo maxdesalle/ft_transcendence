@@ -17,7 +17,7 @@ import autoAnimate from '@formkit/auto-animate';
 import { IoNotificationsSharp } from 'solid-icons/io';
 import PendingFriendReqCard from './PendingFriendReqCard';
 import { AxiosError } from 'axios';
-const LINKS = ['chat', 'leaderboard', 'viewer'];
+const LINKS = ['chat', 'leaderboard', 'viewer', 'pong'];
 
 const Header: Component = () => {
   const [keyword, setKeyword] = createSignal<string>('');

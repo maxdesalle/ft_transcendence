@@ -115,7 +115,10 @@ export function initSocket(): WebSocket {
 
 type P5Type = typeof p5;
 
-export const sketch = (myP5: typeof p5): P5Type => {
+export const sketch = (
+  myP5: typeof p5,
+  navigate?: (path: string) => void,
+): P5Type => {
   const [state, { toggleMatchMaking }] = useStore();
   let sliders = [
     new Slider(
@@ -190,6 +193,7 @@ export const sketch = (myP5: typeof p5): P5Type => {
     initSliders();
 
     okButton.hide();
+    if (navigate) navigate('/matchmaking');
   }
 
   // Wrapper function called when okButton needs to be displayed
