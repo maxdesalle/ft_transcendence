@@ -103,7 +103,7 @@ const App: Component = () => {
     });
     state.ws.addEventListener('open', (e) => {});
     state.ws.addEventListener('close', (e) => {});
-    // if (Cookies.get('jwt_token')) navigate('/matchmaking');
+    if (Cookies.get('jwt_token')) navigate('/matchmaking');
   });
 
   createEffect(() => {
