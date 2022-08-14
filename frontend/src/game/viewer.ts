@@ -304,7 +304,7 @@ export const viewerSketch = (p5: MyP5) => {
       document.getElementById('user_id')!.value = '';
       return;
     }
-    ws.send(JSON.stringify({ id: p5.int(idText) }));
+    ws.send(JSON.stringify({ id: Number(idText) }));
     //
     doneChoosing = true;
     gameStarted = false;

@@ -467,8 +467,8 @@ export const sketch = (myP5: typeof p5): P5Type => {
       s.setP5Slider(
         myP5.createSlider(s.s1, s.s2, s.s3, s.s4),
         widthOffset,
-        heightOffset,
-      ),
+        heightOffset
+      )
     );
   }
 
@@ -606,6 +606,7 @@ export const sketch = (myP5: typeof p5): P5Type => {
   };
 
   myP5.draw = () => {
+    okButton.hide();
     myP5.background(0);
     handleWindowResize();
     if (handleClientNotConnected()) return; //check if we are connected to server

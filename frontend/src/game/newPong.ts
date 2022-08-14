@@ -22,8 +22,10 @@ class buttonClass {
   private w: number = 100;
   private h: number = 100;
   private color: string = 'black';
+  private opacity: number = 1;
   private backgroundColor: string = '#ffffff';
   private eventHandler: () => void = () => {};
+  private display: string = 'block'
 
   // to call each time one of the used-in-style values are changed
   private update(): void {
@@ -34,7 +36,9 @@ class buttonClass {
 background-color: ${this.backgroundColor};\
 width: ${this.w}px; height ${this.h}px;\
 position: absolute;\
-left: ${this.x}px; top: ${this.y}px;`,
+left: ${this.x}px; top: ${this.y}px;
+display: ${this.display};
+opacity: ${this.opacity};`,
     );
   }
   constructor(buttonElement: HTMLButtonElement) {
@@ -63,16 +67,21 @@ left: ${this.x}px; top: ${this.y}px;`,
       case 'background-color':
         this.backgroundColor = value;
         break;
+        case 'opacity':
+        this.opacity = Number(value);
+        break;
       default:
         console.error(`${key} is invalid for buttonClass.style()`);
     }
     this.update();
   }
   hide() {
-    this.buttonElement.style.display = 'none';
+    this.display = 'none';
+    this.update();
   }
   show() {
-    this.buttonElement.style.display = 'block';
+    this.display = 'block';
+    this.update();
   }
 }
 
@@ -83,6 +92,7 @@ class sliderClass {
   private w: number = 100;
   private h: number = 100;
   private opacity: number = 1;
+  private display: string = 'block'
 
   constructor(sliderElement: HTMLInputElement) {
     this.sliderElement = sliderElement;
@@ -113,10 +123,12 @@ left: ${this.x}px; top: ${this.y}px;`,
     this.update();
   }
   hide() {
-    this.sliderElement.style.display = 'none';
+    this.display = 'none';
+    this.update();
   }
   show() {
-    this.sliderElement.style.display = 'block';
+    this.display = 'block';
+    this.update();
   }
   style(key: string, value: string) {
     switch (key) {
@@ -141,6 +153,7 @@ class inputClass {
   width: number = 100;
   height: number = 100;
   private opacity: number = 1;
+  private display: string = 'block'
 
   constructor(inputElement: HTMLInputElement) {
     this.inputElement = inputElement;
@@ -169,11 +182,13 @@ left: ${this.x}px; top: ${this.y}px;`,
     this.height = h;
     this.update();
   }
-  hide() {
-    this.inputElement.style.display = 'none';
+ hide() {
+    this.display = 'none';
+    this.update();
   }
   show() {
-    this.inputElement.style.display = 'block';
+    this.display = 'block';
+    this.update();
   }
   style(key: string, value: string) {
     switch (key) {
