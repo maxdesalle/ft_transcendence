@@ -375,7 +375,6 @@ export const p5: {
   draw() {},
   //for my love, david banziziki <3
   deleteAll() {
-    console.log('deletting everything');
     elementList.forEach((e) => e.parentNode?.removeChild(e));
     elementList = [];
     canvasElement.parentNode.removeChild(canvasElement);
