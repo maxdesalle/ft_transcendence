@@ -100,7 +100,8 @@ left: ${this.x}px; top: ${this.y}px;`,
   }
   position(x: number, y: number) {
     this.x = x;
-    this.y = y;
+    // making same offset as p5.js
+    this.y = y + this.h / 2;
     this.update();
   }
   size(w: number, h: number) {
