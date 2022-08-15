@@ -15,7 +15,7 @@ export class MockAuthController {
 	constructor(
 		private usersService: UsersService,
 		private jwtService: JwtService
-	) {}
+	) { }
 
 	// @Post('register')
 	// addUser(@Body('username') username: string) {
@@ -24,7 +24,7 @@ export class MockAuthController {
 
 	@Post('login')
 	async getUserLoggedIn(
-		@Res( { passthrough: true}) res: Response,
+		@Res({ passthrough: true }) res: Response,
 		@Body('login42') login42: string,
 		@Body() _body: LoginDTO
 	) {
@@ -33,13 +33,13 @@ export class MockAuthController {
 			id: user.id,
 			login42: user.login42
 		});
-		res.cookie('jwt_token', jwtToken);
-		return `Logged in as ${user.login42} (user_id ${user.id})`;
+		res.cookie('jwt_token', jwtToken, { sameSite: 'none', secure: true });
+		return user;
 	}
 
 	@Get('logout')
 	logout(
-		@Res( { passthrough: true}) res: Response,
+		@Res({ passthrough: true }) res: Response,
 	) {
 		res.clearCookie('jwt_token');
 		return `Logged out`

@@ -2,7 +2,6 @@ import Cookies from 'js-cookie';
 import { Navigate, Outlet } from 'solid-app-router';
 import {
   Component,
-  createEffect,
   createResource,
   JSXElement,
   Show,
@@ -19,7 +18,6 @@ const Protected: Component<{ children: JSXElement }> = (props) => {
       const res = await api.get<User>(routes.currentUser);
       setIsAuth(true);
       setUser(res.data);
-      console.log('hi there');
       setToken(Cookies.get('jwt_token'));
       return res.data;
     } catch (error) {

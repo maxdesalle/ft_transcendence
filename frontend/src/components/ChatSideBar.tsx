@@ -51,6 +51,7 @@ const ChatSideBar: Component = () => {
       let res: { event: WsNotificationEvent };
       res = JSON.parse(e.data);
       if (res.event === 'chat_new_group') {
+        console.log("res: ", res);
         refetchPublicRooms();
         refetchRooms();
       } else if (res.event === 'chat_new_user_in_group') {
@@ -88,7 +89,7 @@ const ChatSideBar: Component = () => {
           <Match when={state.chatUi.tab == TAB.PUBLICROOM}>
             <Search
               setKeyword={setKeyword}
-              placeHolder="Search for room"
+              placeHolder="Search for public room"
               popperMsg="Create new room"
             >
               <CreateRoom refetch={refetchPublicRooms} />
@@ -110,7 +111,7 @@ const ChatSideBar: Component = () => {
               placeHolder="Search for room"
               popperMsg="Create new room"
             >
-              <CreateRoom refetch={refetchRooms} />
+              <CreateRoom refetch={refetchPublicRooms} />
             </Search>
             <Show when={publicRooms()}>
               <RoomList room={myRooms()!} keyword={keyword()} />

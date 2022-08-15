@@ -1,6 +1,5 @@
 import { Component, createSignal } from 'solid-js';
 import { chatApi } from '../../api/chat';
-import { RoomInfo } from '../../types/chat.interface';
 
 const CreateRoom: Component<{ refetch: () => void }> = (props) => {
   const [roomName, setRoomName] = createSignal('');
@@ -17,7 +16,6 @@ const CreateRoom: Component<{ refetch: () => void }> = (props) => {
       })
       .then((res) => {
         props.refetch();
-        console.log('new room: ', res.data);
       });
     setRoomName('');
   };

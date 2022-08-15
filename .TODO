@@ -1,4 +1,3 @@
-room settings
-2fa code validation
-join/leave groups
-change owner / set owner
+
+pong: when then disconnect the other cant enter another game without reloading
+pong: matchmaking not working on first connection (have to reload the page before entering)

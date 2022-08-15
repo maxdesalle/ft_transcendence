@@ -17,7 +17,7 @@ import autoAnimate from '@formkit/auto-animate';
 import { IoNotificationsSharp } from 'solid-icons/io';
 import PendingFriendReqCard from './PendingFriendReqCard';
 import { AxiosError } from 'axios';
-const LINKS = ['chat', 'leaderboard', 'viewer', 'pong'];
+const LINKS = ['chat', 'leaderboard', 'viewer'];
 
 const Header: Component = () => {
   const [keyword, setKeyword] = createSignal<string>('');
@@ -70,6 +70,7 @@ const Header: Component = () => {
           <span class="flex items-center rounded-md bg-inherit text-slate-300 h-8 border shadow-md p-1 border-header-menu">
             <BiSearchAlt2 size={22} />
             <input
+              value={keyword()}
               onInput={(e) => setKeyword(e.currentTarget.value)}
               placeholder="search user"
               class="p-1 bg-inherit focus:outline-none"

@@ -1,5 +1,5 @@
 import { Link, useParams } from 'solid-app-router';
-import { Component, createEffect, For, Show } from 'solid-js';
+import { Component, For, Show } from 'solid-js';
 import { User } from '../types/user.interface';
 import defaultAvatar from '../../../backend/images/avatardefault.png';
 import { generateImageUrl, notifyError, notifySuccess } from '../utils/helpers';
@@ -36,6 +36,7 @@ const Profile: Component = () => {
   };
 
   const onInviteUser = () => {
+    console.log("nop lOl: ", user(), state.pong.ws);
     if (!user()) return;
     const data = { event: 'invite', data: user()!.id };
     state.pong.ws.send(JSON.stringify(data));

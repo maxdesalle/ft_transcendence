@@ -9,26 +9,9 @@ import { initSocket } from '../game/pong';
 const StoreContext = createContext<any>();
 
 export interface ActionsType {
-  loadMessages?: (id: number | undefined) => void;
-  mutateRoomMsgs?: (message: Message) => void;
-  logout?: () => void;
-  changeUsername?: (value: string) => void;
-  activate2fa?: () => void;
-  deactivate2fa?: () => void;
-  send2faCode?: (code: string) => void;
-  addUserToRoomByName?: (data: {
-    room_id: number;
-    user_display_name: string;
-  }) => void;
-  sendFriendReq?: (user_id: number) => void;
-  acceptFriendReq?: (user_id: number) => void;
-  loadPendingFriendReq?: () => void;
   changeTab: (tab: TAB) => void;
-  loadFriendMessages?: (id: number | undefined) => void;
-  mutateFriendMsgs?: (msg: Message) => void;
   toggleShowMessages: () => void;
   toggleMatchMaking: (val: boolean) => void;
-  refetchFriends?: () => Promise<Friend[]>;
   addPendingFriendReq: (pendigUser: { req_user: User; status: number }) => void;
   setFriendInvitation: (
     data: {

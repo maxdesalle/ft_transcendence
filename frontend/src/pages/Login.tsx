@@ -2,8 +2,6 @@ import Cookies from 'js-cookie';
 import { useNavigate } from 'solid-app-router';
 import {
   Component,
-  createEffect,
-  createRenderEffect,
   createSignal,
   onMount,
   Show,
@@ -15,17 +13,11 @@ import Loader from '../components/Loader';
 import { useAuth } from '../Providers/AuthProvider';
 import { useStore } from '../store';
 
-function model(el: any, accessor: any) {
-  const [s, set] = accessor();
-  el.addEventListener('input', (e: any) => set(e.currentTarget.value));
-  createRenderEffect(() => (el.value = s()));
-}
-
 const Login: Component = () => {
   const [username, setUsername] = createSignal<string>('');
   const navigate = useNavigate();
   const [state, { setToken }] = useStore();
-  const [auth, { setToken: setAuthToken, setIsAuth }] = useAuth();
+  const [auth, { setToken: setAuthToken, setIsAuth, setUser }] = useAuth();
   const notify = (msg: string) => toast.error(msg);
   const [loading, setLoading] = createSignal(false);
 
@@ -33,12 +25,13 @@ const Login: Component = () => {
     if (!username().length) return;
     setLoading(true);
     loginFromMockApi(username())
-      .then(() => {
+      .then((res) => {
         const token = Cookies.get('jwt_token');
         if (token) {
           setToken(token);
           setAuthToken(token);
           setIsAuth(true);
+          setUser(res.data);
           navigate('/matchmaking');
         }
         setLoading(false);
@@ -64,8 +57,7 @@ const Login: Component = () => {
             </label>
             <input
               autocomplete="off"
-              //@ts-ignore
-              use:model={[username, setUsername]}
+              onInput={(e) => setUsername(e.currentTarget.value)}
               name="username"
               placeholder="username"
               class="p-1 border-b border-blue-600 focus:border-blue-800 focus:outline-none"
