@@ -64,18 +64,11 @@ const ChatSideBar: Component = () => {
   return (
     <>
       <ul class="flex text-white items-center">
-        <li class="p-2 hover:text-gray-400 transition-all">
-          <select
-            onInput={(e) => {
-              changeTab(parseInt(e.currentTarget.value));
-            }}
-            class="bg-skin-menu-background p-1 rounded-md"
-          >
-            <option selected value={TAB.PUBLICROOM}>
-              Public rooms
-            </option>
-            <option value={TAB.ROOMS}>Rooms</option>
-          </select>
+        <li onClick={() => changeTab(TAB.HOME)} class="p-2 hover:text-gray-400 transition-all">
+          Home
+        </li>
+        <li onClick={() => changeTab(TAB.ROOMS)} class="p-2 hover:text-gray-400 transition-all">
+          Rooms
         </li>
         <li
           onClick={() => changeTab(TAB.FRIENDS)}
@@ -86,25 +79,6 @@ const ChatSideBar: Component = () => {
       </ul>
       <Scrollbars id="room_users" class="h-full">
         <Switch>
-          <Match when={state.chatUi.tab == TAB.PUBLICROOM}>
-            <Search
-              setKeyword={setKeyword}
-              placeHolder="Search for public room"
-              popperMsg="Create new room"
-            >
-              <CreateRoom refetch={refetchPublicRooms} />
-            </Search>
-            <Show when={publicRooms()}>
-              <JoinableRoomList
-                keyword={keyword()}
-                refetch={() => {
-                  refetchPublicRooms();
-                  refetchRooms();
-                }}
-                rooms={joinableRooms()!}
-              />
-            </Show>
-          </Match>
           <Match when={state.chatUi.tab === TAB.ROOMS}>
             <Search
               setKeyword={setKeyword}

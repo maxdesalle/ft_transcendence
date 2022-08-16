@@ -217,7 +217,6 @@ export const sketch = (
 
     myP5.text(`Player ${df.playerWon} won!`, canvasWidth / 2, canvasHeight / 2);
     displayOkButton();
-    handleOkButtonPressed();
     return true;
   }
 

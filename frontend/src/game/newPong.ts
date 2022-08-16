@@ -263,6 +263,7 @@ export const p5: {
   deleteAll: () => void;
   setRef: (ref: any) => void;
   ref: null | any;
+  sessionId?: number;
 } = {
   keyIsPressed: false,
   ref: null,

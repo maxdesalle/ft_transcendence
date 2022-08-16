@@ -1,7 +1,7 @@
 import Cookies from 'js-cookie';
 import { createContext, Resource, useContext } from 'solid-js';
 import { Message, WsNotificationEvent } from '../types/chat.interface';
-import { Friend, User } from '../types/user.interface';
+import { User } from '../types/user.interface';
 import { createStore, produce } from 'solid-js/store';
 import { urls } from '../api/utils';
 import { initSocket } from '../game/pong';
@@ -31,10 +31,9 @@ export interface ActionsType {
 export type Status = 'idle' | 'loading' | 'success' | 'failed';
 
 export enum TAB {
-  ROOMS,
-  PUBLICROOM,
-  FRIENDS,
   HOME,
+  ROOMS,
+  FRIENDS,
 }
 
 export interface StoreState {

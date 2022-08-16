@@ -97,7 +97,7 @@ export function initViewerSocket() {
       playScore = true;
     if (
       (df.ballSpeedX !== 0 || df.ballSpeedY !== 0) &&
-        (ballSpeedTmp[0] !== df.ballSpeedX || ballSpeedTmp[1] !== df.ballSpeedY)
+      (ballSpeedTmp[0] !== df.ballSpeedX || ballSpeedTmp[1] !== df.ballSpeedY)
     )
       playImpact = true;
   });
@@ -291,26 +291,27 @@ export const viewerSketch = (p5: MyP5) => {
   let input: any, button: any; // text box for input of id and submit button
   let idListOpacity = 1; // opacity of id list test
   let doneChoosing = false; // false if viewer still did not choose first session to watch
+  
   function handleSubmit() {
-    const idText = input.value();
-    input.value(''); // empty box
-    if (
-      idText === '' ||
-        isNaN(idText) ||
-        !sessionIdsArray.includes(parseInt(idText))
-    ) {
-      console.log(`${idText} is an invalid id`);
-      document.getElementById('user_id')!.placeholder = 'Invalid id';
-      document.getElementById('user_id')!.value = '';
-      return;
-    }
-    ws.send(JSON.stringify({ id: Number(idText) }));
+    // const idText = input.value();
+    // input.value(''); // empty box
+    // if (
+    //   idText === '' ||
+    //   isNaN(idText) ||
+    //   !sessionIdsArray.includes(parseInt(idText))
+    // ) {
+    //   console.log(`${idText} is an invalid id`);
+    //   (document.getElementById('user_id') as HTMLInputElement)!.placeholder = 'Invalid id';
+    //   (document.getElementById('user_id') as HTMLInputElement)!.value = '';
+    //   return;
+    // }
+    ws.send(JSON.stringify({ id: p5.sessionId }));
     //
     doneChoosing = true;
     gameStarted = false;
     gameFinished = false;
-    document.getElementById('user_id')!.placeholder = 'Enter id';
-    document.getElementById('user_id')!.value = '';
+    (document.getElementById('user_id') as HTMLInputElement)!.placeholder = 'Enter id';
+    (document.getElementById('user_id') as HTMLInputElement)!.value = '';
   }
 
   //blocks user from displaying game if nothing chosen and handles box transparency
@@ -390,7 +391,7 @@ export const viewerSketch = (p5: MyP5) => {
         widthOffset,
         heightOffset,
       ),
-                   );
+    );
   }
 
   // called each frame. calls drawcell on every sliders and gets their values
@@ -454,8 +455,8 @@ export const viewerSketch = (p5: MyP5) => {
     input.position(widthOffset, canvasHeight / 20 + heightOffset);
     input.size(canvasWidth / 7, canvasHeight / 25);
     input.id('user_id');
-    document.getElementById('user_id')!.placeholder = 'Enter id';
-    document.getElementById('user_id')!.value = '';
+    (document.getElementById('user_id') as HTMLInputElement)!.placeholder = 'Enter id';
+    (document.getElementById('user_id') as HTMLInputElement)!.value = '';
     // create submit button
     button = p5.createButton('submit');
     button.position(input.x + input.width, input.y);

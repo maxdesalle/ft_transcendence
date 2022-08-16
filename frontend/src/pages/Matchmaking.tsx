@@ -1,15 +1,13 @@
 import Cookies from 'js-cookie';
-import { useNavigate } from 'solid-app-router';
+import { Link, useNavigate } from 'solid-app-router';
 import {
   Component,
   createEffect,
   createSignal,
   For,
-  onCleanup,
   onMount,
   Show,
 } from 'solid-js';
-import { unwrap } from 'solid-js/store';
 import { createTurboResource } from 'turbo-solid';
 import { routes, urls } from '../api/utils';
 import { useAuth } from '../Providers/AuthProvider';
@@ -17,13 +15,11 @@ import { useStore } from '../store';
 import { User } from '../types/user.interface';
 
 const Matchmaking: Component = () => {
-  const [
-    state,
-    { toggleMatchMaking, reconectPong, setFriendInvitation, setToken },
-  ] = useStore();
+  const [state, { toggleMatchMaking, setFriendInvitation, setToken }] =
+    useStore();
   const [ref, setRef] = createSignal<any>();
   const [id, setId] = createSignal(0);
-  const [auth, { setUser, setIsAuth, setToken: authToken }] = useAuth();
+  const [auth, { setUser, setIsAuth, setToken: setAuthToken }] = useAuth();
   const [buttonText, setButtonText] = createSignal('Play');
   const [currentUser] = createTurboResource<User>(() => routes.currentUser);
   const [friends] = createTurboResource<User[]>(() => routes.friends);
@@ -36,7 +32,7 @@ const Matchmaking: Component = () => {
   onMount(() => {
     const token = Cookies.get('jwt_token');
     setToken(token);
-    authToken(token);
+    setAuthToken(token);
   });
 
   createEffect(() => {
@@ -73,7 +69,6 @@ const Matchmaking: Component = () => {
   return (
     <div class="h-full flex items-center text-white justify-between">
       <button
-        // style="border-top-color:transparent"
         ref={setRef}
         onClick={onPlay}
         class="h-72 w-72 rounded-full text-white bg-gradient-to-br from-purple-600 to-blue-500 hover:bg-gradient-to-bl focus:ring-4 focus:outline-none focus:ring-blue-300 dark:focus:ring-blue-800 font-medium text-sm px-5 py-2.5 text-center mr-2 mb-2"
@@ -81,21 +76,14 @@ const Matchmaking: Component = () => {
         <h1 class="text-4xl text-center w-full">{buttonText()}</h1>
       </button>
       <div>
-        <Show when={state.pong.friendInvitation && friends()}>
-          <div class="animate-bounce">
-            <h1 class="text-2xl">
-              New invitation from{' '}
-              {
-                friends()!.find(
-                  (user) => user.id === state.pong.friendInvitation?.user_id,
-                )?.display_name
-              }
-            </h1>
-            <button class="btn-primary text-2xl" onClick={onAcceptInvite}>
-              Accept
-            </button>
-            <button class="btn-secondary text-2xl">Reject</button>
-          </div>
+        <Show when={gameSessions()}>
+          <For each={gameSessions()}>
+            {(id) => (
+              <Link href={`/viewer/${id}`}>
+                <p>{id}</p>
+              </Link>
+            )}
+          </For>
         </Show>
       </div>
       <div class="flex flex-col">
@@ -109,7 +97,7 @@ const Matchmaking: Component = () => {
           id="friends"
         >
           <option disabled selected value="">
-            select a friend
+            Select a friend
           </option>
           <Show when={friends()}>
             <For each={friends()}>

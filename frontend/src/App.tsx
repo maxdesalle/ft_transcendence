@@ -161,7 +161,7 @@ const App: Component = () => {
               <Route path="/matchmaking" element={<Matchmaking />} />
               <Route path="/chat" element={<Chat />} />
               <Route path="/pong" element={<Pong />} />
-              <Route path="/viewer" element={<Viewer />} />
+              <Route path="/viewer/:id" element={<Viewer />} />
               <Route path="/profile/:id" element={<Profile />} />
               <Route path="/edit_profile" element={<EditProfile />} />
               <Route path="/2fa" element={<TwoFactorAuth />} />

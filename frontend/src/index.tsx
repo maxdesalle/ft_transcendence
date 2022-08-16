@@ -7,10 +7,14 @@ import { StoreProvider } from './store/index';
 import { TurboContext } from 'turbo-solid';
 import { api } from './utils/api';
 import { AuthProvider } from './Providers/AuthProvider';
+import Cookies from 'js-cookie';
 
 const configuration = {
   async fetcher(key: string) {
-    const response = await api.get(key);
+    const token = Cookies.get('jwt_token');
+    const response = await api.get(key, {
+      headers: { Authorization: `token ${token}` },
+    });
     return response.data;
   },
 };

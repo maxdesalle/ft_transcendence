@@ -25,6 +25,7 @@ import { AxiosError } from 'axios';
 import autoAnimate from '@formkit/auto-animate';
 import { Link } from 'solid-app-router';
 import { Message } from 'postcss';
+import ChatHome from '../components/ChatHome';
 
 const Chat: Component = () => {
   const [state] = useStore();
@@ -119,6 +120,12 @@ const Chat: Component = () => {
       });
   };
 
+  const inviteFriend = () => {
+    if (!selectedFriend()) return;
+    const data = { event: 'invite', data: selectedFriend()!.id };
+    state.pong.ws.send(JSON.stringify(data));
+  };
+
   onMount(() => {
     state.ws.addEventListener('message', (e) => {
       let res: { event: WsNotificationEvent; message: Message };
@@ -152,9 +159,7 @@ const Chat: Component = () => {
             />
           </Match>
           <Match when={state.chatUi.tab === TAB.HOME}>
-            <div>
-              <h1>Home</h1>
-            </div>
+            <ChatHome />
           </Match>
         </Switch>
       </div>
@@ -184,7 +189,11 @@ const Chat: Component = () => {
                       <p class="text-sm">status: ...</p>
                     </div>
                   </div>
-                  <button type="button" class="btn-primary">
+                  <button
+                    onClick={inviteFriend}
+                    type="button"
+                    class="btn-primary"
+                  >
                     Invite to play
                   </button>
                   <Link
