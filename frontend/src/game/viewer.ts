@@ -291,27 +291,25 @@ export const viewerSketch = (p5: MyP5) => {
   let input: any, button: any; // text box for input of id and submit button
   let idListOpacity = 1; // opacity of id list test
   let doneChoosing = false; // false if viewer still did not choose first session to watch
-  
   function handleSubmit() {
-    // const idText = input.value();
-    // input.value(''); // empty box
-    // if (
-    //   idText === '' ||
-    //   isNaN(idText) ||
-    //   !sessionIdsArray.includes(parseInt(idText))
-    // ) {
-    //   console.log(`${idText} is an invalid id`);
-    //   (document.getElementById('user_id') as HTMLInputElement)!.placeholder = 'Invalid id';
-    //   (document.getElementById('user_id') as HTMLInputElement)!.value = '';
-    //   return;
-    // }
-    ws.send(JSON.stringify({ id: p5.sessionId }));
+    const idText = input.value();
+    input.value(''); // empty box
+    if (
+      idText === '' ||
+      isNaN(idText) ||
+      !sessionIdsArray.includes(parseInt(idText))
+    ) {
+      console.log(`${idText} is an invalid id`);
+      document.getElementById('user_id')!.placeholder = 'Invalid id';
+      document.getElementById('user_id')!.value = '';
+      return;
+    }
+    ws.send(JSON.stringify({ id: Number(idText) }));
     //
-    doneChoosing = true;
     gameStarted = false;
     gameFinished = false;
-    (document.getElementById('user_id') as HTMLInputElement)!.placeholder = 'Enter id';
-    (document.getElementById('user_id') as HTMLInputElement)!.value = '';
+    document.getElementById('user_id')!.placeholder = 'Enter id';
+    document.getElementById('user_id')!.value = '';
   }
 
   //blocks user from displaying game if nothing chosen and handles box transparency
@@ -363,7 +361,7 @@ export const viewerSketch = (p5: MyP5) => {
   // sends requestSessions: true every second + diplays the 10 first ones
   function getAndDisplayIds() {
     const newLoop: number = new Date().getTime();
-    const frameRate: number = 1 / ((newLoop - lastLoop) / 1000.);
+    const frameRate: number = 1 / ((newLoop - lastLoop) / 1000);
     lastLoop = newLoop;
     timeBeforeSendRequest -= 1 / (frameRate + 2); // + 2 to avoid divion by zero or by one on the first frame
     if (timeBeforeSendRequest <= 0) {
@@ -455,8 +453,8 @@ export const viewerSketch = (p5: MyP5) => {
     input.position(widthOffset, canvasHeight / 20 + heightOffset);
     input.size(canvasWidth / 7, canvasHeight / 25);
     input.id('user_id');
-    (document.getElementById('user_id') as HTMLInputElement)!.placeholder = 'Enter id';
-    (document.getElementById('user_id') as HTMLInputElement)!.value = '';
+    document.getElementById('user_id')!.placeholder = 'Enter id';
+    document.getElementById('user_id')!.value = '';
     // create submit button
     button = p5.createButton('submit');
     button.position(input.x + input.width, input.y);

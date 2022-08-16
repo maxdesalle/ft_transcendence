@@ -37,13 +37,13 @@ const PendingFriendReqCard: Component = () => {
   };
 
   onMount(() => {
-    state.ws.addEventListener('message', (e) => {
-      let res: { event: WsNotificationEvent };
-      res = JSON.parse(e.data);
-      if (res.event === 'friends: new_request') {
-        refetch();
-      }
-    });
+    // state.ws.addEventListener('message', (e) => {
+    //   let res: { event: WsNotificationEvent };
+    //   res = JSON.parse(e.data);
+    //   if (res.event === 'friends: new_request') {
+    //     refetch();
+    //   }
+    // });
   });
 
   return (

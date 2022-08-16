@@ -47,27 +47,33 @@ const ChatSideBar: Component = () => {
     });
 
   onMount(() => {
-    state.ws.addEventListener('message', (e) => {
-      let res: { event: WsNotificationEvent };
-      res = JSON.parse(e.data);
-      if (res.event === 'chat_new_group') {
-        console.log("res: ", res);
-        refetchPublicRooms();
-        refetchRooms();
-      } else if (res.event === 'chat_new_user_in_group') {
-        refetchPublicRooms();
-        refetchRooms();
-      }
-    });
+    // state.ws.addEventListener('message', (e) => {
+    //   let res: { event: WsNotificationEvent };
+    //   res = JSON.parse(e.data);
+    //   if (res.event === 'chat_new_group') {
+    //     console.log("res: ", res);
+    //     refetchPublicRooms();
+    //     refetchRooms();
+    //   } else if (res.event === 'chat_new_user_in_group') {
+    //     refetchPublicRooms();
+    //     refetchRooms();
+    //   }
+    // });
   });
 
   return (
     <>
       <ul class="flex text-white items-center">
-        <li onClick={() => changeTab(TAB.HOME)} class="p-2 hover:text-gray-400 transition-all">
+        <li
+          onClick={() => changeTab(TAB.HOME)}
+          class="p-2 hover:text-gray-400 transition-all"
+        >
           Home
         </li>
-        <li onClick={() => changeTab(TAB.ROOMS)} class="p-2 hover:text-gray-400 transition-all">
+        <li
+          onClick={() => changeTab(TAB.ROOMS)}
+          class="p-2 hover:text-gray-400 transition-all"
+        >
           Rooms
         </li>
         <li

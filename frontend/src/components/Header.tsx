@@ -49,7 +49,7 @@ const Header: Component = () => {
       event: 'accept',
       data: state.pong.friendInvitation?.user_id,
     };
-    state.pong.ws.send(JSON.stringify(data));
+    // state.pong.ws.send(JSON.stringify(data));
     navigate('/pong');
     setFriendInvitation(null);
   };

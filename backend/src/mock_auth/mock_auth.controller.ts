@@ -1,4 +1,13 @@
-import { Body, ClassSerializerInterceptor, Controller, Get, Post, Res, UseGuards, UseInterceptors } from '@nestjs/common';
+import {
+  Body,
+  ClassSerializerInterceptor,
+  Controller,
+  Get,
+  Post,
+  Res,
+  UseGuards,
+  UseInterceptors,
+} from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { ApiTags } from '@nestjs/swagger';
 import { Response } from 'express';
@@ -12,44 +21,42 @@ import { LoginDTO } from './DTO/login.dto';
 @ApiTags('mock-auth')
 @UseInterceptors(ClassSerializerInterceptor)
 export class MockAuthController {
-	constructor(
-		private usersService: UsersService,
-		private jwtService: JwtService
-	) { }
+  constructor(
+    private usersService: UsersService,
+    private jwtService: JwtService,
+  ) {}
 
-	// @Post('register')
-	// addUser(@Body('username') username: string) {
-	// 	return this.usersService.createNewUser(username);
-	// }
+  // @Post('register')
+  // addUser(@Body('username') username: string) {
+  // 	return this.usersService.createNewUser(username);
+  // }
 
-	@Post('login')
-	async getUserLoggedIn(
-		@Res({ passthrough: true }) res: Response,
-		@Body('login42') login42: string,
-		@Body() _body: LoginDTO
-	) {
-		const user: User = await this.usersService.createNewUser(login42);
-		const jwtToken = this.jwtService.sign({
-			id: user.id,
-			login42: user.login42
-		});
-		res.cookie('jwt_token', jwtToken, { sameSite: 'none', secure: false });
-		return user;
-	}
+  @Post('login')
+  async getUserLoggedIn(
+    @Res({ passthrough: true }) res: Response,
+    @Body('login42') login42: string,
+    @Body() _body: LoginDTO,
+  ) {
+    const user: User = await this.usersService.createNewUser(login42);
+    const jwtToken = this.jwtService.sign({
+      id: user.id,
+      login42: user.login42,
+    });
+    res.cookie('jwt_token', jwtToken, { sameSite: 'none', secure: true });
+    return user;
+  }
 
-	@Get('logout')
-	logout(
-		@Res({ passthrough: true }) res: Response,
-	) {
-		res.clearCookie('jwt_token');
-		return `Logged out`
-	}
+  @Get('logout')
+  logout(@Res({ passthrough: true }) res: Response) {
+    res.clearCookie('jwt_token', { sameSite: 'none', secure: true });
+    return `Logged out`;
+  }
 
-	// @Get('jwt_info')
-	// @UseGuards(JwtGuard)
-	// jwt_info(
-	// 	@Usr() user: User
-	// ) {
-	// 	return user;
-	// }
+  // @Get('jwt_info')
+  // @UseGuards(JwtGuard)
+  // jwt_info(
+  // 	@Usr() user: User
+  // ) {
+  // 	return user;
+  // }
 }

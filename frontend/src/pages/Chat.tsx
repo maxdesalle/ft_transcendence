@@ -123,19 +123,19 @@ const Chat: Component = () => {
   const inviteFriend = () => {
     if (!selectedFriend()) return;
     const data = { event: 'invite', data: selectedFriend()!.id };
-    state.pong.ws.send(JSON.stringify(data));
+    // state.pong.ws.send(JSON.stringify(data));
   };
 
   onMount(() => {
-    state.ws.addEventListener('message', (e) => {
-      let res: { event: WsNotificationEvent; message: Message };
-      res = JSON.parse(e.data);
-      if (res.event === 'chat_room_msg') {
-        updateRoomMessages();
-      } else if (res.event === 'chat_dm') {
-        updateFriendMessages();
-      }
-    });
+    // state.ws.addEventListener('message', (e) => {
+    //   let res: { event: WsNotificationEvent; message: Message };
+    //   res = JSON.parse(e.data);
+    //   if (res.event === 'chat_room_msg') {
+    //     updateRoomMessages();
+    //   } else if (res.event === 'chat_dm') {
+    //     updateFriendMessages();
+    //   }
+    // });
   });
 
   return (

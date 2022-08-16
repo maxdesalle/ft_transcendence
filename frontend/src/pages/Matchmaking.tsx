@@ -11,6 +11,7 @@ import {
 import { createTurboResource } from 'turbo-solid';
 import { routes, urls } from '../api/utils';
 import { useAuth } from '../Providers/AuthProvider';
+import { useSockets } from '../Providers/SocketProvider';
 import { useStore } from '../store';
 import { User } from '../types/user.interface';
 
@@ -26,6 +27,7 @@ const Matchmaking: Component = () => {
   const [gameSessions] = createTurboResource<number[]>(
     () => `${urls.backendUrl}/pong/sessions`,
   );
+  const [sockets] = useSockets();
 
   const navigate = useNavigate();
 
@@ -44,8 +46,7 @@ const Matchmaking: Component = () => {
 
   const onPlay = () => {
     const message = { event: 'play' };
-
-    state.pong.ws.send(JSON.stringify(message));
+    sockets.pongWs!.send(JSON.stringify(message));
     toggleMatchMaking(true);
     ref().classList.toggle('animate-pulse');
     setButtonText('Searching...');
@@ -54,7 +55,7 @@ const Matchmaking: Component = () => {
   const inviteFriend = () => {
     if (!id()) return;
     const data = { event: 'invite', data: id() };
-    state.pong.ws.send(JSON.stringify(data));
+    // state.pong.ws.send(JSON.stringify(data));
   };
 
   const onAcceptInvite = () => {
@@ -62,7 +63,7 @@ const Matchmaking: Component = () => {
       event: 'accept',
       data: state.pong.friendInvitation?.user_id,
     };
-    state.pong.ws.send(JSON.stringify(data));
+    // state.pong.ws.send(JSON.stringify(data));
     navigate('/pong');
     setFriendInvitation(null);
   };

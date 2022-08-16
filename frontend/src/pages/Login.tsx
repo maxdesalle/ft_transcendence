@@ -11,7 +11,7 @@ import { useStore } from '../store';
 const Login: Component = () => {
   const [username, setUsername] = createSignal<string>('');
   const navigate = useNavigate();
-  const [state, { setToken, reconectPong, reconectNotification }] = useStore();
+  const [state, { setToken }] = useStore();
   const [auth, { setToken: setAuthToken, setIsAuth, setUser }] = useAuth();
   const notify = (msg: string) => toast.error(msg);
   const [loading, setLoading] = createSignal(false);
@@ -21,7 +21,7 @@ const Login: Component = () => {
     setLoading(true);
     loginFromMockApi(username())
       .then((res) => {
-        const token = Cookies.get('jwt_token', {Same site: none, secure: false});
+        const token = Cookies.get('jwt_token');
         if (token) {
           setToken(token);
           setAuthToken(token);
