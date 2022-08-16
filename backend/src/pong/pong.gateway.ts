@@ -356,6 +356,11 @@ async function startGame(id: number) {
   }
   console.log(`deleting session ${id}`);
   deleteGameSession(gameSockets.id);
+  ///// Rodolpho added these lines: remove session from sockets array
+  const session_idx = sockets.findIndex(val => val.id === id);
+  if (session_idx >= 0)
+    sockets.splice(session_idx, 1);
+  //////
   viewerSockets.forEach((s) => {
     if (s.id === gameSockets.id) {
       s.id = -1;
