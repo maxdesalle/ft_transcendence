@@ -16,7 +16,7 @@ RUN [ $(grep host ./frontend/vite.config.ts | wc -l) -eq 0 ] && \
             ./frontend/vite.config.ts || \
         (echo "ERROR: host is already defined in vite.config.ts" 2>&1 && exit 1)
 
-# Replacing 127.0.0.1 by public_ip (for cloud)
+# Replacing 127.0.0.1 by public_ip
 RUN for i in $(find . -type f -name '*.js' -or -name '*.ts' -or -name '*.html' -or -name '*.json' -or -name '*.md'); \
 	do \
 	sed -i -E "s/localhost|127\.0\.0\.1/$PUBLIC_IP/g" $i; \
