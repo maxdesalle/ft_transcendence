@@ -58,14 +58,13 @@ export class PongGateway implements OnGatewayConnection, OnGatewayDisconnect {
   ) {}
 
   // authenticates user
-  handleConnection(ws: WebSocket, req: IncomingMessage) {
+  async handleConnection(ws: WebSocket, req: IncomingMessage) {
     let user: { id: number; login42: string };
     try {
-      const token = parse(req.headers.cookie)['jwt_token'];
-      user = this.jwtService.verify(token);
+			user = await this.wsService.authenticateUser(req);
     } catch (error) {
       ws.close(1008, 'Bad credentials');
-      console.log('Authentication failed');
+      console.log('Authentication to Pong wss failed');
       return;
     }
     // add to connected_users map

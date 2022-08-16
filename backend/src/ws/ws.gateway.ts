@@ -4,24 +4,24 @@ import { WebSocket } from 'ws';
 import { WsService } from './ws.service';
 
 @WebSocketGateway()
-// @UseFilters(WsExceptionFilter)
 export class WsGateway implements OnGatewayConnection, OnGatewayDisconnect{
 
     constructor (
 		private wsService: WsService
 	) {}
 
-    handleConnection(client: WebSocket, req: IncomingMessage) {
+	async handleConnection(client: WebSocket, req: IncomingMessage) {
 		// authenticate user
     	let user: {id: number, login42: string};
 		try {
-			user = this.wsService.getUserFromUpgradeRequest(req);
+			user = await this.wsService.authenticateUser(req);
 		} catch (error) {
 			client.send(JSON.stringify({
 				event: "ws_auth_fail",
-				reason: "no valid JWT"
+				error: error
 			}));
 			client.close(1008, 'Bad credentials');
+			console.log('Authentication to Notifications wss failed');
 			return;
 		}
 		// avoid duplicate connection for same user

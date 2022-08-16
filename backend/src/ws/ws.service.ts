@@ -4,6 +4,7 @@ import { IncomingMessage } from "http";
 import { parse } from 'cookie';
 import { WebSocket } from "ws";
 import { FriendsService } from "src/friends/friends.service";
+import { UsersService } from "src/users/users.service";
 
 
  @Injectable()
@@ -14,14 +15,24 @@ import { FriendsService } from "src/friends/friends.service";
     constructor (
 		private jwtService: JwtService,
 		@Inject(forwardRef(() => FriendsService))
-		private friendsService: FriendsService
+		private friendsService: FriendsService,
+		@Inject(forwardRef(() => UsersService))
+		private usersService: UsersService
 	) {}
 
 	// throws exception if verify fails
-	getUserFromUpgradeRequest(req: IncomingMessage) {
-		const token = parse(req.headers.cookie)['jwt_token'];
-		const user = this.jwtService.verify(token);
-		return (user);
+	// returns user {id, login42} upon success
+	async authenticateUser(req: IncomingMessage) {
+		let token;
+		try {
+			token = parse(req.headers.cookie)['jwt_token'];
+		} catch {
+			throw "jwt_token cookie is absent" // more meaningful message
+		}
+		const user = this.jwtService.verify(token); // might thow
+		if (await this.usersService.findById(user.id))
+			return (user);
+		throw "User does not exist in database"
 	}
 
 	getUserFromSocket(socket: WebSocket) {
