@@ -69,7 +69,7 @@ export class PongGateway implements OnGatewayConnection, OnGatewayDisconnect {
     }
     // add to connected_users map
     connected_users.set(ws, user.id);
-    console.log(`User ${user.id} connected to pong WSS`);
+    console.log(`User ${user.login42} (id: ${user.id}) connected to pong WSS`);
 
     ws.on('error', (e) => console.error(`socket error: ${e.message}`));
   }
@@ -80,7 +80,7 @@ export class PongGateway implements OnGatewayConnection, OnGatewayDisconnect {
     playing.delete(user_id);
     clearInviteWait(user_id);
     removeGameSession(client);
-    if (user_id) console.log(`User ${user_id} disconnected`);
+    if (user_id) console.log(`User ${user_id} disconnected from pong wss`);
   }
 
   @SubscribeMessage('play')

@@ -1,4 +1,4 @@
-import {  OnGatewayConnection, OnGatewayDisconnect, SubscribeMessage, WebSocketGateway} from '@nestjs/websockets';
+import {  OnGatewayConnection, OnGatewayDisconnect, WebSocketGateway} from '@nestjs/websockets';
 import { IncomingMessage } from 'http';
 import { WebSocket } from 'ws';
 import { WsService } from './ws.service';
@@ -37,7 +37,7 @@ export class WsGateway implements OnGatewayConnection, OnGatewayDisconnect{
 		// add to map of connected users
 		this.wsService.setUserOnline(user.id, client);
 		// log client and server side
-		console.log(`user ${user.id} (${user.login42}) is connected.`);
+		console.log(`User ${user.login42} (id: ${user.id}) connected to Notifications WSS`);
 		client.send(JSON.stringify({
 			event: "ws_auth_success",
 		}));
@@ -49,7 +49,7 @@ export class WsGateway implements OnGatewayConnection, OnGatewayDisconnect{
 		const user_id = this.wsService.getUserFromSocket(client);
 		// remove entry from map
 		if (this.wsService.setUserOffline(user_id)) {
-			console.log(`user ${user_id} disconnected.`);
+			console.log(`user ${user_id} disconnected from Notifications wss.`);
 			this.wsService.notifyStatusChangeToFriends(user_id, 'offline');
 		}
 	}

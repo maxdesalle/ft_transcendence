@@ -30,9 +30,12 @@ import { UsersService } from "src/users/users.service";
 			throw "jwt_token cookie is absent" // more meaningful message
 		}
 		const user = this.jwtService.verify(token); // might thow
-		if (await this.usersService.findById(user.id))
-			return (user);
-		throw "User does not exist in database"
+		const stored_user = await this.usersService.findById(user.id)
+		if (!stored_user)
+			throw "User does not exist in database"
+		if (stored_user.login42 !== user.login42)
+			throw "User.login42 does not match"
+		return (user);
 	}
 
 	getUserFromSocket(socket: WebSocket) {
