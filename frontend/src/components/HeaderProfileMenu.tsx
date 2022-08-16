@@ -19,7 +19,7 @@ const HeaderProfileMenu: Component<{ user: User }> = (props) => {
   const [currentUser] = createTurboResource<User>(() => routes.currentUser);
   const onLogout = () => {
     setToken(undefined);
-    Cookies.remove('jwt_token', { sameSite: 'none', secure: false });
+    Cookies.remove('jwt_token', { sameSite: 'none', secure: true });
     forget();
     navigate('/login');
   };
