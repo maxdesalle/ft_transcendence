@@ -29,4 +29,10 @@ services:
     image: postgres
     environment:
       POSTGRES_PASSWORD: ${DB_PASSWORD}
+    volumes:
+      - pgdata:/var/lib/postgresql/data
     # forward port 5432 if you want to connect to database
+
+volumes:
+  pgdata:
+    external: false
