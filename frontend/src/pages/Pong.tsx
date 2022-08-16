@@ -2,12 +2,14 @@ import { useNavigate } from 'solid-app-router';
 import { Component, onCleanup, onMount } from 'solid-js';
 import { p5 } from '../game/newPong';
 import { sketch } from '../game/pong';
+import { useStore } from '../store';
 
 const Pong: Component = () => {
   let ref: any;
   let game: typeof p5;
   let id: any;
   const navigate = useNavigate();
+  const [state] = useStore();
 
   onMount(() => {
     game = sketch(p5, navigate);

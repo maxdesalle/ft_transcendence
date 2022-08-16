@@ -31,7 +31,15 @@ import Layout from './components/Layout';
 import Cookies from 'js-cookie';
 
 const App: Component = () => {
-  const [state, { setFriendInvitation, setFriendReqCount }] = useStore();
+  const [
+    state,
+    {
+      setFriendInvitation,
+      reconectPong,
+      setFriendReqCount,
+      reconectNotification,
+    },
+  ] = useStore();
   const navigate = useNavigate();
   const [auth] = useAuth();
   const token = () => auth.token;
@@ -105,11 +113,23 @@ const App: Component = () => {
           break;
       }
     });
-    state.ws.addEventListener('open', (e) => {});
-    state.ws.addEventListener('close', (e) => {});
+    state.ws.addEventListener('open', (e) => {
+      console.log('notif connected', e);
+    });
+    state.ws.addEventListener('close', (e) => {
+      console.log('notif closed: ', e);
+    });
   });
 
   createEffect(() => {
+    if (state.pong.ws.readyState === state.pong.ws.CLOSED) {
+      console.log('reconnecting pong...');
+      reconectPong();
+    }
+    if (state.ws.readyState === state.ws.CLOSED) {
+      console.log('reconnecting notif...');
+      reconectNotification();
+    }
     if (pendingFriendReq()) {
       setFriendReqCount(pendingFriendReq()!.length);
     }
@@ -122,6 +142,7 @@ const App: Component = () => {
   onCleanup(() => {
     state.ws.close();
     state.pong.ws.close();
+    console.log('cleaning up all');
   });
 
   return (

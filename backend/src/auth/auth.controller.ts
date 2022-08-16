@@ -34,11 +34,11 @@ export class AuthController {
     private readonly authService: AuthService,
     private jwtService: JwtService,
     private usersService: UsersService,
-  ) { }
+  ) {}
 
   @Get('login/42')
   @UseGuards(IntraGuard)
-  getUserLogin(): void { }
+  getUserLogin(): void {}
 
   @Get('login/42/return')
   @UseGuards(IntraGuard)
@@ -107,8 +107,7 @@ export class AuthController {
     });
 
     res.clearCookie('jwt_token');
-    res.cookie('jwt_token', jwtToken);
-
+    res.cookie('jwt_token', jwtToken, { sameSite: 'none', secure: true });
     return { success: true };
   }
 

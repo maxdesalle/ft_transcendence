@@ -11,7 +11,7 @@ async function bootstrap() {
     origin: true,
     credentials: true,
   });
-  app.use(cookieParser());
+  app.use(cookieParser({}));
   app.useWebSocketAdapter(new WsAdapter(app));
   app.useGlobalPipes(new ValidationPipe());
 

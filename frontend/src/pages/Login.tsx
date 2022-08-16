@@ -1,11 +1,6 @@
 import Cookies from 'js-cookie';
 import { useNavigate } from 'solid-app-router';
-import {
-  Component,
-  createSignal,
-  onMount,
-  Show,
-} from 'solid-js';
+import { Component, createSignal, onMount, Show } from 'solid-js';
 import toast from 'solid-toast';
 import { loginFromMockApi } from '../api/mock';
 import { routes } from '../api/utils';
@@ -16,7 +11,7 @@ import { useStore } from '../store';
 const Login: Component = () => {
   const [username, setUsername] = createSignal<string>('');
   const navigate = useNavigate();
-  const [state, { setToken }] = useStore();
+  const [state, { setToken, reconectPong, reconectNotification }] = useStore();
   const [auth, { setToken: setAuthToken, setIsAuth, setUser }] = useAuth();
   const notify = (msg: string) => toast.error(msg);
   const [loading, setLoading] = createSignal(false);
@@ -32,7 +27,7 @@ const Login: Component = () => {
           setAuthToken(token);
           setIsAuth(true);
           setUser(res.data);
-          navigate('/matchmaking');
+          navigate('/matchmaking', { replace: true });
         }
         setLoading(false);
       })

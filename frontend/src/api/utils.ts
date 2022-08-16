@@ -42,4 +42,5 @@ export const routes = {
   setRoomPassword: `${urls.backendUrl}/chat/set_password`,
   setPrivate: `${urls.backendUrl}/chat/set_private`,
   setOwner: `${urls.backendUrl}/chat/set_owner`,
+  leaveGroup: `${urls.backendUrl}/chat/leave_group`,
 };

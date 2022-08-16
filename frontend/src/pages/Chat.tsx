@@ -138,6 +138,7 @@ const Chat: Component = () => {
       </div>
       <div class="col-span-4 flex flex-col pl-1 pr-1 h-full">
         <Switch>
+          {/*TODO: add tab for chat home page */}
           <Match when={state.chatUi.tab === TAB.ROOMS}>
             <ChatMessagesBox
               messages={roomMessages()!}
@@ -149,6 +150,11 @@ const Chat: Component = () => {
               messages={friendMessages()!}
               onSendMessage={onSendMessageToFriend}
             />
+          </Match>
+          <Match when={state.chatUi.tab === TAB.HOME}>
+            <div>
+              <h1>Home</h1>
+            </div>
           </Match>
         </Switch>
       </div>

@@ -17,8 +17,10 @@ import { useStore } from '../store';
 import { User } from '../types/user.interface';
 
 const Matchmaking: Component = () => {
-  const [state, { toggleMatchMaking, setFriendInvitation, setToken }] =
-    useStore();
+  const [
+    state,
+    { toggleMatchMaking, reconectPong, setFriendInvitation, setToken },
+  ] = useStore();
   const [ref, setRef] = createSignal<any>();
   const [id, setId] = createSignal(0);
   const [auth, { setUser, setIsAuth, setToken: authToken }] = useAuth();
@@ -46,6 +48,7 @@ const Matchmaking: Component = () => {
 
   const onPlay = () => {
     const message = { event: 'play' };
+
     state.pong.ws.send(JSON.stringify(message));
     toggleMatchMaking(true);
     ref().classList.toggle('animate-pulse');

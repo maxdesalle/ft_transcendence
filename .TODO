@@ -1,3 +1,2 @@
-
-pong: when then disconnect the other cant enter another game without reloading
-pong: matchmaking not working on first connection (have to reload the page before entering)
+pong: new mock user cant enter a game
+viewer: redirect user to viewer when clicking a current game

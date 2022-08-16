@@ -20,10 +20,12 @@ export interface ActionsType {
     } | null,
   ) => void;
   setToken: (token: string | undefined) => void;
-  setCurrentRoomId: (id: number) => void;
+  setCurrentRoomId: (id: number | undefined) => void;
   setFriendId: (id: number | undefined) => void;
   setPendigFriendReq: (req: { status: number; req_user: User }[]) => void;
   setFriendReqCount: (val: number) => void;
+  reconectPong: () => void;
+  reconectNotification: () => void;
 }
 
 export type Status = 'idle' | 'loading' | 'success' | 'failed';
@@ -32,6 +34,7 @@ export enum TAB {
   ROOMS,
   PUBLICROOM,
   FRIENDS,
+  HOME,
 }
 
 export interface StoreState {
@@ -91,7 +94,7 @@ export function StoreProvider(props: any) {
       friendId: undefined,
     },
     chatUi: {
-      tab: TAB.PUBLICROOM,
+      tab: TAB.HOME,
       showMessages: false,
     },
     currentUser: {
@@ -141,6 +144,12 @@ export function StoreProvider(props: any) {
     },
     setFriendReqCount(val) {
       setState('currentUser', 'friendReqCount', val);
+    },
+    reconectPong() {
+      setState('pong', 'ws', initSocket());
+    },
+    reconectNotification() {
+      setState('ws', new WebSocket(urls.wsUrl));
     },
   };
   const store: [StoreState, ActionsType] = [state, actions];

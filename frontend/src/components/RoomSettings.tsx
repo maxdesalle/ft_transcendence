@@ -1,24 +1,19 @@
 import { AxiosError } from 'axios';
-import {
-  Component,
-  createEffect,
-  createResource,
-  createSignal,
-  For,
-  Show,
-} from 'solid-js';
+import { Component, createResource, createSignal, For, Show } from 'solid-js';
 import { chatApi } from '../api/chat';
 import { routes } from '../api/utils';
-import { useStore } from '../store';
+import { useAuth } from '../Providers/AuthProvider';
+import { TAB, useStore } from '../store';
 import { RoomInfo } from '../types/chat.interface';
 import { api } from '../utils/api';
 import { notifyError, notifySuccess } from '../utils/helpers';
 
 const RoomSettings: Component<{ refetch?: () => void }> = (props) => {
-  const [state] = useStore();
+  const [state, { setCurrentRoomId, changeTab }] = useStore();
   const [userId, setUserId] = createSignal(0);
   const roomId = () => state.chat.roomId;
   const [password, setPassword] = createSignal('');
+  const [{ user }] = useAuth();
   const [currentRoom, { refetch }] = createResource(
     roomId,
     async (id: number) => {
@@ -73,9 +68,18 @@ const RoomSettings: Component<{ refetch?: () => void }> = (props) => {
       });
   };
 
-  createEffect(() => {
-    console.log('selected user: ', userId());
-  });
+  const onLeaveGroup = () => {
+    chatApi
+      .leaveGroup(currentRoom()!.room_id)
+      .then(() => {
+        notifySuccess(`${user.display_name} left ${currentRoom()!.room_name}`);
+        setCurrentRoomId(undefined);
+        changeTab(TAB.HOME);
+      })
+      .catch((err: AxiosError<{ message: string }>) => {
+        notifyError(err.response?.data.message as string);
+      });
+  };
 
   return (
     <div class="p-2 flex flex-col text-white">
@@ -132,6 +136,9 @@ const RoomSettings: Component<{ refetch?: () => void }> = (props) => {
       <Show when={currentRoom() && !currentRoom()!.private}>
         <button onClick={onSetPrivate} class="btn-primary w-full">
           Set private
+        </button>
+        <button onClick={onLeaveGroup} class="btn-secondary w-full">
+          Leave
         </button>
       </Show>
     </div>

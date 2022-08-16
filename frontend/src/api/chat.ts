@@ -123,6 +123,9 @@ const setOwner = async (data: { room_id: number; user_id: number }) => {
   return await api.post<RoomInfo>(routes.setOwner, data);
 };
 
+const leaveGroup = async (id: number) => {
+  return await api.post<RoomInfo[]>(routes.leaveGroup, { room_id: id });
+};
 export const chatApi = {
   createRoom,
   getRooms,
@@ -142,4 +145,5 @@ export const chatApi = {
   setRoomPassword,
   setPrivate,
   setOwner,
+  leaveGroup,
 };

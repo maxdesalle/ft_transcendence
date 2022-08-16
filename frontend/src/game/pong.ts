@@ -78,6 +78,7 @@ export function initSocket(): WebSocket {
   ws.addEventListener('close', (e: any) => {
     isDisconnected = true;
     playerNumber = 0;
+    console.log('disconected', e);
   });
   ws.addEventListener('error', (e: any) => {
     socketErrObject = e;
@@ -119,7 +120,7 @@ export const sketch = (
   myP5: typeof p5,
   navigate?: (path: string) => void,
 ): P5Type => {
-  const [state, { toggleMatchMaking }] = useStore();
+  const [state, { toggleMatchMaking, reconectPong }] = useStore();
   let sliders = [
     new Slider(
       myP5,
@@ -471,8 +472,8 @@ export const sketch = (
       s.setP5Slider(
         myP5.createSlider(s.s1, s.s2, s.s3, s.s4),
         widthOffset,
-        heightOffset
-      )
+        heightOffset,
+      ),
     );
   }
 
