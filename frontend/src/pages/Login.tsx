@@ -21,7 +21,7 @@ const Login: Component = () => {
     setLoading(true);
     loginFromMockApi(username())
       .then((res) => {
-        const token = Cookies.get('jwt_token', {sameSite: none, secure: true});
+        const token = Cookies.get('jwt_token');
         if (token) {
           setToken(token);
           setAuthToken(token);
