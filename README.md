@@ -16,5 +16,5 @@ docker volume rm `docker volume ls`
 
 ```
 Other useful docker clearing stuff:  
-`docker-compose down`
+`docker-compose down`  
 `docker system prune`
