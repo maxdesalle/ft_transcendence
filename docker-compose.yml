@@ -20,12 +20,6 @@ services:
       - pgdata:/var/lib/postgresql/data
     restart: unless-stopped
 
-  # adminer:
-  #   image: adminer
-  #   restart: always
-  #   ports:
-  #     - 8080:8080
-
 volumes:
   pgdata:
     external: false
