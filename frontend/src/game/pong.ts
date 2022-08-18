@@ -3,7 +3,8 @@ import { p5 } from '../game/newPong';
 import { Slider } from './slider';
 import { useStore } from '../store';
 
-const socketServerIP = 'localhost';
+// const socketServerIP = 'localhost';
+const socketServerIP = '127.0.0.1';
 const socketServerPort = 3000;
 const socketServerPath = 'pong';
 let isDisconnected = false;

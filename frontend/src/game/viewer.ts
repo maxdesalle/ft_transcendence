@@ -1,10 +1,11 @@
 import { Slider } from './slider';
 import { p5 } from './newPong';
 
-const socketServerIP = 'localhost';
+// const socketServerIP = 'localhost';
+const socketServerIP = '127.0.0.1';
 const socketServerPort = 3000;
-const httpServerIP = 'localhost';
-const httpServerPort = 3000;
+// const httpServerIP = 'localhost';
+// const httpServerPort = 3000;
 const socketServerPath = 'pong_viewer';
 let socketErrObject: any = undefined;
 let ws: any; // webSocket

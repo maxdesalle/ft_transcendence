@@ -1,0 +1,32 @@
+version: '3.5'
+services:
+  app:
+    container_name: app
+    image: app
+    build: .
+    depends_on:
+      - db
+    ports: 
+      - 3000:3000
+    env_file:
+      - .env
+    restart: always
+
+  db:
+    container_name: db
+    image: postgres
+    environment:
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    restart: always
+
+  # adminer:
+  #   image: adminer
+  #   restart: always
+  #   ports:
+  #     - 8080:8080
+
+volumes:
+  pgdata:
+    external: false

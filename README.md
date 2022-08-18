@@ -1,61 +1,16 @@
+## HOW TO RUN
+
+- have the .env file at the ROOT of the repo
+
+- `docker-composer up`
+
 ## TODO's before push
 - no more need to serve "client" dir (backend)
 - remove mock auth module
+- remove html module
 - typeORM config: no 'synchronize' in production!
 - remove CORS enable (if the setup allows so...)
 - HTTPS ?
-
-## Bugs... ?
-A major massive multi package upgrade was performed (26 july). And, of course, plenty of bugs had to be fixed. If you find a bug, that might be the reason... (and, of course, report it!)
-
-
-## How to make stuff happen
-
-First you need a .env file inside **backend** directory, like this: (cannot put secret stuff in a public repo, sorry)
-```
-    # auth
-    FORTYTWO_CLIENT_ID=<you gotta provide the right one>  
-    FORTYTWO_CLIENT_SECRET=<you gotta provide the right one>  
-    FORTYTWO_CALLBACK_URL="http://127.0.0.1:3000/login/42/return"  
-    JWT_TOKEN_SECRET=<whatever you wish>  
-    JWT_TOKEN_EXPIRY=<some time, like "3600s"> 
-
-    # database
-    DB_PASSWORD=<whatever you wish, but DON'T USE QUOTES around it>
-    DB_HOST=127.0.0.1
-    DB_PORT=5432
-
-    # avatar photo
-    AVATAR_DEFAULT_FILE="images/avatardefault.png"
-    AVATAR_MAX_SIZE=1000000
-    
-    # frontend url
-    FRONTEND_URL="http://127.0.01:8000"
-```
-Then:
-OR: `./launch.sh` (have the **.env** file ready)
-
-Frontend app should be available at `http://127.0.01:8000`
-
------------------------
-
-### How to access the database:
-**Adminer** is available at 127.0.0.1:8080
-System: PostgreSQL  
-Server:db  
-Username: postgres	  
-Password: <the value of DB_PASSWORD in your .env file>  
-Database: postgres	  
-
-----------------------------
-
-### How to access the database with the psql client (if you really like the terminal):
-`docker exec -it db psql -U postgres`
-
-Useful commands:
-* \d (show tables)
-* \d [table name] (describe table)
-
 
 ----------------------
 ### Mock-authentication

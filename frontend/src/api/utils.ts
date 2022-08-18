@@ -1,7 +1,9 @@
 export const urls = {
-  frontendUrl: 'http://localhost:8000',
-  backendUrl: 'http://localhost:3000',
-  wsUrl: 'ws://localhost:3000',
+  // frontendUrl: 'http://localhost:8000',
+  // backendUrl: 'http://localhost:3000',
+  backendUrl: 'http://127.0.0.1:3000',
+  // wsUrl: 'ws://localhost:3000',
+  wsUrl: 'ws://127.0.0.1:3000',
 };
 
 //TODO: add endpoints

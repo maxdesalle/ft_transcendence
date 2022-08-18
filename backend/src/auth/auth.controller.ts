@@ -114,7 +114,7 @@ export class AuthController {
   }
 
   @Get('logout')
-  @UseGuards(JwtGuard)
+  // @UseGuards(JwtGuard)
   getLogoutPage(@Res({ passthrough: true }) res: Response) {
     res.clearCookie('jwt_token');
     return res.redirect(
