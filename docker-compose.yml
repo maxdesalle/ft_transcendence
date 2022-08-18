@@ -2,17 +2,14 @@ version: '3.5'
 services:
   app:
     container_name: app
-    build:
-      context: .
-      args:
-        - VITE_HOST=${APP_HOST}
+    image: rcammaro/transcendence:127.0.0.1
     depends_on:
       - db
     ports: 
       - 3000:3000
     env_file:
       - .env
-    restart: always
+    restart: unless-stopped
 
   db:
     container_name: db
@@ -21,7 +18,7 @@ services:
       POSTGRES_PASSWORD: ${DB_PASSWORD}
     volumes:
       - pgdata:/var/lib/postgresql/data
-    restart: always
+    restart: unless-stopped
 
   # adminer:
   #   image: adminer
