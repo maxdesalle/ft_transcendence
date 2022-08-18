@@ -24,6 +24,7 @@ RUN npm run build
 # frontend
 WORKDIR /usr/src/frontend
 COPY frontend/ .
+ARG VITE_HOST
 RUN npm run build
 
 # Start backend node server

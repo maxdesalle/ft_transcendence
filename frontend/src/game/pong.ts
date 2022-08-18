@@ -3,9 +3,11 @@ import { p5 } from '../game/newPong';
 import { Slider } from './slider';
 import { useStore } from '../store';
 
+import { urls } from '../api/utils';
 // const socketServerIP = 'localhost';
-const socketServerIP = '127.0.0.1';
-const socketServerPort = 3000;
+// const socketServerIP = '127.0.0.1';
+// const socketServerPort = 3000;
+// const socketServerIP = '127.0.0.1';
 const socketServerPath = 'pong';
 let isDisconnected = false;
 let socketErrObject: any = undefined; // if not undefined, socket returned an error
@@ -70,7 +72,8 @@ let scoreSound: any = undefined;
 let isReady = false; //this player is done with settings
 let isOtherPlayerReady = false; //other player is done with settings
 export function initSocket(): WebSocket {
-  const serverAddress = `ws://${socketServerIP}:${socketServerPort}/${socketServerPath}`;
+  // const serverAddress = `ws://${socketServerIP}:${socketServerPort}/${socketServerPath}`;
+  const serverAddress = `${urls.wsUrl}/${socketServerPath}`;
   ws = new WebSocket(serverAddress);
 
   ws.addEventListener('open', (e: any) => {

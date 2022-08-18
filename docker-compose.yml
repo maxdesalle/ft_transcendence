@@ -3,7 +3,10 @@ services:
   app:
     container_name: app
     image: app
-    build: .
+    build:
+      context: .
+      args:
+        - VITE_HOST=${APP_HOST}
     depends_on:
       - db
     ports: 
