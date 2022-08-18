@@ -11,12 +11,13 @@ import {
 import { createTurboResource } from 'turbo-solid';
 import { routes, urls } from '../api/utils';
 import { useAuth } from '../Providers/AuthProvider';
+import { useSockets } from '../Providers/SocketProvider';
 import { useStore } from '../store';
+import { WsNotificationEvent } from '../types/chat.interface';
 import { User } from '../types/user.interface';
 
 const Matchmaking: Component = () => {
-  const [state, { toggleMatchMaking, setFriendInvitation, setToken }] =
-    useStore();
+  const [state, { toggleMatchMaking, setToken }] = useStore();
   const [ref, setRef] = createSignal<any>();
   const [id, setId] = createSignal(0);
   const [auth, { setUser, setIsAuth, setToken: setAuthToken }] = useAuth();
@@ -26,6 +27,7 @@ const Matchmaking: Component = () => {
   const [gameSessions] = createTurboResource<number[]>(
     () => `${urls.backendUrl}/pong/sessions`,
   );
+  const [sockets] = useSockets();
 
   const navigate = useNavigate();
 
@@ -44,28 +46,30 @@ const Matchmaking: Component = () => {
 
   const onPlay = () => {
     const message = { event: 'play' };
-
-    state.pong.ws.send(JSON.stringify(message));
+    sockets.pongWs!.send(JSON.stringify(message));
     toggleMatchMaking(true);
     ref().classList.toggle('animate-pulse');
-    setButtonText('Searching...');
+    setButtonText('Cancel...');
   };
 
   const inviteFriend = () => {
     if (!id()) return;
     const data = { event: 'invite', data: id() };
-    state.pong.ws.send(JSON.stringify(data));
+    sockets.pongWs!.send(JSON.stringify(data));
   };
 
-  const onAcceptInvite = () => {
-    const data = {
-      event: 'accept',
-      data: state.pong.friendInvitation?.user_id,
-    };
-    state.pong.ws.send(JSON.stringify(data));
-    navigate('/pong');
-    setFriendInvitation(null);
-  };
+  createEffect(() => {
+    if (sockets.notificationWs) {
+      sockets.notificationWs!.addEventListener('message', (e) => {
+        let res: { event: WsNotificationEvent };
+        res = JSON.parse(e.data);
+        if (res.event === 'pong: player_joined') {
+          navigate('/pong');
+        }
+      });
+    }
+  });
+
   return (
     <div class="h-full flex items-center text-white justify-between">
       <button

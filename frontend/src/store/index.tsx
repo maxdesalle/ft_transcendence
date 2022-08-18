@@ -39,7 +39,7 @@ export enum TAB {
 export interface StoreState {
   token: string | undefined;
   error?: any;
-  ws: WebSocket;
+  ws?: WebSocket;
   chat: {
     status: Status;
     error?: any;
@@ -63,7 +63,7 @@ export interface StoreState {
   };
   pong: {
     inMatchMaking: boolean;
-    ws: WebSocket;
+    ws?: WebSocket;
     friendInvitation: { event: WsNotificationEvent; user_id?: number } | null;
   };
 }
@@ -75,11 +75,11 @@ export function StoreProvider(props: any) {
 
   const [state, setState] = createStore<StoreState>({
     token: Cookies.get('jwt_token'),
-    ws: new WebSocket(urls.wsUrl),
+    // ws: new WebSocket(urls.wsUrl),
     pong: {
       friendInvitation: null,
       inMatchMaking: false,
-      ws: initSocket(),
+      // ws: ,
     },
     chat: {
       status: 'idle',

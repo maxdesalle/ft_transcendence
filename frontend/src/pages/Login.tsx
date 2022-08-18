@@ -11,7 +11,7 @@ import { useStore } from '../store';
 const Login: Component = () => {
   const [username, setUsername] = createSignal<string>('');
   const navigate = useNavigate();
-  const [state, { setToken, reconectPong, reconectNotification }] = useStore();
+  const [state, { setToken }] = useStore();
   const [auth, { setToken: setAuthToken, setIsAuth, setUser }] = useAuth();
   const notify = (msg: string) => toast.error(msg);
   const [loading, setLoading] = createSignal(false);
@@ -39,7 +39,7 @@ const Login: Component = () => {
   };
 
   onMount(() => {
-    if (auth.token) navigate('/matchmaking');
+    // if (auth.token) navigate('/matchmaking');
   });
 
   return (

@@ -1,11 +1,6 @@
 import Cookies from 'js-cookie';
 import { Navigate, Outlet } from 'solid-app-router';
-import {
-  Component,
-  createResource,
-  JSXElement,
-  Show,
-} from 'solid-js';
+import { Component, createResource, JSXElement, Show } from 'solid-js';
 import { routes } from '../api/utils';
 import { useAuth } from '../Providers/AuthProvider';
 import { User } from '../types/user.interface';

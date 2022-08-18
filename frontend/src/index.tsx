@@ -8,6 +8,7 @@ import { TurboContext } from 'turbo-solid';
 import { api } from './utils/api';
 import { AuthProvider } from './Providers/AuthProvider';
 import Cookies from 'js-cookie';
+import { SocketProvider } from './Providers/SocketProvider';
 
 const configuration = {
   async fetcher(key: string) {
@@ -22,11 +23,13 @@ render(
   () => (
     <AuthProvider>
       <TurboContext.Provider value={configuration}>
-        <Router>
-          <StoreProvider>
-            <App />
-          </StoreProvider>
-        </Router>
+        <SocketProvider>
+          <Router>
+            <StoreProvider>
+              <App />
+            </StoreProvider>
+          </Router>
+        </SocketProvider>
       </TurboContext.Provider>
     </AuthProvider>
   ),
