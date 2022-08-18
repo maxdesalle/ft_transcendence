@@ -2,7 +2,6 @@ version: '3.5'
 services:
   app:
     container_name: app
-    image: app
     build:
       context: .
       args:
