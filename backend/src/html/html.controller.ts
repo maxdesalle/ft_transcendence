@@ -25,18 +25,18 @@ export class HtmlController {
 		private usersService: UsersService,
 		private htmlService: HtmlService) {}
 
-	@Get()
-	@UseFilters(ViewAuthFilter)
-	@UseGuards(JwtGuard)
-	async getHomePage(@Usr() user): Promise<string> {
-		const user_object = await this.usersService.findById(user.id);
-		return this.htmlService.getHomePage(user_object.login42);
-	}
+	// @Get()
+	// @UseFilters(ViewAuthFilter)
+	// @UseGuards(JwtGuard)
+	// async getHomePage(@Usr() user): Promise<string> {
+	// 	const user_object = await this.usersService.findById(user.id);
+	// 	return this.htmlService.getHomePage(user_object.login42);
+	// }
 
-	@Get('login')
-	getLoginPage(): string {
-		return this.htmlService.getLoginPage();
-	}
+	// @Get('login')
+	// getLoginPage(): string {
+	// 	return this.htmlService.getLoginPage();
+	// }
 	
 	@Get('settings')
 	@UseGuards(JwtGuard)

@@ -50,14 +50,16 @@ export class AuthController {
       id: user.id,
       login42: user.login42,
     });
-    res.cookie('jwt_token', jwtToken, { sameSite: 'none', secure: true });
+    res.cookie('jwt_token', jwtToken);
     if (user.isTwoFactorAuthenticationEnabled) {
       return res.redirect(
-        `${this.configService.get<string>('FRONTEND_URL')}/2fa`,
+        // `${this.configService.get<string>('FRONTEND_URL')}/2fa`,
+        '/matchmaking',
       );
     }
     return res.redirect(
-      this.configService.get<string>('FRONTEND_URL') + '/matchmaking',
+      // this.configService.get<string>('FRONTEND_URL') + '/matchmaking',
+      '/matchmaking',
     );
   }
 
@@ -107,7 +109,7 @@ export class AuthController {
     });
 
     res.clearCookie('jwt_token');
-    res.cookie('jwt_token', jwtToken, { sameSite: 'none', secure: true });
+    res.cookie('jwt_token', jwtToken);
     return { success: true };
   }
 
@@ -116,7 +118,8 @@ export class AuthController {
   getLogoutPage(@Res({ passthrough: true }) res: Response) {
     res.clearCookie('jwt_token');
     return res.redirect(
-      `${this.configService.get<string>('FRONTEND_URL')}/login`,
+      // `${this.configService.get<string>('FRONTEND_URL')}/login`,
+      '/matchmaking',
     );
   }
 }
