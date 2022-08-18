@@ -50,7 +50,7 @@ export class AuthController {
       id: user.id,
       login42: user.login42,
     });
-    res.cookie('jwt_token', jwtToken);
+    res.cookie('jwt_token', jwtToken, {sameSite: 'strict'});
     if (user.isTwoFactorAuthenticationEnabled) {
       return res.redirect(
         // `${this.configService.get<string>('FRONTEND_URL')}/2fa`,
@@ -109,7 +109,7 @@ export class AuthController {
     });
 
     res.clearCookie('jwt_token');
-    res.cookie('jwt_token', jwtToken);
+    res.cookie('jwt_token', jwtToken, {sameSite: 'strict'});
     return { success: true };
   }
 

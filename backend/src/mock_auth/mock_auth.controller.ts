@@ -33,7 +33,7 @@ export class MockAuthController {
 			id: user.id,
 			login42: user.login42
 		});
-		res.cookie('jwt_token', jwtToken);
+		res.cookie('jwt_token', jwtToken, {sameSite: 'strict'});
 		return user;
 	}
 
