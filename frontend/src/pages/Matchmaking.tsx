@@ -13,6 +13,7 @@ import { routes, urls } from '../api/utils';
 import { useAuth } from '../Providers/AuthProvider';
 import { useSockets } from '../Providers/SocketProvider';
 import { useStore } from '../store';
+import { WsNotificationEvent } from '../types/chat.interface';
 import { User } from '../types/user.interface';
 
 const Matchmaking: Component = () => {
@@ -49,24 +50,27 @@ const Matchmaking: Component = () => {
     sockets.pongWs!.send(JSON.stringify(message));
     toggleMatchMaking(true);
     ref().classList.toggle('animate-pulse');
-    setButtonText('Searching...');
+    setButtonText('Cancel...');
   };
 
   const inviteFriend = () => {
     if (!id()) return;
     const data = { event: 'invite', data: id() };
-    // state.pong.ws.send(JSON.stringify(data));
+    sockets.notificationWs!.send(JSON.stringify(data));
   };
 
-  const onAcceptInvite = () => {
-    const data = {
-      event: 'accept',
-      data: state.pong.friendInvitation?.user_id,
-    };
-    // state.pong.ws.send(JSON.stringify(data));
-    navigate('/pong');
-    setFriendInvitation(null);
-  };
+  createEffect(() => {
+    if (sockets.notificationWs) {
+      sockets.notificationWs!.addEventListener('message', (e) => {
+        let res: { event: WsNotificationEvent };
+        res = JSON.parse(e.data);
+        if (res.event === 'pong: player_joined') {
+          navigate('/pong');
+        }
+      });
+    }
+  });
+
   return (
     <div class="h-full flex items-center text-white justify-between">
       <button

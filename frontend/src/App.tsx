@@ -31,29 +31,13 @@ import Cookies from 'js-cookie';
 import { useSockets } from './Providers/SocketProvider';
 
 const App: Component = () => {
-  const [
-    state,
-    {
-      setFriendInvitation,
-      reconectPong,
-      setFriendReqCount,
-      reconectNotification,
-    },
-  ] = useStore();
+  const [state, { setFriendReqCount }] = useStore();
   const navigate = useNavigate();
   const [auth] = useAuth();
   const token = () => auth.token;
-  const [me, setMe] = createSignal<User>({
-    display_name: '',
-    avatarId: 0,
-    isTwoFactorAuthenticationEnabled: false,
-    login42: '',
-    id: 0,
-  });
   const location = useLocation();
 
-  const [sockets, { connectPongWs, onNotification, connectNotificationWs }] =
-    useSockets();
+  const [sockets, { connectPongWs, connectNotificationWs }] = useSockets();
 
   const [pendingFriendReq] = createResource(token, async () => {
     const res = await api.get<{ req_user: User; status: number }[]>(
@@ -131,7 +115,10 @@ const App: Component = () => {
       console.log(location.pathname);
       navigate('/matchmaking');
     }
-    if (!Cookies.get('jwt_token')) navigate('/login', { replace: true });
+  });
+
+  createEffect(() => {
+    console.log('token: ', auth.token);
   });
 
   createEffect(() => {
@@ -139,11 +126,6 @@ const App: Component = () => {
       connectPongWs();
       connectNotificationWs();
     }
-  });
-  onCleanup(() => {
-    // state.ws.close();
-    // state.pong.ws.close();
-    console.log('cleaning up all');
   });
 
   return (

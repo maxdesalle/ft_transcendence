@@ -3,19 +3,19 @@ import { Component, createEffect, For, onMount, Show } from 'solid-js';
 import { createTurboResource } from 'turbo-solid';
 import { acceptFriendReq, rejectFriendReq } from '../api/user';
 import { routes } from '../api/utils';
-import { useStore } from '../store';
+import { useSockets } from '../Providers/SocketProvider';
 import { WsNotificationEvent } from '../types/chat.interface';
 import { User } from '../types/user.interface';
 import { notifyError, notifySuccess } from '../utils/helpers';
 
 const PendingFriendReqCard: Component = () => {
-  const [state, { setPendigFriendReq, setFriendReqCount }] = useStore();
   const [pendingFriendReq, { refetch }] = createTurboResource<
     {
       req_user: User;
       status: number;
     }[]
   >(() => routes.receivedFriendReq);
+  const [sockets] = useSockets();
   const onAcceptFriendReq = (id: number) => {
     acceptFriendReq(id)
       .then(() => {
@@ -36,14 +36,16 @@ const PendingFriendReqCard: Component = () => {
       );
   };
 
-  onMount(() => {
-    // state.ws.addEventListener('message', (e) => {
-    //   let res: { event: WsNotificationEvent };
-    //   res = JSON.parse(e.data);
-    //   if (res.event === 'friends: new_request') {
-    //     refetch();
-    //   }
-    // });
+  createEffect(() => {
+    if (sockets.notificationWs) {
+      sockets.notificationWs.addEventListener('message', (e) => {
+        let res: { event: WsNotificationEvent };
+        res = JSON.parse(e.data);
+        if (res.event === 'friends: new_request') {
+          refetch();
+        }
+      });
+    }
   });
 
   return (

@@ -16,10 +16,6 @@ interface StoreState {
 interface ActionsType {
   connectNotificationWs: () => void;
   connectPongWs: () => void;
-  onNotification: (
-    event: WsNotificationEvent,
-    fun: (e: MessageEvent) => void,
-  ) => void;
 }
 
 export const SocketProvider = (props: any) => {
@@ -36,24 +32,6 @@ export const SocketProvider = (props: any) => {
     connectPongWs() {
       setState('pongWsState', WebSocket.CONNECTING);
       setState('pongWs', initSocket());
-    },
-    onNotification(event, fun) {
-      state.notificationWs?.addEventListener('message', (e) => {
-        const res: { event: WsNotificationEvent } = JSON.parse(e.data);
-        switch (res.event) {
-          case 'pong: invitation_accepted':
-            fun(e);
-            break;
-          case 'pong: invitation':
-            fun(e);
-            break;
-          case 'pong: player_joined':
-            fun(e);
-            break;
-          default:
-            break;
-        }
-      });
     },
   };
 

@@ -26,6 +26,7 @@ import autoAnimate from '@formkit/auto-animate';
 import { Link } from 'solid-app-router';
 import { Message } from 'postcss';
 import ChatHome from '../components/ChatHome';
+import { useSockets } from '../Providers/SocketProvider';
 
 const Chat: Component = () => {
   const [state] = useStore();
@@ -37,6 +38,7 @@ const Chat: Component = () => {
     const res = await api.get<RoomInfo>(`${routes.chat}/room_info/${id}`);
     return res.data;
   });
+  const [sockets] = useSockets();
   const [blockedFriends, { refetch }] = createTurboResource<number[]>(
     () => routes.blocked,
   );
@@ -45,6 +47,7 @@ const Chat: Component = () => {
   onMount(() => {
     autoAnimate(ref);
   });
+
   const [friends] = createTurboResource<User[]>(() => routes.friends);
   const selectedFriend = () =>
     friends()?.find((friend) => friend.id === state.chat.friendId);
@@ -123,19 +126,21 @@ const Chat: Component = () => {
   const inviteFriend = () => {
     if (!selectedFriend()) return;
     const data = { event: 'invite', data: selectedFriend()!.id };
-    // state.pong.ws.send(JSON.stringify(data));
+    sockets.pongWs!.send(JSON.stringify(data));
   };
 
-  onMount(() => {
-    // state.ws.addEventListener('message', (e) => {
-    //   let res: { event: WsNotificationEvent; message: Message };
-    //   res = JSON.parse(e.data);
-    //   if (res.event === 'chat_room_msg') {
-    //     updateRoomMessages();
-    //   } else if (res.event === 'chat_dm') {
-    //     updateFriendMessages();
-    //   }
-    // });
+  createEffect(() => {
+    if (sockets.notificationWs) {
+      sockets.notificationWs.addEventListener('message', (e) => {
+        let res: { event: WsNotificationEvent; message: Message };
+        res = JSON.parse(e.data);
+        if (res.event === 'chat_room_msg') {
+          updateRoomMessages();
+        } else if (res.event === 'chat_dm') {
+          updateFriendMessages();
+        }
+      });
+    }
   });
 
   return (

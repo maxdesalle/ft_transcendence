@@ -292,24 +292,24 @@ export const viewerSketch = (p5: MyP5) => {
   let idListOpacity = 1; // opacity of id list test
   let doneChoosing = false; // false if viewer still did not choose first session to watch
   function handleSubmit() {
-    const idText = input.value();
-    input.value(''); // empty box
-    if (
-      idText === '' ||
-      isNaN(idText) ||
-      !sessionIdsArray.includes(parseInt(idText))
-    ) {
-      console.log(`${idText} is an invalid id`);
-      document.getElementById('user_id')!.placeholder = 'Invalid id';
-      document.getElementById('user_id')!.value = '';
-      return;
-    }
-    ws.send(JSON.stringify({ id: Number(idText) }));
+    // const idText = input.value();
+    // input.value(''); // empty box
+    // if (
+    //   idText === '' ||
+    //   isNaN(idText) ||
+    //   !sessionIdsArray.includes(parseInt(idText))
+    // ) {
+    //   console.log(`${idText} is an invalid id`);
+    //   document.getElementById('user_id')!.placeholder = 'Invalid id';
+    //   document.getElementById('user_id')!.value = '';
+    //   return;
+    // }
+    ws.send(JSON.stringify({ id: p5.sessionId }));
     //
     gameStarted = false;
     gameFinished = false;
-    document.getElementById('user_id')!.placeholder = 'Enter id';
-    document.getElementById('user_id')!.value = '';
+    // document.getElementById('user_id')!.placeholder = 'Enter id';
+    // document.getElementById('user_id')!.value = '';
   }
 
   //blocks user from displaying game if nothing chosen and handles box transparency

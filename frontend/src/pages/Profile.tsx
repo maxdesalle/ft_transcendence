@@ -11,9 +11,11 @@ import { sendFriendReq } from '../api/user';
 import { AxiosError } from 'axios';
 import { useStore } from '../store';
 import Scrollbars from 'solid-custom-scrollbars';
+import { useSockets } from '../Providers/SocketProvider';
 
 const Profile: Component = () => {
   const [state] = useStore();
+  const [{ pongWs }] = useSockets();
   const params = useParams<{ id: string }>();
   const [matches] = createTurboResource<MatchDTO[]>(
     () => `${routes.matches}/${parseInt(params.id)}`,
@@ -36,10 +38,9 @@ const Profile: Component = () => {
   };
 
   const onInviteUser = () => {
-    console.log("nop lOl: ", user(), state.pong.ws);
     if (!user()) return;
     const data = { event: 'invite', data: user()!.id };
-    state.pong.ws.send(JSON.stringify(data));
+    pongWs!.send(JSON.stringify(data));
   };
 
   return (

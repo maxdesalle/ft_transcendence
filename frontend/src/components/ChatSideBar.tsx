@@ -20,11 +20,13 @@ import { RoomInfo, WsNotificationEvent } from '../types/chat.interface';
 import RoomList from './RoomList';
 import { useAuth } from '../Providers/AuthProvider';
 import JoinableRoomList from './JoinableRoomList';
+import { useSockets } from '../Providers/SocketProvider';
 
 const ChatSideBar: Component = () => {
   const [keyword, setKeyword] = createSignal('');
   const [auth] = useAuth();
   const [state, { changeTab }] = useStore();
+  const [sockets] = useSockets();
   const [publicRooms, { refetch: refetchPublicRooms }] = createTurboResource<
     RoomInfo[]
   >(() => routes.publicRooms);
@@ -46,19 +48,21 @@ const ChatSideBar: Component = () => {
       return false;
     });
 
-  onMount(() => {
-    // state.ws.addEventListener('message', (e) => {
-    //   let res: { event: WsNotificationEvent };
-    //   res = JSON.parse(e.data);
-    //   if (res.event === 'chat_new_group') {
-    //     console.log("res: ", res);
-    //     refetchPublicRooms();
-    //     refetchRooms();
-    //   } else if (res.event === 'chat_new_user_in_group') {
-    //     refetchPublicRooms();
-    //     refetchRooms();
-    //   }
-    // });
+  createEffect(() => {
+    if (sockets.notificationWs) {
+      sockets.notificationWs.addEventListener('message', (e) => {
+        let res: { event: WsNotificationEvent };
+        res = JSON.parse(e.data);
+        if (res.event === 'chat_new_group') {
+          console.log('res: ', res);
+          refetchPublicRooms();
+          refetchRooms();
+        } else if (res.event === 'chat_new_user_in_group') {
+          refetchPublicRooms();
+          refetchRooms();
+        }
+      });
+    }
   });
 
   return (

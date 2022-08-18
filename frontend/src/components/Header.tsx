@@ -17,6 +17,7 @@ import autoAnimate from '@formkit/auto-animate';
 import { IoNotificationsSharp } from 'solid-icons/io';
 import PendingFriendReqCard from './PendingFriendReqCard';
 import { AxiosError } from 'axios';
+import { useSockets } from '../Providers/SocketProvider';
 const LINKS = ['chat', 'leaderboard'];
 
 const Header: Component = () => {
@@ -24,6 +25,7 @@ const Header: Component = () => {
   const [state, { setFriendInvitation }] = useStore();
   const [users] = createTurboResource<User[]>(() => routes.users);
   const [currentUser] = createTurboResource<User>(() => routes.currentUser);
+  const [{ pongWs }] = useSockets();
   const navigate = useNavigate();
   const notifySuccess = (msg: string) => toast.success(msg);
   const notifyError = (msg: string) => toast.error(msg);
@@ -49,7 +51,7 @@ const Header: Component = () => {
       event: 'accept',
       data: state.pong.friendInvitation?.user_id,
     };
-    // state.pong.ws.send(JSON.stringify(data));
+    pongWs!.send(JSON.stringify(data));
     navigate('/pong');
     setFriendInvitation(null);
   };
