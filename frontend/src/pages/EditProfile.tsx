@@ -13,14 +13,19 @@ import { notifyError, notifySuccess } from '../utils/helpers';
 import { createTurboResource } from 'turbo-solid';
 import { routes } from '../api/utils';
 import { User } from '../types/user.interface';
+import { useAuth } from '../Providers/AuthProvider';
 
 const EditProfile: Component = () => {
   const [newName, setNewName] = createSignal('');
   const [isOpen, setIsOpen] = createSignal(false);
   const [image, setImage] = createSignal<File | null>(null);
   const [pathUrl, setPathUrl] = createSignal('');
-  const [state] = useStore();
+  const [auth, { setUser, setUserAvatarId }] = useAuth();
   const [currentUser] = createTurboResource<User>(() => routes.currentUser);
+
+  createEffect(() => {
+    console.log('updated: ', auth.user);
+  });
 
   const onChangeName = () => {
     if (newName()) {
@@ -54,7 +59,8 @@ const EditProfile: Component = () => {
     const formData = new FormData();
     formData.append('file', image()!, image()!.name);
     changeAvatar(formData)
-      .then(() => {
+      .then((res) => {
+        setUserAvatarId(res.data.avatarId);
         notifySuccess('Great success 🙂');
       })
       .catch((e) => notifyError('error 😥'));
@@ -80,12 +86,12 @@ const EditProfile: Component = () => {
       <div class="p-2">
         <h1 class="text-center">2 fa</h1>
         <Switch>
-          <Match when={!currentUser()?.isTwoFactorAuthenticationEnabled}>
+          <Match when={!auth.user.isTwoFactorAuthenticationEnabled}>
             <button onClick={onActivate2fa} class="btn-primary">
               Activate 2fa
             </button>
           </Match>
-          <Match when={currentUser()?.isTwoFactorAuthenticationEnabled}>
+          <Match when={auth.user.isTwoFactorAuthenticationEnabled}>
             <button class="btn-primary" onClick={onDeactivate2fa}>
               Deactivate 2fa
             </button>

@@ -106,7 +106,7 @@ export class AuthController {
       validTwoFactorAuthentication: true,
     });
 
-    res.clearCookie('jwt_token');
+    res.clearCookie('jwt_token', { sameSite: 'none', secure: true });
     res.cookie('jwt_token', jwtToken, { sameSite: 'none', secure: true });
     return { success: true };
   }

@@ -26,7 +26,10 @@ export const AuthProvider = (props: any) => {
 
   const actions = {
     setUser(user: User) {
-      setState('user', user);
+      setState('user', () => ({ ...user }));
+    },
+    setUserAvatarId(id: number) {
+      setState('user', 'avatarId', id);
     },
     setToken(token: string | undefined) {
       setState('token', token);
@@ -48,6 +51,7 @@ export function useAuth(): [
     setUser: (user: User) => void;
     setToken: (token: string | undefined) => void;
     setIsAuth: (isAuth: boolean) => void;
+    setUserAvatarId: (id: number) => void;
   },
 ] {
   return useContext(AuthContext);
