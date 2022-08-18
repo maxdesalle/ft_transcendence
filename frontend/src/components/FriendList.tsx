@@ -37,10 +37,6 @@ const FriendList: Component = () => {
     autoAnimate(ref);
   });
 
-  createEffect(() => {
-    console.log('user id', state.chat.friendId);
-  });
-
   return (
     <div ref={ref} class="h-full">
       <Search

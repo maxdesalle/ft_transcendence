@@ -1,9 +1,8 @@
-import { Component, createEffect, createSignal } from 'solid-js';
-import { Friend, User } from '../types/user.interface';
+import { Component } from 'solid-js';
+import { Friend } from '../types/user.interface';
 import { generateImageUrl } from '../utils/helpers';
 import Avatar from './Avatar';
 import defaultAvatar from '../../../backend/images/avatardefault.png';
-import { blockUser } from '../api/chat';
 
 export const FriendCard: Component<{ friend: Friend; onClick?: () => void }> = (
   props,
@@ -22,7 +21,7 @@ export const FriendCard: Component<{ friend: Friend; onClick?: () => void }> = (
               : defaultAvatar
           }
         />
-        <h4 class="pl-3">{props.friend.display_name}</h4>
+        <h4 class="hidden lg:block pl-3">{props.friend.display_name}</h4>
       </div>
     </div>
   );

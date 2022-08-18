@@ -145,12 +145,11 @@ const Chat: Component = () => {
 
   return (
     <div class="grid grid-cols-6 h-full">
-      <div class="flex row-span-4 flex-col col-span-1 border-x-header-menu border-x">
+      <div class="flex row-span-4 flex-col w-fit col-span-1 border-x-header-menu border-x">
         <ChatSideBar />
       </div>
-      <div class="col-span-4 flex flex-col pl-1 pr-1 h-full">
+      <div class="col-span-4 w-full flex flex-col pl-1 pr-1 h-full">
         <Switch>
-          {/*TODO: add tab for chat home page */}
           <Match when={state.chatUi.tab === TAB.ROOMS}>
             <ChatMessagesBox
               messages={roomMessages()!}

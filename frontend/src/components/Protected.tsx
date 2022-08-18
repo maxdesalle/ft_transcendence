@@ -4,10 +4,8 @@ import {
   Component,
   createEffect,
   createResource,
-  createSignal,
   JSXElement,
   Show,
-  Suspense,
 } from 'solid-js';
 import { routes } from '../api/utils';
 import Login from '../pages/Login';
@@ -31,7 +29,7 @@ const Protected: Component<{ children: JSXElement }> = (props) => {
   const navigate = useNavigate();
   createEffect(() => {
     if (!data.loading && state.isAuth) {
-      navigate('/', { replace: true });
+      navigate('/');
     }
   });
   return (

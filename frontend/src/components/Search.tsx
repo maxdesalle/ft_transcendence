@@ -51,7 +51,7 @@ const Search: Component<{
 
   return (
     <div class="flex items-center pl-2 pb-2">
-      <div class="flex items-center w-2/3 rounded-md p-1 border border-header-menu">
+      <div class="hidden lg:flex w-2/3 rounded-md p-1 border border-header-menu">
         <BiSearch size={24} />
         <input
           onInput={(e) => props.setKeyword(e.currentTarget.value)}
@@ -62,7 +62,7 @@ const Search: Component<{
           autocomplete="off"
         />
       </div>
-      <div ref={setAnchor} class="ml-5">
+      <div ref={setAnchor} class="ml-5 lg:self-start">
         <button onclick={() => setIsOpen(!isOpen())}>
           <AiOutlinePlusCircle ref={ref} size={26} />
         </button>

@@ -67,7 +67,7 @@ const ChatSideBar: Component = () => {
 
   return (
     <>
-      <ul class="flex text-white items-center">
+      <ul class="text-white items-center lg:flex">
         <li
           onClick={() => changeTab(TAB.HOME)}
           class="p-2 hover:text-gray-400 transition-all"

@@ -24,10 +24,6 @@ const ChatMessagesBox: Component<{
   const [currentUser] = createTurboResource(() => routes.currentUser);
   const roomId = state.chat.roomId;
   const [message, setMessage] = createSignal('');
-  const [currentRoom] = createResource(roomId, async (id: number) => {
-    const res = await api.get<RoomInfo>(`${routes.chat}/room_info/${id}`);
-    return res.data;
-  });
 
   return (
     <>

@@ -1,9 +1,11 @@
 - [x] 🎉 pong: new mock user cant enter a game
 - [x] 🎉 viewer: redirect user to viewer when clicking a current game
+- [x] 📃 chanel: hide blocked user messages
+- [x] 📃 block: anyone
+- [x] 🎉 user status on the chat
 
-- [ ] 📃 block: anyone
-- [ ] 📃 make edit profile reactive
+- [ ] 📃 user status on the profile page
 - [ ] 📃 watch friend game from chat interface
 - [ ] 📃 mini tutorial on how to play the game
 - [ ] 📃 player stats on the profile page
-- [ ] 📃 chanel: hide blocked user messages
+- [ ] 📃 make edit profile reactive
