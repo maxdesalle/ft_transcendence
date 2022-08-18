@@ -85,6 +85,7 @@ export function initViewerSocket() {
     gameStarted = dataOB.gameStarted ?? gameStarted;
     gameFinished = dataOB.gameFinished ?? gameFinished;
     sessionIdsArray = dataOB.sessionIdsArray ?? sessionIdsArray;
+    console.log(sessionIdsArray);
     const scoreTmp = [df.p1Score, df.p2Score];
     const ballSpeedTmp = [df.ballSpeedX, df.ballSpeedY];
     if (dataOB.powerUpsMap)
@@ -292,24 +293,25 @@ export const viewerSketch = (p5: MyP5) => {
   let idListOpacity = 1; // opacity of id list test
   let doneChoosing = false; // false if viewer still did not choose first session to watch
   function handleSubmit() {
-    // const idText = input.value();
-    // input.value(''); // empty box
-    // if (
-    //   idText === '' ||
-    //   isNaN(idText) ||
-    //   !sessionIdsArray.includes(parseInt(idText))
-    // ) {
-    //   console.log(`${idText} is an invalid id`);
-    //   document.getElementById('user_id')!.placeholder = 'Invalid id';
-    //   document.getElementById('user_id')!.value = '';
-    //   return;
-    // }
-    ws.send(JSON.stringify({ id: p5.sessionId }));
+    const idText = input.value();
+    input.value(''); // empty box
+    if (
+      idText === '' ||
+      isNaN(idText) ||
+      !sessionIdsArray.includes(parseInt(idText))
+    ) {
+      console.log(`${idText} is an invalid id`);
+      (document.getElementById('user_id') as HTMLInputElement)!.placeholder = 'Invalid id';
+      (document.getElementById('user_id') as HTMLInputElement)!.value = '';
+      return;
+    }
+    ws.send(JSON.stringify({ id: Number(idText) }));
     //
+    doneChoosing = true;
     gameStarted = false;
     gameFinished = false;
-    // document.getElementById('user_id')!.placeholder = 'Enter id';
-    // document.getElementById('user_id')!.value = '';
+    (document.getElementById('user_id') as HTMLInputElement)!.placeholder = 'Enter id';
+    (document.getElementById('user_id') as HTMLInputElement)!.value = '';
   }
 
   //blocks user from displaying game if nothing chosen and handles box transparency
@@ -453,8 +455,8 @@ export const viewerSketch = (p5: MyP5) => {
     input.position(widthOffset, canvasHeight / 20 + heightOffset);
     input.size(canvasWidth / 7, canvasHeight / 25);
     input.id('user_id');
-    document.getElementById('user_id')!.placeholder = 'Enter id';
-    document.getElementById('user_id')!.value = '';
+    (document.getElementById('user_id') as HTMLInputElement)!.placeholder = 'Enter id';
+    (document.getElementById('user_id') as HTMLInputElement)!.value = '';
     // create submit button
     button = p5.createButton('submit');
     button.position(input.x + input.width, input.y);
@@ -468,6 +470,8 @@ export const viewerSketch = (p5: MyP5) => {
   };
 
   p5.draw = () => {
+    console.log(doneChoosing);
+    
     p5.background(0);
     handleWindowResize();
     if (handleSocketError()) return; //check if we are connected to server

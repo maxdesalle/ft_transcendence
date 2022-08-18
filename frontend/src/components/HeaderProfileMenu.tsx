@@ -1,4 +1,4 @@
-import { Component, Show } from 'solid-js';
+import { Component, createEffect, Show } from 'solid-js';
 import { User } from '../types/user.interface';
 import Avatar from './Avatar';
 import leaderboardLogo from '../assets/podium.png';
@@ -12,6 +12,7 @@ import { routes, urls } from '../api/utils';
 import { createTurboResource, forget } from 'turbo-solid';
 import Cookies from 'js-cookie';
 import { useAuth } from '../Providers/AuthProvider';
+import { unwrap } from 'solid-js/store';
 
 const HeaderProfileMenu: Component<{ user: User }> = (props) => {
   const navigate = useNavigate();
@@ -24,13 +25,18 @@ const HeaderProfileMenu: Component<{ user: User }> = (props) => {
     navigate('/login');
   };
 
+  const avatarId = () => props.user.avatarId;
+  createEffect(() => {
+    console.log('user: ', avatarId());
+  });
+
   return (
-    <Show when={currentUser()}>
+    <Show when={props.user}>
       <div class="flex flex-col items-center py-3">
         <Avatar
           imgUrl={
-            currentUser()!.avatarId
-              ? `${urls.backendUrl}/database-files/${currentUser()!.avatarId}`
+            props.user.avatarId
+              ? `${urls.backendUrl}/database-files/${props.user.avatarId}`
               : undefined
           }
         />

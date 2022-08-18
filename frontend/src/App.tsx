@@ -31,7 +31,7 @@ import Cookies from 'js-cookie';
 import { useSockets } from './Providers/SocketProvider';
 
 const App: Component = () => {
-  const [state, { setFriendReqCount }] = useStore();
+  const [state, { setFriendReqCount, setFriendInvitation }] = useStore();
   const navigate = useNavigate();
   const [auth] = useAuth();
   const token = () => auth.token;
@@ -108,6 +108,20 @@ const App: Component = () => {
   });
 
   createEffect(() => {
+    if (sockets.notificationWs) {
+      sockets.notificationWs.addEventListener('message', (e) => {
+        let res: { event: WsNotificationEvent };
+        res = JSON.parse(e.data);
+        if (res.event === 'pong: invitation') {
+          setFriendInvitation(res);
+        } else if (res.event === 'pong: invitation_accepted') {
+          navigate('/pong');
+        }
+      });
+    }
+  });
+
+  createEffect(() => {
     if (pendingFriendReq()) {
       setFriendReqCount(pendingFriendReq()!.length);
     }
@@ -115,10 +129,6 @@ const App: Component = () => {
       console.log(location.pathname);
       navigate('/matchmaking');
     }
-  });
-
-  createEffect(() => {
-    console.log('token: ', auth.token);
   });
 
   createEffect(() => {

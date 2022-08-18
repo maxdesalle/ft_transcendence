@@ -36,7 +36,7 @@ const ChatRoomUserCard: Component<{
   const [currentUser] = createTurboResource<User>(() => routes.currentUser);
   const roomId = () => state.chat.roomId;
   let ref: any;
-  const [{ pongWs }] = useSockets();
+  const [sockets] = useSockets();
   const [currentRoom] = createResource(roomId, async (id: number) => {
     const res = await api.get<RoomInfo>(`${routes.chat}/room_info/${id}`);
     return res.data;
@@ -46,7 +46,7 @@ const ChatRoomUserCard: Component<{
   const [isFriend, setIsFriend] = createSignal(false);
   const inviteUser = () => {
     const data = { event: 'invite', data: props.user.id };
-    pongWs!.send(JSON.stringify(data));
+    sockets.pongWs!.send(JSON.stringify(data));
     notify(`invitation sent to ${props.user.display_name}`);
   };
 

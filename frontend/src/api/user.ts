@@ -14,7 +14,7 @@ export const fetchUserById = async (id: number) => {
 };
 
 export const changeAvatar = async (data: any) => {
-  return await api.post(`${routes.users}/avatar`, data);
+  return await api.post<User>(`${routes.users}/avatar`, data);
 };
 
 export const changeDisplayName = async (value: string) => {

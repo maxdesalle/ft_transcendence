@@ -39,7 +39,7 @@ const Login: Component = () => {
   };
 
   onMount(() => {
-    if (auth.token) navigate('/matchmaking');
+    // if (auth.token) navigate('/matchmaking');
   });
 
   return (

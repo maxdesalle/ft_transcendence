@@ -1,5 +1,12 @@
 import { Link, useNavigate } from 'solid-app-router';
-import { Component, createSignal, For, onMount, Show } from 'solid-js';
+import {
+  Component,
+  createEffect,
+  createSignal,
+  For,
+  onMount,
+  Show,
+} from 'solid-js';
 import logo from '../assets/logo.png';
 import { BiSearchAlt2 } from 'solid-icons/bi';
 import HeaderProfileMenu from './HeaderProfileMenu';
@@ -18,6 +25,8 @@ import { IoNotificationsSharp } from 'solid-icons/io';
 import PendingFriendReqCard from './PendingFriendReqCard';
 import { AxiosError } from 'axios';
 import { useSockets } from '../Providers/SocketProvider';
+import { useAuth } from '../Providers/AuthProvider';
+import { unwrap } from 'solid-js/store';
 const LINKS = ['chat', 'leaderboard'];
 
 const Header: Component = () => {
@@ -25,7 +34,8 @@ const Header: Component = () => {
   const [state, { setFriendInvitation }] = useStore();
   const [users] = createTurboResource<User[]>(() => routes.users);
   const [currentUser] = createTurboResource<User>(() => routes.currentUser);
-  const [{ pongWs }] = useSockets();
+  const [sockets] = useSockets();
+  const [auth, { setUser }] = useAuth();
   const navigate = useNavigate();
   const notifySuccess = (msg: string) => toast.success(msg);
   const notifyError = (msg: string) => toast.error(msg);
@@ -34,6 +44,10 @@ const Header: Component = () => {
   const [uRef, setUref] = createSignal<any>();
   let ref: any;
   let notifRef: any;
+
+  createEffect(() => {
+    console.log('auth user: ', unwrap(auth.user.display_name));
+  });
 
   const onSendFriendReq = (userId: number, userName: string) => {
     api
@@ -51,7 +65,7 @@ const Header: Component = () => {
       event: 'accept',
       data: state.pong.friendInvitation?.user_id,
     };
-    pongWs!.send(JSON.stringify(data));
+    sockets.pongWs!.send(JSON.stringify(data));
     navigate('/pong');
     setFriendInvitation(null);
   };
@@ -119,8 +133,8 @@ const Header: Component = () => {
           <button onClick={() => setIsOpen(!isOpen())}>
             <Avatar
               imgUrl={
-                currentUser()?.avatarId
-                  ? `${generateImageUrl(currentUser()!.avatarId)}`
+                auth.user.avatarId
+                  ? `${generateImageUrl(auth.user.avatarId)}`
                   : undefined
               }
             />
@@ -128,7 +142,7 @@ const Header: Component = () => {
           <Modal isOpen={isOpen()} toggleModal={setIsOpen}>
             <Show when={currentUser()}>
               <div class="bg-skin-menu-background w-60 absolute border-header-menu -right-4 border shadow-sm p-2 -top-1">
-                <HeaderProfileMenu user={currentUser()!} />
+                <HeaderProfileMenu user={auth.user} />
               </div>
             </Show>
           </Modal>

@@ -17,8 +17,7 @@ import { WsNotificationEvent } from '../types/chat.interface';
 import { User } from '../types/user.interface';
 
 const Matchmaking: Component = () => {
-  const [state, { toggleMatchMaking, setFriendInvitation, setToken }] =
-    useStore();
+  const [state, { toggleMatchMaking, setToken }] = useStore();
   const [ref, setRef] = createSignal<any>();
   const [id, setId] = createSignal(0);
   const [auth, { setUser, setIsAuth, setToken: setAuthToken }] = useAuth();
@@ -56,7 +55,7 @@ const Matchmaking: Component = () => {
   const inviteFriend = () => {
     if (!id()) return;
     const data = { event: 'invite', data: id() };
-    sockets.notificationWs!.send(JSON.stringify(data));
+    sockets.pongWs!.send(JSON.stringify(data));
   };
 
   createEffect(() => {
