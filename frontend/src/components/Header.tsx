@@ -80,7 +80,7 @@ const Header: Component = () => {
     <>
       <header class="flex items-center relative z-20 bg-skin-header-background py-1 px-6 justify-between">
         <div class="flex items-center">
-          <Link href="/matchmaking">
+          <Link href="/">
             <img class="w-9 rounded-xl mr-2 h-8" src={logo} alt="logo" />
           </Link>
           <span class="flex items-center rounded-md bg-inherit text-slate-300 h-8 border shadow-md p-1 border-header-menu">

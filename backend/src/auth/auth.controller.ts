@@ -54,12 +54,12 @@ export class AuthController {
     if (user.isTwoFactorAuthenticationEnabled) {
       return res.redirect(
         // `${this.configService.get<string>('FRONTEND_URL')}/2fa`,
-        '/matchmaking',
+        '/',
       );
     }
     return res.redirect(
       // this.configService.get<string>('FRONTEND_URL') + '/matchmaking',
-      '/matchmaking',
+      '/',
     );
   }
 
@@ -119,7 +119,7 @@ export class AuthController {
     res.clearCookie('jwt_token');
     return res.redirect(
       // `${this.configService.get<string>('FRONTEND_URL')}/login`,
-      '/matchmaking',
+      '/',
     );
   }
 }
