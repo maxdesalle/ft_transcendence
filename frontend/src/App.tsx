@@ -31,11 +31,10 @@ import Cookies from 'js-cookie';
 import { useSockets } from './Providers/SocketProvider';
 
 const App: Component = () => {
-  const [state, { setFriendReqCount, setFriendInvitation }] = useStore();
+  const [_, { setFriendReqCount, setFriendInvitation }] = useStore();
   const navigate = useNavigate();
   const [auth] = useAuth();
   const token = () => auth.token;
-  const location = useLocation();
 
   const [sockets, { connectPongWs, connectNotificationWs }] = useSockets();
 
@@ -44,67 +43,6 @@ const App: Component = () => {
       routes.receivedFriendReq,
     );
     return res.data;
-  });
-
-  onMount(() => {
-    ///cant do it on mount
-    // state.ws.addEventListener('message', (e) => {
-    //   let res: {
-    //     event: WsNotificationEvent;
-    //     message?: Message;
-    //     user_id?: number;
-    //     friend_request?: {
-    //       req_user_id?: number;
-    //       recv_user_id?: number;
-    //       receiving_user?: { id: number };
-    //       requesting_user?: { id: number };
-    //       status: number;
-    //     };
-    //   };
-    //   res = JSON.parse(e.data);
-    //   switch (res.event) {
-    //     case 'friends: request_accepted':
-    //       console.log(`${res.event}: `, res);
-    //       break;
-    //     case 'friends: request_rejected':
-    //       console.log(`${res.event}: `, res);
-    //       break;
-    //     case 'status: friend_offline':
-    //       console.log(`${res.event}: `, res);
-    //       break;
-    //     case 'status: friend_online':
-    //       console.log(`${res.event}: `, res);
-    //       break;
-    //     case 'status: friend_online':
-    //       console.log(`${res.event}: `, res);
-    //       break;
-    //     case 'pong: player_joined':
-    //       console.log(res);
-    //       navigate('/pong');
-    //       break;
-    //     case 'pong: invitation_accepted':
-    //       console.log('Navigating to pong: ', res);
-    //       navigate('/pong');
-    //       break;
-    //     case 'pong: invitation':
-    //       setFriendInvitation(res);
-    //       break;
-    //     case 'ws_auth_fail':
-    //       // navigate('/login');
-    //       break;
-    //     case 'users: new_user':
-    //       break;
-    //     default:
-    //       console.log(`${res.event}: `, res);
-    //       break;
-    //   }
-    // });
-    // state.ws.addEventListener('open', (e) => {
-    //   console.log('notif connected', e);
-    // });
-    // state.ws.addEventListener('close', (e) => {
-    //   console.log('notif closed: ', e);
-    // });
   });
 
   createEffect(() => {
@@ -125,14 +63,10 @@ const App: Component = () => {
     if (pendingFriendReq()) {
       setFriendReqCount(pendingFriendReq()!.length);
     }
-    if (location.pathname === '/' && Cookies.get('jwt_token')) {
-      console.log(location.pathname);
-      navigate('/matchmaking');
-    }
   });
 
   createEffect(() => {
-    if (auth.token) {
+    if (auth.isAuth) {
       connectPongWs();
       connectNotificationWs();
     }
@@ -151,7 +85,7 @@ const App: Component = () => {
             }
           >
             <Route path="" element={<Layout />}>
-              <Route path="/matchmaking" element={<Matchmaking />} />
+              <Route path="/" element={<Matchmaking />} />
               <Route path="/chat" element={<Chat />} />
               <Route path="/pong" element={<Pong />} />
               <Route path="/viewer/:id" element={<Viewer />} />

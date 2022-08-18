@@ -194,7 +194,7 @@ export const sketch = (
     initSliders();
 
     okButton.hide();
-    if (navigate) navigate('/matchmaking');
+    if (navigate) navigate('/');
   }
 
   // Wrapper function called when okButton needs to be displayed

@@ -56,9 +56,7 @@ export class AuthController {
         `${this.configService.get<string>('FRONTEND_URL')}/2fa`,
       );
     }
-    return res.redirect(
-      this.configService.get<string>('FRONTEND_URL') + '/matchmaking',
-    );
+    return res.redirect(this.configService.get<string>('FRONTEND_URL'));
   }
 
   @Get('/settings/activate-2fa')

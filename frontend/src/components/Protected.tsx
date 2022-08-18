@@ -1,14 +1,23 @@
 import Cookies from 'js-cookie';
-import { Navigate, Outlet } from 'solid-app-router';
-import { Component, createResource, JSXElement, Show } from 'solid-js';
+import { Navigate, Outlet, useLocation, useNavigate } from 'solid-app-router';
+import {
+  Component,
+  createEffect,
+  createResource,
+  createSignal,
+  JSXElement,
+  Show,
+  Suspense,
+} from 'solid-js';
 import { routes } from '../api/utils';
+import Login from '../pages/Login';
 import { useAuth } from '../Providers/AuthProvider';
 import { User } from '../types/user.interface';
 import { api } from '../utils/api';
 
 const Protected: Component<{ children: JSXElement }> = (props) => {
   const [state, { setUser, setToken, setIsAuth }] = useAuth();
-  const [_] = createResource(async () => {
+  const [data] = createResource(async () => {
     try {
       const res = await api.get<User>(routes.currentUser);
       setIsAuth(true);
@@ -19,9 +28,14 @@ const Protected: Component<{ children: JSXElement }> = (props) => {
       setIsAuth(false);
     }
   });
-
+  const navigate = useNavigate();
+  createEffect(() => {
+    if (!data.loading && state.isAuth) {
+      navigate('/', { replace: true });
+    }
+  });
   return (
-    <Show when={state.token} fallback={<Navigate href="/login" />}>
+    <Show when={state.isAuth} fallback={<Login />}>
       {props.children}
       <Outlet />
     </Show>
