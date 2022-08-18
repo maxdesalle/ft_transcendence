@@ -46,10 +46,10 @@ const Profile: Component = () => {
   return (
     <Show when={user()}>
       <div class="flex justify-evenly">
-        <div class="mt-7">
-          <div class="text-white">
+        <div class="mt-7 border-r border-gray-600 shadow-md flex flex-col items-center">
+          <div class="text-white flex flex-col items-center">
             <img
-              class="w-40 h-44 mt-5 rounded-md"
+              class="w-40 h-44 mt-5"
               src={
                 user()!.avatarId
                   ? generateImageUrl(user()!.avatarId)
@@ -63,18 +63,12 @@ const Profile: Component = () => {
               when={currentUser() && parseInt(params.id) !== currentUser().id}
             >
               <li>
-                <button
-                  onClick={onSendFriendReq}
-                  class="text-white bg-gradient-to-r w-full from-blue-500 via-blue-600 to-blue-700 hover:bg-gradient-to-br focus:ring-4 focus:outline-none focus:ring-blue-300 dark:focus:ring-blue-800 font-medium rounded text-sm px-2 py-1.5 text-center"
-                >
+                <button onClick={onSendFriendReq} class="btn-primary">
                   Send friend request
                 </button>
               </li>
               <li>
-                <button
-                  onClick={onInviteUser}
-                  class="text-white w-full mt-2 bg-gradient-to-r from-blue-500 via-blue-600 to-blue-700 hover:bg-gradient-to-br focus:ring-4 focus:outline-none focus:ring-blue-300 dark:focus:ring-blue-800 font-medium rounded text-sm px-2 py-1.5 text-center"
-                >
+                <button onClick={onInviteUser} class="btn-primary">
                   Invite to play
                 </button>
               </li>
@@ -83,17 +77,12 @@ const Profile: Component = () => {
               when={currentUser() && currentUser().id === parseInt(params.id)}
             >
               <li>
-                <Link
-                  class="text-white bg-gradient-to-r from-blue-500 via-blue-600 to-blue-700 hover:bg-gradient-to-br focus:ring-4 focus:outline-none focus:ring-blue-300 dark:focus:ring-blue-800 font-medium rounded-sm text-sm px-2 py-1 text-center mr-2 mb-2"
-                  href="/edit_profile"
-                >
+                <Link class="btn-primary" href="/edit_profile">
                   Edit profile
                 </Link>
               </li>
               <li>
-                <button class="text-white bg-gradient-to-r mt-2 from-red-400 via-red-500 to-red-600 hover:bg-gradient-to-br focus:ring-4 focus:outline-none focus:ring-red-300 dark:focus:ring-red-800 font-medium rounded-sm text-sm px-2 py-1 text-center mr-2 mb-2">
-                  Sign out
-                </button>
+                <button class="btn-secondary">Sign out</button>
               </li>
             </Show>
           </ul>
@@ -111,17 +100,15 @@ const Profile: Component = () => {
               width: '100%',
             }}
           >
-            {/* <div class="scrollbar flex border-l flex-col items-center w-full  scrollbar-thumb-gray-700 scrollbar-track-gray-500 h-82"> */}
             <Show when={matches()}>
               <For each={matches()}>
                 {(match) => (
-                  <div class="px-2">
+                  <div class="py-1 px-2">
                     <MatchHistoryCard match={match} />
                   </div>
                 )}
               </For>
             </Show>
-            {/* </div> */}
           </Scrollbars>
         </div>
       </div>
