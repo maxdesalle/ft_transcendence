@@ -7,7 +7,9 @@ ROOT_DIR=$(pwd)
 
 # execute if --stop argument provided
 kill_all() {
-    docker-compose --file $ROOT_DIR/backend/docker-compose.yml down
+	cd $ROOT_DIR/backend
+    docker-compose down
+	cd $ROOT_DIR
     [[ -f $PID_FILE_NAME ]] || return 0
     grep FRONTEND_PID $ROOT_DIR/$PID_FILE_NAME | awk '{print $2}' | xargs kill
     grep BACKEND_PID $ROOT_DIR/$PID_FILE_NAME | awk '{print $2}' | xargs kill
