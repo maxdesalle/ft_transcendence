@@ -5,14 +5,13 @@ import {
   createSignal,
   For,
   Match,
-  onMount,
   Show,
   Switch,
 } from 'solid-js';
 import { AiOutlinePlusCircle } from 'solid-icons/ai';
 import Modal from './Modal';
 import AddUserToRoom from './admin/AddUserToRoom';
-import { useStore } from '../store';
+import { useStore } from '../store/all';
 import Avatar from './Avatar';
 import ChatRoomUserCard from './ChatRoomUserCard';
 import { RoomUser, User } from '../types/user.interface';
@@ -37,6 +36,7 @@ const ChatRightSideBar: Component<{}> = () => {
       return res.data;
     },
   );
+  const [userStatus, setUserStatus] = createSignal<number[]>([]);
   const currentUserRole = () =>
     currentRoom()?.users.find((user) => user.id === currentUser()?.id)?.role;
   createEffect(() => {

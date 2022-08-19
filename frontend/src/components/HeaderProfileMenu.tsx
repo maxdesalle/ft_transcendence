@@ -7,7 +7,7 @@ import settingsLogo from '../assets/settings.png';
 import matchHistoryLogo from '../assets/pong.png';
 import logOutLogo from '../assets/log-out.png';
 import { Link, useNavigate } from 'solid-app-router';
-import { useStore } from '../store';
+import { useStore } from '../store/all';
 import { routes, urls } from '../api/utils';
 import { createTurboResource, forget } from 'turbo-solid';
 import Cookies from 'js-cookie';

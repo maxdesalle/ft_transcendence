@@ -12,12 +12,13 @@ import { createTurboResource } from 'turbo-solid';
 import { routes, urls } from '../api/utils';
 import { useAuth } from '../Providers/AuthProvider';
 import { useSockets } from '../Providers/SocketProvider';
-import { useStore } from '../store';
+import { useStore } from '../store/all';
 import { WsNotificationEvent } from '../types/chat.interface';
 import { User } from '../types/user.interface';
 
 const Matchmaking: Component = () => {
-  const [state, { toggleMatchMaking, setToken }] = useStore();
+  const [state, { toggleMatchMaking, setFriendInvitation, setOnlineUsers }] =
+    useStore();
   const [ref, setRef] = createSignal<any>();
   const [id, setId] = createSignal(0);
   const [auth, { setUser, setIsAuth, setToken: setAuthToken }] = useAuth();
@@ -30,12 +31,6 @@ const Matchmaking: Component = () => {
   const [sockets] = useSockets();
 
   const navigate = useNavigate();
-
-  onMount(() => {
-    const token = Cookies.get('jwt_token');
-    setToken(token);
-    setAuthToken(token);
-  });
 
   createEffect(() => {
     if (currentUser()) {
@@ -57,6 +52,39 @@ const Matchmaking: Component = () => {
     const data = { event: 'invite', data: id() };
     sockets.pongWs!.send(JSON.stringify(data));
   };
+
+  onMount(() => {
+    if (sockets.notifWsState) {
+      sockets.notificationWs!.addEventListener('message', (e) => {
+        let res: { event: WsNotificationEvent; data: any };
+        res = JSON.parse(e.data);
+        switch (res.event) {
+          case 'pong: invitation':
+            setFriendInvitation(res);
+            break;
+          case 'pong: invitation_accepted':
+            navigate('/pong');
+            break;
+          case 'isOnline':
+            console.log('online users: ', res.data);
+            setOnlineUsers(res.data);
+          default:
+            break;
+        }
+      });
+    }
+  });
+
+  createEffect(() => {
+    if (sockets.notificationWs) {
+      sockets.notificationWs!.send(
+        JSON.stringify({
+          event: 'isOnline',
+          data: { sender: auth.user.id },
+        }),
+      );
+    }
+  });
 
   createEffect(() => {
     if (sockets.notificationWs) {

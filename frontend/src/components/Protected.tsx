@@ -27,11 +27,7 @@ const Protected: Component<{ children: JSXElement }> = (props) => {
     }
   });
   const navigate = useNavigate();
-  createEffect(() => {
-    if (!data.loading && state.isAuth) {
-      navigate('/');
-    }
-  });
+
   return (
     <Show when={state.isAuth} fallback={<Login />}>
       {props.children}

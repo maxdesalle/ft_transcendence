@@ -10,7 +10,7 @@ import {
 import { RoomUser } from '../types/user.interface';
 import { AiOutlineMore } from 'solid-icons/ai';
 import Modal from './Modal';
-import { TAB, useStore } from '../store';
+import { TAB, useStore } from '../store/all';
 import { Link } from 'solid-app-router';
 import Avatar from './Avatar';
 import { chatApi } from '../api/chat';
@@ -60,47 +60,47 @@ const ChatRoomUserCard: Component<{
 
   //TODO: send a socket event to check if this user is online or offline
   onMount(() => {
-    if (sockets.notifWsState === WebSocket.CONNECTING) {
-      sockets.notificationWs!.send(
-        JSON.stringify({
-          event: 'isOnline',
-          data: { user_id: props.user.id, sender: auth.user.id },
-        }),
-      );
-      sockets.notificationWs!.send(
-        JSON.stringify({
-          event: 'isInGame',
-          data: { user_id: props.user.id, sender: auth.user.id },
-        }),
-      );
-      sockets.notificationWs!.addEventListener('message', (e) => {
-        let res: {
-          event: WsNotificationEvent;
-          data: any;
-        };
-        res = JSON.parse(e.data);
-        if (res.event === 'isOnline') {
-          setStatus(res.data);
-        }
-        if (res.event === 'isInGame') {
-          setInGamePlayers(res.data.inGame);
-        } else if (res.event === 'pong: session_over') {
-          sockets.notificationWs!.send(
-            JSON.stringify({
-              event: 'isInGame',
-              data: { user_id: props.user.id, sender: auth.user.id },
-            }),
-          );
-        } else if (res.event === 'pong: new_session') {
-          sockets.notificationWs!.send(
-            JSON.stringify({
-              event: 'isInGame',
-              data: { user_id: props.user.id, sender: auth.user.id },
-            }),
-          );
-        }
-      });
-    }
+    // if (sockets.notifWsState === WebSocket.CONNECTING) {
+    //   sockets.notificationWs!.send(
+    //     JSON.stringify({
+    //       event: 'isOnline',
+    //       data: { user_id: props.user.id, sender: auth.user.id },
+    //     }),
+    //   );
+    //   sockets.notificationWs!.send(
+    //     JSON.stringify({
+    //       event: 'isInGame',
+    //       data: { user_id: props.user.id, sender: auth.user.id },
+    //     }),
+    //   );
+    //   sockets.notificationWs!.addEventListener('message', (e) => {
+    //     let res: {
+    //       event: WsNotificationEvent;
+    //       data: any;
+    //     };
+    //     res = JSON.parse(e.data);
+    //     if (res.event === 'isOnline') {
+    //       setStatus(res.data);
+    //     }
+    //     if (res.event === 'isInGame') {
+    //       setInGamePlayers(res.data.inGame);
+    //     } else if (res.event === 'pong: session_over') {
+    //       sockets.notificationWs!.send(
+    //         JSON.stringify({
+    //           event: 'isInGame',
+    //           data: { user_id: props.user.id, sender: auth.user.id },
+    //         }),
+    //       );
+    //     } else if (res.event === 'pong: new_session') {
+    //       sockets.notificationWs!.send(
+    //         JSON.stringify({
+    //           event: 'isInGame',
+    //           data: { user_id: props.user.id, sender: auth.user.id },
+    //         }),
+    //       );
+    //     }
+    //   });
+    // }
   });
 
   const onMuteUser = () => {

@@ -3,7 +3,7 @@ import { Component, createResource, createSignal, For, Show } from 'solid-js';
 import { chatApi } from '../api/chat';
 import { routes } from '../api/utils';
 import { useAuth } from '../Providers/AuthProvider';
-import { TAB, useStore } from '../store';
+import { TAB, useStore } from '../store/all';
 import { RoomInfo } from '../types/chat.interface';
 import { api } from '../utils/api';
 import { notifyError, notifySuccess } from '../utils/helpers';

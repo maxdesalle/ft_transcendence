@@ -12,7 +12,7 @@ import ChatMessagesBox from '../components/ChatMessagesBox';
 import ChatRightSideBar from '../components/ChatRightSideBar';
 import 'simplebar';
 import { blockUser, chatApi } from '../api/chat';
-import { TAB, useStore } from '../store/index';
+import { TAB, useStore } from '../store/all';
 import toast from 'solid-toast';
 import { routes } from '../api/utils';
 import { RoomInfo, WsNotificationEvent } from '../types/chat.interface';

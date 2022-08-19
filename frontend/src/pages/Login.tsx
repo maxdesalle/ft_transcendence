@@ -6,7 +6,7 @@ import { loginFromMockApi } from '../api/mock';
 import { routes } from '../api/utils';
 import Loader from '../components/Loader';
 import { useAuth } from '../Providers/AuthProvider';
-import { useStore } from '../store';
+import { useStore } from '../store/all';
 
 const Login: Component = () => {
   const [username, setUsername] = createSignal<string>('');
@@ -38,6 +38,12 @@ const Login: Component = () => {
       });
     setUsername('');
   };
+
+  createEffect(() => {
+    if (auth.token) {
+      navigate('/', { replace: true });
+    }
+  });
 
   return (
     <Show when={!loading()} fallback={<Loader />}>

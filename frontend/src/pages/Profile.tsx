@@ -9,7 +9,7 @@ import { MatchDTO } from '../types/stats.interface';
 import MatchHistoryCard from '../components/MatchHistoryCard';
 import { fetchUserById, sendFriendReq } from '../api/user';
 import { AxiosError } from 'axios';
-import { useStore } from '../store';
+import { useStore } from '../store/all';
 import Scrollbars from 'solid-custom-scrollbars';
 import { useSockets } from '../Providers/SocketProvider';
 

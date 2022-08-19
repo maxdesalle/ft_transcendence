@@ -1,7 +1,7 @@
 import { p5 } from '../game/newPong';
 
 import { Slider } from './slider';
-import { useStore } from '../store';
+import { useStore } from '../store/all';
 
 const socketServerIP = 'localhost';
 const socketServerPort = 3000;

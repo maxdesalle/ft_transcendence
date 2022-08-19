@@ -7,7 +7,7 @@ import {
   Show,
 } from 'solid-js';
 import MessageList from './MessageList';
-import { useStore } from '../store';
+import { useStore } from '../store/all';
 import ChatForm from './ChatForm';
 import { Message, RoomInfo } from '../types/chat.interface';
 import PendingFriendReqCard from './PendingFriendReqCard';

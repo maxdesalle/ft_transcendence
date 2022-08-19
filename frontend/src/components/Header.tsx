@@ -12,7 +12,7 @@ import { BiSearchAlt2 } from 'solid-icons/bi';
 import HeaderProfileMenu from './HeaderProfileMenu';
 import Modal from './Modal';
 import Avatar from './Avatar';
-import { useStore } from '../store/index';
+import { useStore } from '../store/all';
 import SearchUserCard from './SearchUserCard';
 import { generateImageUrl } from '../utils/helpers';
 import { createTurboResource } from 'turbo-solid';
@@ -44,10 +44,6 @@ const Header: Component = () => {
   const [uRef, setUref] = createSignal<any>();
   let ref: any;
   let notifRef: any;
-
-  createEffect(() => {
-    console.log('auth user: ', unwrap(auth.user.display_name));
-  });
 
   const onSendFriendReq = (userId: number, userName: string) => {
     api

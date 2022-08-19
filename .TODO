@@ -9,3 +9,9 @@
 - [ ] 📃 mini tutorial on how to play the game
 - [ ] 📃 player stats on the profile page
 - [ ] 📃 make edit profile reactive
+
+
+
+(#1) store for all users state:
+- [ ] 🎉 create the store
+----

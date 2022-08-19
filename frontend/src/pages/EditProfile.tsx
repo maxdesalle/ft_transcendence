@@ -7,7 +7,7 @@ import {
   deactivate2fa,
 } from '../api/user';
 import Modal from '../components/Modal';
-import { useStore } from '../store';
+import { useStore } from '../store/all';
 import QRCode from 'qrcode';
 import { notifyError, notifySuccess } from '../utils/helpers';
 import { createTurboResource } from 'turbo-solid';

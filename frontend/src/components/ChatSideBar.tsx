@@ -9,7 +9,7 @@ import {
   Switch,
 } from 'solid-js';
 import { HiSolidUserGroup } from 'solid-icons/hi';
-import { TAB, useStore } from '../store';
+import { TAB, useStore } from '../store/all';
 import FriendList from './FriendList';
 import Search from './Search';
 import CreateRoom from './admin/createRoom';

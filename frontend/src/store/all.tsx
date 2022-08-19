@@ -26,6 +26,9 @@ export interface ActionsType {
   setFriendReqCount: (val: number) => void;
   reconectPong: () => void;
   reconectNotification: () => void;
+  addOnlineUser: (user_id: number) => void;
+  removeDisconnectedUser: (user_id: number) => void;
+  setOnlineUsers: (ids: number[]) => void;
 }
 
 export type Status = 'idle' | 'loading' | 'success' | 'failed';
@@ -38,6 +41,8 @@ export enum TAB {
 
 export interface StoreState {
   token: string | undefined;
+  onlineUsers: number[];
+  inGameUsers: number[];
   error?: any;
   ws?: WebSocket;
   chat: {
@@ -75,11 +80,11 @@ export function StoreProvider(props: any) {
 
   const [state, setState] = createStore<StoreState>({
     token: Cookies.get('jwt_token'),
-    // ws: new WebSocket(urls.wsUrl),
+    onlineUsers: [],
+    inGameUsers: [],
     pong: {
       friendInvitation: null,
       inMatchMaking: false,
-      // ws: ,
     },
     chat: {
       status: 'idle',
@@ -149,6 +154,15 @@ export function StoreProvider(props: any) {
     },
     reconectNotification() {
       setState('ws', new WebSocket(urls.wsUrl));
+    },
+    addOnlineUser(user_id: number) {
+      setState('onlineUsers', (e) => [...e, user_id]);
+    },
+    removeDisconnectedUser(user_id: number) {
+      setState('onlineUsers', (e) => [...e.filter((id) => id != user_id)]);
+    },
+    setOnlineUsers(ids: number[]) {
+      setState('onlineUsers', ids);
     },
   };
   const store: [StoreState, ActionsType] = [state, actions];

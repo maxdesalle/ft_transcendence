@@ -2,7 +2,7 @@ import Cookies from 'js-cookie';
 import { useNavigate } from 'solid-app-router';
 import { Component, createSignal } from 'solid-js';
 import { urls } from '../api/utils';
-import { useStore } from '../store';
+import { useStore } from '../store/all';
 import { api } from '../utils/api';
 
 const TwoFactorAuth: Component = () => {

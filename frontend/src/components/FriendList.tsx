@@ -10,7 +10,7 @@ import {
 } from 'solid-js';
 import { createTurboResource } from 'turbo-solid';
 import { routes } from '../api/utils';
-import { useStore } from '../store';
+import { useStore } from '../store/all';
 import { Friend, User } from '../types/user.interface';
 import AddFriend from './AddFriend';
 import FriendCard from './FriendCard';
