@@ -21,15 +21,10 @@ const EditProfile: Component = () => {
   const [image, setImage] = createSignal<File | null>(null);
   const [pathUrl, setPathUrl] = createSignal('');
   const [auth, { setUser, setUserAvatarId }] = useAuth();
-  const [currentUser] = createTurboResource<User>(() => routes.currentUser);
-
-  createEffect(() => {
-    console.log('updated: ', auth.user);
-  });
 
   const onChangeName = () => {
     if (newName()) {
-      changeDisplayName(newName());
+      changeDisplayName(newName()).then((res) => setUser(res.data));
       setNewName('');
     }
   };
@@ -60,11 +55,16 @@ const EditProfile: Component = () => {
     formData.append('file', image()!, image()!.name);
     changeAvatar(formData)
       .then((res) => {
-        setUserAvatarId(res.data.avatarId);
+        setUser(res.data);
+        console.log('After change avatar: ', res.data);
         notifySuccess('Great success 🙂');
       })
       .catch((e) => notifyError('error 😥'));
   };
+
+  createEffect(() => {
+    console.log('user updated: ', auth.user);
+  });
 
   return (
     <div class="pt-5 text-white flex">

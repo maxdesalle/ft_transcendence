@@ -54,48 +54,48 @@ const Matchmaking: Component = () => {
   };
 
   onMount(() => {
-    if (sockets.notifWsState) {
-      sockets.notificationWs!.addEventListener('message', (e) => {
-        let res: { event: WsNotificationEvent; data: any };
-        res = JSON.parse(e.data);
-        switch (res.event) {
-          case 'pong: invitation':
-            setFriendInvitation(res);
-            break;
-          case 'pong: invitation_accepted':
-            navigate('/pong');
-            break;
-          case 'isOnline':
-            console.log('online users: ', res.data);
-            setOnlineUsers(res.data);
-          default:
-            break;
-        }
-      });
-    }
+    // if (sockets.notifWsState) {
+    //   sockets.notificationWs?.addEventListener('message', (e) => {
+    //     let res: { event: WsNotificationEvent; data: any };
+    //     res = JSON.parse(e.data);
+    //     switch (res.event) {
+    //       case 'pong: invitation':
+    //         setFriendInvitation(res);
+    //         break;
+    //       case 'pong: invitation_accepted':
+    //         navigate('/pong');
+    //         break;
+    //       case 'isOnline':
+    //         console.log('online users: ', res.data);
+    //         setOnlineUsers(res.data);
+    //       default:
+    //         break;
+    //     }
+    //   });
+    // }
   });
 
   createEffect(() => {
-    if (sockets.notificationWs) {
-      sockets.notificationWs!.send(
-        JSON.stringify({
-          event: 'isOnline',
-          data: { sender: auth.user.id },
-        }),
-      );
-    }
+    // if (sockets.notificationWs) {
+    //   sockets.notificationWs!.send(
+    //     JSON.stringify({
+    //       event: 'isOnline',
+    //       data: { sender: auth.user.id },
+    //     }),
+    //   );
+    // }
   });
 
   createEffect(() => {
-    if (sockets.notificationWs) {
-      sockets.notificationWs!.addEventListener('message', (e) => {
-        let res: { event: WsNotificationEvent };
-        res = JSON.parse(e.data);
-        if (res.event === 'pong: player_joined') {
-          navigate('/pong');
-        }
-      });
-    }
+    // if (sockets.notificationWs) {
+    //   sockets.notificationWs!.addEventListener('message', (e) => {
+    //     let res: { event: WsNotificationEvent };
+    //     res = JSON.parse(e.data);
+    //     if (res.event === 'pong: player_joined') {
+    //       navigate('/pong');
+    //     }
+    //   });
+    // }
   });
 
   return (

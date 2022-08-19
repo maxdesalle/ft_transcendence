@@ -89,6 +89,7 @@ const Header: Component = () => {
               autocomplete="off"
             />
           </span>
+          <h1 class="text-white">{auth.user.display_name}</h1>
         </div>
         <ul class="flex p-1 justify-between w-64 items-center">
           <For each={LINKS}>

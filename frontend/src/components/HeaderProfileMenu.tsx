@@ -12,6 +12,7 @@ import { routes, urls } from '../api/utils';
 import { createTurboResource, forget } from 'turbo-solid';
 import Cookies from 'js-cookie';
 import { useAuth } from '../Providers/AuthProvider';
+import { unwrap } from 'solid-js/store';
 
 const HeaderProfileMenu: Component<{ user: User }> = (props) => {
   const navigate = useNavigate();
@@ -24,9 +25,9 @@ const HeaderProfileMenu: Component<{ user: User }> = (props) => {
     navigate('/login');
   };
 
-  const avatarId = () => props.user.avatarId;
+  const [auth] = useAuth();
   createEffect(() => {
-    console.log('user: ', avatarId());
+    console.log('user: ', unwrap(auth.user));
   });
 
   return (
