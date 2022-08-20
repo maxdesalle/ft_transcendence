@@ -1,6 +1,6 @@
 import Cookies from 'js-cookie';
-import { useLocation, useNavigate } from 'solid-app-router';
-import { Component, createEffect, createSignal, onMount, Show } from 'solid-js';
+import { useNavigate } from 'solid-app-router';
+import { Component, createEffect, createSignal, Show } from 'solid-js';
 import toast from 'solid-toast';
 import { loginFromMockApi } from '../api/mock';
 import { routes } from '../api/utils';
@@ -37,13 +37,6 @@ const Login: Component = () => {
       });
     setUsername('');
   };
-
-  createEffect(() => {
-    //TODO: propably a better way to do this
-    if (auth.token) {
-      navigate('/', { replace: true });
-    }
-  });
 
   return (
     <Show when={!loading()} fallback={<Loader />}>

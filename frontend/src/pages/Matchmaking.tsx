@@ -16,6 +16,7 @@ import { useSockets } from '../Providers/SocketProvider';
 import { useStore } from '../store/all';
 import { WsNotificationEvent } from '../types/chat.interface';
 import { User } from '../types/user.interface';
+import { notifyError } from '../utils/helpers';
 
 const Matchmaking: Component = () => {
   const [state, { toggleMatchMaking, setFriendInvitation, setOnlineUsers }] =
@@ -50,6 +51,9 @@ const Matchmaking: Component = () => {
 
   const inviteFriend = () => {
     if (!id()) return;
+    if (!state.onlineUsers.includes(id())) {
+      notifyError('user not online');
+    }
     const data = { event: 'invite', data: id() };
     sockets.pongWs!.send(JSON.stringify(data));
   };

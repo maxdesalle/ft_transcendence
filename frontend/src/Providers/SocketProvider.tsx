@@ -53,6 +53,8 @@ export const SocketProvider = (props: any) => {
     disconnect() {
       state.notificationWs?.close();
       state.pongWs?.close();
+      setState('notifWsState', WebSocket.CLOSED);
+      setState('pongWsState', WebSocket.CLOSED);
     },
   };
 
@@ -63,6 +65,19 @@ export const SocketProvider = (props: any) => {
       };
       state.notificationWs.onclose = () => {
         setState('notifWsState', WebSocket.CLOSED);
+      };
+    }
+  });
+
+  createEffect(() => {
+    if (state.pongWs) {
+      state.pongWs.onopen = (e) => {
+        console.log('connecting pong ws...', e);
+        setState('pongWsState', WebSocket.OPEN);
+      };
+      state.pongWs.onclose = (e) => {
+        console.log('disconnected from pong ws', e);
+        setState('pongWsState', WebSocket.CLOSED);
       };
     }
   });

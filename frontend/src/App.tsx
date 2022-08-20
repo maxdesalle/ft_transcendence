@@ -17,11 +17,18 @@ import Protected from './components/Protected';
 import Layout from './components/Layout';
 import { useSockets } from './Providers/SocketProvider';
 import { WsNotificationEvent } from './types/chat.interface';
+import { unwrap } from 'solid-js/store';
 
 const App: Component = () => {
   const [
     state,
-    { setOnlineUsers, setFriendInvitation, setInGameUsers, addOnlineUser },
+    {
+      setOnlineUsers,
+      setFriendInvitation,
+      setInGameUsers,
+      addOnlineUser,
+      removeDisconnectedUser,
+    },
   ] = useStore();
   const navigate = useNavigate();
   const [auth] = useAuth();
@@ -40,7 +47,7 @@ const App: Component = () => {
   createEffect(() => {
     if (sockets.notifWsState === WebSocket.OPEN) {
       sockets.notificationWs!.addEventListener('message', (e) => {
-        let res: { event: WsNotificationEvent; data: any };
+        let res: { event: WsNotificationEvent; data: any; user_id?: number };
         res = JSON.parse(e.data);
         switch (res.event) {
           case 'pong: invitation':
@@ -53,7 +60,6 @@ const App: Component = () => {
             setOnlineUsers(res.data);
             break;
           case 'isInGame':
-            console.log(res.data.inGame);
             setInGameUsers(res.data.inGame);
             break;
           case 'pong: session_over':
@@ -71,6 +77,15 @@ const App: Component = () => {
                 data: { sender: auth.user.id },
               }),
             );
+            break;
+          case 'users: new_user':
+            addOnlineUser(res.user_id!);
+            break;
+          case 'status: friend_online':
+            addOnlineUser(res.user_id!);
+            break;
+          case 'status: friend_offline':
+            removeDisconnectedUser(res.user_id!);
             break;
           default:
             console.log(res);
@@ -103,6 +118,10 @@ const App: Component = () => {
       connectPongWs();
       connectNotificationWs();
     }
+  });
+
+  createEffect(() => {
+    console.log('Online users :', unwrap(state.onlineUsers));
   });
 
   return (

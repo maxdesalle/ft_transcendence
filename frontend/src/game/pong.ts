@@ -78,7 +78,7 @@ export function initSocket(): WebSocket {
   ws.addEventListener('close', (e: any) => {
     isDisconnected = true;
     playerNumber = 0;
-    console.log('disconected', e);
+    console.log('disconected from pong: ', e);
   });
   ws.addEventListener('error', (e: any) => {
     socketErrObject = e;
