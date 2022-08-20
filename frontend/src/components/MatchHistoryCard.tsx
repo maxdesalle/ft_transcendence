@@ -1,10 +1,4 @@
-import {
-  Component,
-  createEffect,
-  createSignal,
-  Show,
-  splitProps,
-} from 'solid-js';
+import { Component, Show } from 'solid-js';
 import { createTurboResource } from 'turbo-solid';
 import { routes } from '../api/utils';
 import { MatchDTO } from '../types/stats.interface';
@@ -21,28 +15,15 @@ const MatchHistoryCard: Component<{ match: MatchDTO }> = (props) => {
     () => `${routes.users}/${props.match.p2.user_id}`,
   );
 
-  // const [match] = splitProps(props, ["match"])
-
   const params = useParams();
   const [user] = createTurboResource<User>(
     () => `${routes.users}/${params.id}`,
   );
-  // const [currentUserWon, setCurrentUserWon] = createSignal(false);
 
   const winner = () =>
     props.match.p1Score > props.match.p2Score ? props.match.p1 : props.match.p2;
 
   const currentUserWon = () => winner().user_id === user()?.id;
-
-  // createEffect(() => {
-  //   if (user()) {
-  //     if (winner().user_id === user()!.id) {
-  //       setCurrentUserWon(true);
-  //     } else {
-  //       setCurrentUserWon(false);
-  //     }
-  //   }
-  // });
 
   return (
     <Show when={player1() && player2()}>
@@ -51,7 +32,7 @@ const MatchHistoryCard: Component<{ match: MatchDTO }> = (props) => {
           'bg-blue-700': currentUserWon(),
           'bg-red-700': !currentUserWon(),
         }}
-        class={`flex py-2 px-4 justify-between text-white border rounded-sm`}
+        class={`flex py-2 px-4 justify-between border-b text-white`}
       >
         <div class="flex flex-col items-center">
           <img

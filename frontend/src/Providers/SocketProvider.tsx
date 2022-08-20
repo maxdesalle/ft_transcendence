@@ -60,10 +60,10 @@ export const SocketProvider = (props: any) => {
 
   createEffect(() => {
     if (state.notificationWs) {
-      state.notificationWs.onopen = () => {
+      state.notificationWs.onopen = (e) => {
         setState('notifWsState', WebSocket.OPEN);
       };
-      state.notificationWs.onclose = () => {
+      state.notificationWs.onclose = (e) => {
         setState('notifWsState', WebSocket.CLOSED);
       };
     }
@@ -72,24 +72,22 @@ export const SocketProvider = (props: any) => {
   createEffect(() => {
     if (state.pongWs) {
       state.pongWs.onopen = (e) => {
-        console.log('connecting pong ws...', e);
         setState('pongWsState', WebSocket.OPEN);
       };
       state.pongWs.onclose = (e) => {
-        console.log('disconnected from pong ws', e);
         setState('pongWsState', WebSocket.CLOSED);
       };
     }
   });
 
-  onCleanup(() => {
-    state.notificationWs?.close();
-    state.pongWs?.close();
-    setState('notificationWs', undefined);
-    setState('pongWs', undefined);
-    setState('pongWsState', WebSocket.CLOSED);
-    setState('notifWsState', WebSocket.CLOSED);
-  });
+  // onCleanup(() => {
+  //   state.notificationWs?.close();
+  //   state.pongWs?.close();
+  //   setState('notificationWs', undefined);
+  //   setState('pongWs', undefined);
+  //   setState('pongWsState', WebSocket.CLOSED);
+  //   setState('notifWsState', WebSocket.CLOSED);
+  // });
 
   const store = [state, actions];
 

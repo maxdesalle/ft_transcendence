@@ -90,25 +90,22 @@ const Profile: Component = () => {
           <h1 class="text-center font-bold text-2xl py-2 text-blue-600">
             Match History
           </h1>
-          <Scrollbars
-            style={{
-              height: '89vh',
-              display: 'flex',
-              'flex-direction': 'column',
-              'justify-content': 'flex-end',
-              width: '100%',
-            }}
-          >
-            <Show when={matches()}>
+          <Show when={matches()}>
+            <Scrollbars
+              style={{
+                height: '89vh',
+                display: 'flex',
+                'flex-direction': 'column',
+                'justify-content': 'flex-end',
+                gap: '0.5rem',
+                width: '100%',
+              }}
+            >
               <For each={matches()}>
-                {(match) => (
-                  <div class="py-1 px-2">
-                    <MatchHistoryCard match={match} />
-                  </div>
-                )}
+                {(match) => <MatchHistoryCard match={match} />}
               </For>
-            </Show>
-          </Scrollbars>
+            </Scrollbars>
+          </Show>
         </div>
       </div>
     </Show>

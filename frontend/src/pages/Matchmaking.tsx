@@ -19,11 +19,10 @@ import { User } from '../types/user.interface';
 import { notifyError } from '../utils/helpers';
 
 const Matchmaking: Component = () => {
-  const [state, { toggleMatchMaking, setFriendInvitation, setOnlineUsers }] =
-    useStore();
+  const [state, { toggleMatchMaking }] = useStore();
   const [ref, setRef] = createSignal<any>();
   const [id, setId] = createSignal(0);
-  const [auth, { setUser, setIsAuth, setToken: setAuthToken }] = useAuth();
+  const [auth, { setUser, setIsAuth, setToken }] = useAuth();
   const [buttonText, setButtonText] = createSignal('Play');
   const [currentUser] = createTurboResource<User>(() => routes.currentUser);
   const [friends] = createTurboResource<User[]>(() => routes.friends);
@@ -58,39 +57,6 @@ const Matchmaking: Component = () => {
     sockets.pongWs!.send(JSON.stringify(data));
   };
 
-  // createEffect(() => {
-  // if (sockets.notifWsState) {
-  //   sockets.notificationWs?.addEventListener('message', (e) => {
-  //     let res: { event: WsNotificationEvent; data: any };
-  //     res = JSON.parse(e.data);
-  //     switch (res.event) {
-  //       case 'pong: invitation':
-  //         setFriendInvitation(res);
-  //         break;
-  //       case 'pong: invitation_accepted':
-  //         navigate('/pong');
-  //         break;
-  //       case 'isOnline':
-  //         console.log('online users: ', res.data);
-  //         setOnlineUsers(res.data);
-  //       default:
-  //         break;
-  //     }
-  //   });
-  // }
-  // });
-
-  // createEffect(() => {
-  // if (sockets.notificationWs) {
-  //   sockets.notificationWs!.send(
-  //     JSON.stringify({
-  //       event: 'isOnline',
-  //       data: { sender: auth.user.id },
-  //     }),
-  //   );
-  // }
-  // });
-
   createEffect(() => {
     if (sockets.notificationWs) {
       sockets.notificationWs!.addEventListener('message', (e) => {
@@ -123,7 +89,7 @@ const Matchmaking: Component = () => {
           </For>
         </Show>
       </div>
-      <div class="flex flex-col">
+      <div class="flex flex-col gap-2">
         <label for="friends" class="text-2xl mt-3">
           Invite a friend
         </label>
@@ -144,7 +110,7 @@ const Matchmaking: Component = () => {
             </For>
           </Show>
         </select>
-        <button onClick={inviteFriend} class="btn-primary">
+        <button onClick={inviteFriend} class="btn-primary w-full">
           Invite
         </button>
       </div>

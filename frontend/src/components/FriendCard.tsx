@@ -3,10 +3,14 @@ import { Friend } from '../types/user.interface';
 import { generateImageUrl } from '../utils/helpers';
 import Avatar from './Avatar';
 import defaultAvatar from '../../../backend/images/avatardefault.png';
+import { useStore } from '../store/all';
 
 export const FriendCard: Component<{ friend: Friend; onClick?: () => void }> = (
   props,
 ) => {
+  const [state] = useStore();
+
+  const isOnline = () => state.onlineUsers.includes(props.friend.id);
   return (
     <div
       onClick={props.onClick}
@@ -14,7 +18,7 @@ export const FriendCard: Component<{ friend: Friend; onClick?: () => void }> = (
     >
       <div class="flex">
         <Avatar
-          color={props.friend.status === 'online' ? 'green' : 'red'}
+          color={isOnline() ? 'bg-green-400' : 'bg-red-400'}
           imgUrl={
             props.friend.avatarId
               ? `${generateImageUrl(props.friend.avatarId)}`

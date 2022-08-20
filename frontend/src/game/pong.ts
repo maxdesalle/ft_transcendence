@@ -73,12 +73,12 @@ export function initSocket(): WebSocket {
   ws = new WebSocket(serverAddress);
 
   ws.addEventListener('open', (e: any) => {
-    // console.log(`connected to ${serverAddress}`);
+    console.log(`connected to ${serverAddress}`);
   });
   ws.addEventListener('close', (e: any) => {
     isDisconnected = true;
     playerNumber = 0;
-    console.log('disconected from pong: ', e);
+    console.log('disconected', e);
   });
   ws.addEventListener('error', (e: any) => {
     socketErrObject = e;
@@ -244,23 +244,26 @@ export const sketch = (
       displayOkButton();
       return true;
     }
-    if (isDisconnected) {
-      sliders.forEach((s) => s.p5Slider.remove());
-      myP5.textAlign('center', 'center');
-      myP5.fill(
-        colors[colorIndex].r,
-        colors[colorIndex].g,
-        colors[colorIndex].b,
-        255,
-      );
-      myP5.text(
-        'The other player has been disconnected.',
-        canvasWidth / 2,
-        canvasHeight / 2,
-      );
-      displayOkButton();
-      return true;
-    }
+
+    //TODO: for some reason isDisconnected is true by some magic
+    // if (isDisconnected) {
+    //   console.log('player disconnected');
+    //   sliders.forEach((s) => s.p5Slider.remove());
+    //   myP5.textAlign('center', 'center');
+    //   myP5.fill(
+    //     colors[colorIndex].r,
+    //     colors[colorIndex].g,
+    //     colors[colorIndex].b,
+    //     255,
+    //   );
+    //   myP5.text(
+    //     'The other player has been disconnected.',
+    //     canvasWidth / 2,
+    //     canvasHeight / 2,
+    //   );
+    //   displayOkButton();
+    //   return true;
+    // }
     if (state.pong.inMatchMaking && sessionId === -1) {
       myP5.textAlign('center', 'center');
       myP5.fill(

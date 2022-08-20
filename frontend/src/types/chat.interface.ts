@@ -52,4 +52,6 @@ export type WsNotificationEvent =
   | 'ladder_change'
   | 'users: new_user'
   | 'isOnline'
-  | 'isInGame';
+  | 'isInGame'
+  | 'group: online'
+  | 'group: offline';

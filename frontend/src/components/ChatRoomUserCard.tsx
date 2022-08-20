@@ -183,10 +183,6 @@ const ChatRoomUserCard: Component<{
   const isOnline = () => state.onlineUsers.includes(props.user.id);
   const isInGame = () => state.inGameUsers.includes(props.user.id);
 
-  createEffect(() => {
-    console.log('Ingame users: ', state.inGameUsers);
-  });
-
   return (
     <div ref={ref} class="w-full rounded-lg shadow-md">
       <div
@@ -198,6 +194,7 @@ const ChatRoomUserCard: Component<{
       >
         <div onClick={() => setIsOpen(true)} class="flex items-center w-full">
           <Avatar
+            color={isOnline() ? 'bg-green-400' : 'bg-red-400'}
             imgUrl={
               props.user.avatarId
                 ? generateImageUrl(props.user.avatarId)
@@ -206,7 +203,7 @@ const ChatRoomUserCard: Component<{
           />
           <div class="flex items-center w-full justify-between">
             <h1 class="pl-3">{props.user.display_name}</h1>
-            <Show when={!isInGame()}>
+            {/* <Show when={!isInGame()}>
               <p
                 class="text-sm"
                 classList={{
@@ -216,7 +213,7 @@ const ChatRoomUserCard: Component<{
               >
                 {isOnline() ? 'online' : 'offline'}
               </p>
-            </Show>
+            </Show> */}
             <Show when={state.inGameUsers.length}>
               <p class="text-sm text-cyan-700">{isInGame() ? 'In Game' : ''}</p>
             </Show>

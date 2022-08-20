@@ -176,7 +176,6 @@ const Chat: Component = () => {
           </Match>
         </Switch>
       </div>
-      {/* TODO: adapt when it's on the friend tab or room tab */}
       <div
         ref={ref}
         class="flex relative row-span-4 flex-col border-x shadow-md border-x-header-menu col-span-1"
@@ -191,6 +190,7 @@ const Chat: Component = () => {
                 <div class="flex flex-col">
                   <div class="mb-2 flex items-center text-white">
                     <Avatar
+                      color={isOnline() ? 'bg-green-400' : 'bg-red-400'}
                       imgUrl={
                         selectedFriend()!.avatarId
                           ? generateImageUrl(selectedFriend()!.avatarId)

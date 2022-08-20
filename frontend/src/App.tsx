@@ -1,4 +1,4 @@
-import { Component, createEffect } from 'solid-js';
+import { Component, createEffect, createResource, onCleanup } from 'solid-js';
 import { Route, Routes, useNavigate } from 'solid-app-router';
 import Chat from './pages/Chat';
 import Pong from './pages/Pong';
@@ -17,7 +17,9 @@ import Protected from './components/Protected';
 import Layout from './components/Layout';
 import { useSockets } from './Providers/SocketProvider';
 import { WsNotificationEvent } from './types/chat.interface';
-import { unwrap } from 'solid-js/store';
+import { api } from './utils/api';
+import { User } from './types/user.interface';
+import { routes } from './api/utils';
 
 const App: Component = () => {
   const [
@@ -32,17 +34,18 @@ const App: Component = () => {
   ] = useStore();
   const navigate = useNavigate();
   const [auth] = useAuth();
-  const [
-    sockets,
-    { connectPongWs, connectNotificationWs, setNotifState, setWsPongState },
-  ] = useSockets();
+  const [sockets, { connectPongWs, connectNotificationWs, disconnect }] =
+    useSockets();
 
-  // const [pendingFriendReq] = createResource(token, async () => {
-  //   const res = await api.get<{ req_user: User; status: number }[]>(
-  //     routes.receivedFriendReq,
-  //   );
-  //   return res.data;
-  // });
+  const [pendingFriendReq] = createResource(
+    () => auth.token,
+    async () => {
+      const res = await api.get<{ req_user: User; status: number }[]>(
+        routes.receivedFriendReq,
+      );
+      return res.data;
+    },
+  );
 
   createEffect(() => {
     if (sockets.notifWsState === WebSocket.OPEN) {
@@ -87,6 +90,12 @@ const App: Component = () => {
           case 'status: friend_offline':
             removeDisconnectedUser(res.user_id!);
             break;
+          case 'group: online':
+            addOnlineUser(res.data.user_id);
+            break;
+          case 'group: offline':
+            removeDisconnectedUser(res.data.user_id);
+            break;
           default:
             console.log(res);
         }
@@ -113,16 +122,13 @@ const App: Component = () => {
   });
 
   createEffect(() => {
-    // console.log(auth.isAuth);
     if (auth.isAuth) {
       connectPongWs();
       connectNotificationWs();
     }
   });
 
-  createEffect(() => {
-    console.log('Online users :', unwrap(state.onlineUsers));
-  });
+  onCleanup(() => disconnect());
 
   return (
     <>
