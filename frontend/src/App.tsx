@@ -16,9 +16,13 @@ import { useAuth } from './Providers/AuthProvider';
 import Protected from './components/Protected';
 import Layout from './components/Layout';
 import { useSockets } from './Providers/SocketProvider';
+import { WsNotificationEvent } from './types/chat.interface';
 
 const App: Component = () => {
-  const [state, { setOnlineUsers, setFriendInvitation }] = useStore();
+  const [
+    state,
+    { setOnlineUsers, setFriendInvitation, setInGameUsers, addOnlineUser },
+  ] = useStore();
   const navigate = useNavigate();
   const [auth] = useAuth();
   const [
@@ -33,41 +37,68 @@ const App: Component = () => {
   //   return res.data;
   // });
 
-  // createEffect(() => {
-  //   if (sockets.notifWsState === WebSocket.OPEN) {
-  //     sockets.notificationWs!.addEventListener('message', (e) => {
-  //       let res: { event: WsNotificationEvent; data: any };
-  //       res = JSON.parse(e.data);
-  //       switch (res.event) {
-  //         case 'pong: invitation':
-  //           setFriendInvitation(res);
-  //           break;
-  //         case 'pong: invitation_accepted':
-  //           navigate('/pong');
-  //           break;
-  //         case 'isOnline':
-  //           console.log('online users: ', res.data);
-  //           setOnlineUsers(res.data);
-  //         default:
-  //           break;
-  //       }
-  //     });
-  //   }
-  // });
-
-  // createEffect(() => {
-  //   if (sockets.notifWsState === WebSocket.OPEN) {
-  //     console.log('checks');
-  //     sockets.notificationWs!.send(
-  //       JSON.stringify({
-  //         event: 'isOnline',
-  //         data: { sender: auth.user.id },
-  //       }),
-  //     );
-  //   }
-  // });
+  createEffect(() => {
+    if (sockets.notifWsState === WebSocket.OPEN) {
+      sockets.notificationWs!.addEventListener('message', (e) => {
+        let res: { event: WsNotificationEvent; data: any };
+        res = JSON.parse(e.data);
+        switch (res.event) {
+          case 'pong: invitation':
+            setFriendInvitation(res);
+            break;
+          case 'pong: invitation_accepted':
+            navigate('/pong');
+            break;
+          case 'isOnline':
+            setOnlineUsers(res.data);
+            break;
+          case 'isInGame':
+            console.log(res.data.inGame);
+            setInGameUsers(res.data.inGame);
+            break;
+          case 'pong: session_over':
+            sockets.notificationWs!.send(
+              JSON.stringify({
+                event: 'isInGame',
+                data: { sender: auth.user.id },
+              }),
+            );
+            break;
+          case 'pong: new_session':
+            sockets.notificationWs!.send(
+              JSON.stringify({
+                event: 'isInGame',
+                data: { sender: auth.user.id },
+              }),
+            );
+            break;
+          default:
+            console.log(res);
+        }
+      });
+    }
+  });
 
   createEffect(() => {
+    if (sockets.notifWsState === WebSocket.OPEN) {
+      sockets.notificationWs!.send(
+        JSON.stringify({
+          event: 'isOnline',
+          data: { sender: auth.user.id },
+        }),
+      );
+
+      sockets.notificationWs!.send(
+        JSON.stringify({
+          event: 'isInGame',
+          data: { sender: auth.user.id },
+        }),
+      );
+    }
+  });
+
+  createEffect(() => {
+    // console.log(auth.isAuth);
     if (auth.isAuth) {
       connectPongWs();
       connectNotificationWs();
@@ -98,6 +129,7 @@ const App: Component = () => {
           </Route>
           <Route path="/2fa" element={<TwoFactorAuth />} />
           <Route path="/login" element={<Login />} />
+          <Route path="*" element={<p>Not found</p>} />
         </Routes>
       </div>
       <Toaster />

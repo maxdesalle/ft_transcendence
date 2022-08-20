@@ -29,6 +29,7 @@ export interface ActionsType {
   addOnlineUser: (user_id: number) => void;
   removeDisconnectedUser: (user_id: number) => void;
   setOnlineUsers: (ids: number[]) => void;
+  setInGameUsers: (ids: number[]) => void;
 }
 
 export type Status = 'idle' | 'loading' | 'success' | 'failed';
@@ -163,6 +164,9 @@ export function StoreProvider(props: any) {
     },
     setOnlineUsers(ids: number[]) {
       setState('onlineUsers', ids);
+    },
+    setInGameUsers(ids) {
+      setState('inGameUsers', ids);
     },
   };
   const store: [StoreState, ActionsType] = [state, actions];

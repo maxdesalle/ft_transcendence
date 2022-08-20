@@ -1,12 +1,6 @@
 import Cookies from 'js-cookie';
-import { Navigate, Outlet, useLocation, useNavigate } from 'solid-app-router';
-import {
-  Component,
-  createEffect,
-  createResource,
-  JSXElement,
-  Show,
-} from 'solid-js';
+import { Outlet } from 'solid-app-router';
+import { Component, createResource, JSXElement, Show } from 'solid-js';
 import { routes } from '../api/utils';
 import Login from '../pages/Login';
 import { useAuth } from '../Providers/AuthProvider';
@@ -26,7 +20,6 @@ const Protected: Component<{ children: JSXElement }> = (props) => {
       setIsAuth(false);
     }
   });
-  const navigate = useNavigate();
 
   return (
     <Show when={state.isAuth} fallback={<Login />}>

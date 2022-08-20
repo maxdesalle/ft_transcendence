@@ -15,7 +15,6 @@ const Login: Component = () => {
   const [auth, { setToken: setAuthToken, setIsAuth, setUser }] = useAuth();
   const notify = (msg: string) => toast.error(msg);
   const [loading, setLoading] = createSignal(false);
-  const location = useLocation();
 
   const onLogin = () => {
     if (!username().length) return;
@@ -40,6 +39,7 @@ const Login: Component = () => {
   };
 
   createEffect(() => {
+    //TODO: propably a better way to do this
     if (auth.token) {
       navigate('/', { replace: true });
     }

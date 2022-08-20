@@ -5,10 +5,8 @@ import {
   createSignal,
   onMount,
   Show,
-  Suspense,
 } from 'solid-js';
 import { RoomUser } from '../types/user.interface';
-import { AiOutlineMore } from 'solid-icons/ai';
 import Modal from './Modal';
 import { TAB, useStore } from '../store/all';
 import { Link } from 'solid-app-router';
@@ -18,14 +16,13 @@ import { createTurboResource } from 'turbo-solid';
 import { routes } from '../api/utils';
 import { User } from '../types/user.interface';
 import toast from 'solid-toast';
-import { RoomInfo, WsNotificationEvent } from '../types/chat.interface';
+import { RoomInfo } from '../types/chat.interface';
 import { api } from '../utils/api';
 import { generateImageUrl, notifyError, notifySuccess } from '../utils/helpers';
 import { AxiosError } from 'axios';
 import autoAnimate from '@formkit/auto-animate';
 import { sendFriendReq } from '../api/user';
 import { useSockets } from '../Providers/SocketProvider';
-import { useAuth } from '../Providers/AuthProvider';
 
 const ChatRoomUserCard: Component<{
   user: RoomUser;
@@ -37,7 +34,6 @@ const ChatRoomUserCard: Component<{
   const [currentUser] = createTurboResource<User>(() => routes.currentUser);
   const roomId = () => state.chat.roomId;
   let ref: any;
-  const [auth] = useAuth();
   const [sockets] = useSockets();
   const [currentRoom] = createResource(roomId, async (id: number) => {
     const res = await api.get<RoomInfo>(`${routes.chat}/room_info/${id}`);
@@ -51,57 +47,9 @@ const ChatRoomUserCard: Component<{
     sockets.pongWs!.send(JSON.stringify(data));
     notify(`invitation sent to ${props.user.display_name}`);
   };
-  const [status, setStatus] = createSignal<number[]>([]);
 
   const currentUserRole = () =>
     currentRoom()?.users.find((user) => user.id === currentUser()?.id)?.role;
-
-  const [inGamePlayers, setInGamePlayers] = createSignal<number[]>([]);
-
-  //TODO: send a socket event to check if this user is online or offline
-  onMount(() => {
-    // if (sockets.notifWsState === WebSocket.CONNECTING) {
-    //   sockets.notificationWs!.send(
-    //     JSON.stringify({
-    //       event: 'isOnline',
-    //       data: { user_id: props.user.id, sender: auth.user.id },
-    //     }),
-    //   );
-    //   sockets.notificationWs!.send(
-    //     JSON.stringify({
-    //       event: 'isInGame',
-    //       data: { user_id: props.user.id, sender: auth.user.id },
-    //     }),
-    //   );
-    //   sockets.notificationWs!.addEventListener('message', (e) => {
-    //     let res: {
-    //       event: WsNotificationEvent;
-    //       data: any;
-    //     };
-    //     res = JSON.parse(e.data);
-    //     if (res.event === 'isOnline') {
-    //       setStatus(res.data);
-    //     }
-    //     if (res.event === 'isInGame') {
-    //       setInGamePlayers(res.data.inGame);
-    //     } else if (res.event === 'pong: session_over') {
-    //       sockets.notificationWs!.send(
-    //         JSON.stringify({
-    //           event: 'isInGame',
-    //           data: { user_id: props.user.id, sender: auth.user.id },
-    //         }),
-    //       );
-    //     } else if (res.event === 'pong: new_session') {
-    //       sockets.notificationWs!.send(
-    //         JSON.stringify({
-    //           event: 'isInGame',
-    //           data: { user_id: props.user.id, sender: auth.user.id },
-    //         }),
-    //       );
-    //     }
-    //   });
-    // }
-  });
 
   const onMuteUser = () => {
     if (currentRoom()) {
@@ -232,8 +180,12 @@ const ChatRoomUserCard: Component<{
     }
   });
 
-  const isOnline = () => status()?.includes(props.user.id);
-  const isInGame = () => inGamePlayers()?.includes(props.user.id);
+  const isOnline = () => state.onlineUsers.includes(props.user.id);
+  const isInGame = () => state.inGameUsers.includes(props.user.id);
+
+  createEffect(() => {
+    console.log('Ingame users: ', state.inGameUsers);
+  });
 
   return (
     <div ref={ref} class="w-full rounded-lg shadow-md">
@@ -265,7 +217,7 @@ const ChatRoomUserCard: Component<{
                 {isOnline() ? 'online' : 'offline'}
               </p>
             </Show>
-            <Show when={inGamePlayers().length}>
+            <Show when={state.inGameUsers.length}>
               <p class="text-sm text-cyan-700">{isInGame() ? 'In Game' : ''}</p>
             </Show>
           </div>

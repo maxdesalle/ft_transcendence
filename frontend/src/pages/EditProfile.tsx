@@ -55,7 +55,7 @@ const EditProfile: Component = () => {
     formData.append('file', image()!, image()!.name);
     changeAvatar(formData)
       .then((res) => {
-        setUser(res.data);
+        setUserAvatarId(res.data);
         console.log('After change avatar: ', res.data);
         notifySuccess('Great success 🙂');
       })

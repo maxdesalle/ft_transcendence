@@ -20,17 +20,9 @@ const Profile: Component = () => {
   const [matches] = createTurboResource<MatchDTO[]>(
     () => `${routes.matches}/${parseInt(params.id)}`,
   );
-  // const [user] = createTurboResource<User>(
-  //   () => `${routes.users}/${params.id}`,
-  // );
-
   const id = () => Number(params.id);
   const [user] = createResource(id, fetchUserById);
   const [currentUser] = createTurboResource(() => routes.currentUser);
-
-  createEffect(() => {
-    console.log(user());
-  });
 
   const onSendFriendReq = () => {
     if (user()) {

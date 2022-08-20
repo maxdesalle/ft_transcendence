@@ -1,7 +1,8 @@
 import {
+  Component,
   createContext,
   createEffect,
-  createSignal,
+  JSXElement,
   onCleanup,
   useContext,
 } from 'solid-js';
@@ -23,6 +24,7 @@ interface ActionsType {
   connectPongWs: () => void;
   setNotifState: (state: number) => void;
   setWsPongState: (state: number) => void;
+  disconnect: () => void;
 }
 
 export const SocketProvider = (props: any) => {
@@ -48,10 +50,21 @@ export const SocketProvider = (props: any) => {
     setWsPongState(state) {
       setState('pongWsState', state);
     },
+    disconnect() {
+      state.notificationWs?.close();
+      state.pongWs?.close();
+    },
   };
 
   createEffect(() => {
-    // if (state.notifWsState && state)
+    if (state.notificationWs) {
+      state.notificationWs.onopen = () => {
+        setState('notifWsState', WebSocket.OPEN);
+      };
+      state.notificationWs.onclose = () => {
+        setState('notifWsState', WebSocket.CLOSED);
+      };
+    }
   });
 
   onCleanup(() => {
@@ -59,6 +72,8 @@ export const SocketProvider = (props: any) => {
     state.pongWs?.close();
     setState('notificationWs', undefined);
     setState('pongWs', undefined);
+    setState('pongWsState', WebSocket.CLOSED);
+    setState('notifWsState', WebSocket.CLOSED);
   });
 
   const store = [state, actions];

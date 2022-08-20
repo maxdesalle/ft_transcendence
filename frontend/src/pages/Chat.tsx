@@ -2,6 +2,7 @@ import {
   Component,
   createEffect,
   createResource,
+  createSignal,
   Match,
   onMount,
   Show,
@@ -143,6 +144,14 @@ const Chat: Component = () => {
     }
   });
 
+  const [isOnline, setIsOnline] = createSignal(false);
+
+  createEffect(() => {
+    if (selectedFriend()) {
+      setIsOnline(state.onlineUsers.includes(selectedFriend()!.id));
+    }
+  });
+
   return (
     <div class="grid grid-cols-6 h-full">
       <div class="flex row-span-4 flex-col w-fit col-span-1 border-x-header-menu border-x">
@@ -188,9 +197,17 @@ const Chat: Component = () => {
                           : undefined
                       }
                     />
-                    <div class="flex flex-col pl-3">
+                    <div class="flex flex-col pl-3 w-full">
                       <h1 class="text-lg">{selectedFriend()!.display_name}</h1>
-                      <p class="text-sm">status: ...</p>
+                      <div class="text-sm flex w-full">
+                        <p class="pr-2">status:</p>
+                        <Show
+                          when={isOnline()}
+                          fallback={<span class="text-red-500">offline</span>}
+                        >
+                          <span class="text-green-500">online</span>
+                        </Show>
+                      </div>
                     </div>
                   </div>
                   <button

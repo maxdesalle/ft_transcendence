@@ -26,7 +26,6 @@ import PendingFriendReqCard from './PendingFriendReqCard';
 import { AxiosError } from 'axios';
 import { useSockets } from '../Providers/SocketProvider';
 import { useAuth } from '../Providers/AuthProvider';
-import { unwrap } from 'solid-js/store';
 const LINKS = ['chat', 'leaderboard'];
 
 const Header: Component = () => {
