@@ -12,7 +12,6 @@ import Login from '../pages/Login';
 import { useAuth } from '../Providers/AuthProvider';
 import { User } from '../types/user.interface';
 import { api } from '../utils/api';
-import Unauthorized from './Unauthorized';
 
 const Protected: Component<{ children: JSXElement }> = (props) => {
   const [state, { setUser, setToken, setIsAuth }] = useAuth();

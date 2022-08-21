@@ -192,7 +192,11 @@ const ChatRoomUserCard: Component<{
             : `flex items-center hover:bg-gray-900 justify-between transition-all px-1 py-2`
         }
       >
-        <div onClick={() => setIsOpen(true)} class="flex items-center w-full">
+        <div
+          classList={{ 'animate-pulse': isInGame() }}
+          onClick={() => setIsOpen(true)}
+          class="flex w-full md:pl-0 pl-4"
+        >
           <Avatar
             color={isOnline() ? 'bg-green-400' : 'bg-red-400'}
             imgUrl={
@@ -201,19 +205,8 @@ const ChatRoomUserCard: Component<{
                 : undefined
             }
           />
-          <div class="flex items-center w-full justify-between">
-            <h1 class="pl-3">{props.user.display_name}</h1>
-            {/* <Show when={!isInGame()}>
-              <p
-                class="text-sm"
-                classList={{
-                  'text-red-700': !isOnline(),
-                  'text-green-700': isOnline(),
-                }}
-              >
-                {isOnline() ? 'online' : 'offline'}
-              </p>
-            </Show> */}
+          <div class="flex pl-3 flex-col w-full">
+            <h1 class="hidden md:block">{props.user.display_name}</h1>
             <Show when={state.inGameUsers.length}>
               <p class="text-sm text-cyan-700">{isInGame() ? 'In Game' : ''}</p>
             </Show>

@@ -43,4 +43,5 @@ export const routes = {
   setPrivate: `${urls.backendUrl}/chat/set_private`,
   setOwner: `${urls.backendUrl}/chat/set_owner`,
   leaveGroup: `${urls.backendUrl}/chat/leave_group`,
+  playerStats: `${urls.backendUrl}/stats/summary`,
 };

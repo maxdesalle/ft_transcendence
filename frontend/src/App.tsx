@@ -20,6 +20,7 @@ import { WsNotificationEvent } from './types/chat.interface';
 import { api } from './utils/api';
 import { User } from './types/user.interface';
 import { routes } from './api/utils';
+import { notifySuccess } from './utils/helpers';
 
 const App: Component = () => {
   const [
@@ -30,6 +31,8 @@ const App: Component = () => {
       setInGameUsers,
       addOnlineUser,
       removeDisconnectedUser,
+      addPendingFriendReq,
+      setPendigFriendReq,
     },
   ] = useStore();
   const navigate = useNavigate();
@@ -50,7 +53,14 @@ const App: Component = () => {
   createEffect(() => {
     if (sockets.notifWsState === WebSocket.OPEN) {
       sockets.notificationWs!.addEventListener('message', (e) => {
-        let res: { event: WsNotificationEvent; data: any; user_id?: number };
+        let res: {
+          event: WsNotificationEvent;
+          data: any;
+          user_id?: number;
+          friend_request: {
+            requesting_user: User;
+          };
+        };
         res = JSON.parse(e.data);
         switch (res.event) {
           case 'pong: invitation':
@@ -96,10 +106,22 @@ const App: Component = () => {
           case 'group: offline':
             removeDisconnectedUser(res.data.user_id);
             break;
+          case 'friends: new_request':
+            addPendingFriendReq({
+              req_user: res.friend_request.requesting_user,
+              status: 0,
+            });
+            break;
           default:
             console.log(res);
         }
       });
+    }
+  });
+
+  createEffect(() => {
+    if (pendingFriendReq()) {
+      setPendigFriendReq(pendingFriendReq()!);
     }
   });
 
@@ -132,7 +154,7 @@ const App: Component = () => {
 
   return (
     <>
-      <div class="h-90 bg-skin-page">
+      <div class="bg-skin-page w-full overflow-hidden">
         <Routes>
           <Route
             path=""

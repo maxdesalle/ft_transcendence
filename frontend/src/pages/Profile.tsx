@@ -12,6 +12,7 @@ import { AxiosError } from 'axios';
 import { useStore } from '../store/all';
 import Scrollbars from 'solid-custom-scrollbars';
 import { useSockets } from '../Providers/SocketProvider';
+import { getPlayerStats } from '../api/stats';
 
 const Profile: Component = () => {
   const [state] = useStore();
@@ -23,6 +24,7 @@ const Profile: Component = () => {
   const id = () => Number(params.id);
   const [user] = createResource(id, fetchUserById);
   const [currentUser] = createTurboResource(() => routes.currentUser);
+  const [stats] = createResource(() => parseInt(params.id), getPlayerStats);
 
   const onSendFriendReq = () => {
     if (user()) {
@@ -36,6 +38,10 @@ const Profile: Component = () => {
     }
   };
 
+  createEffect(() => {
+    console.log(stats());
+  });
+
   const onInviteUser = () => {
     if (!user()) return;
     const data = { event: 'invite', data: user()!.id };
@@ -45,7 +51,7 @@ const Profile: Component = () => {
   return (
     <Show when={user()}>
       <div class="flex justify-evenly">
-        <div class="mt-7 border-r border-gray-600 shadow-md flex flex-col items-center">
+        <div class="mt-7 border-r border-gray-600 shadow-md flex flex-col gap-2 items-center">
           <div class="text-white flex flex-col items-center">
             <img
               class="w-40 h-44 mt-5"
@@ -55,9 +61,14 @@ const Profile: Component = () => {
                   : defaultAvatar
               }
             />
-            <h1 class="text-xl">{user()!.display_name}</h1>
+            <h1 class="text-xl text-start w-full">{user()!.display_name}</h1>
+            <p class="text-center w-full">Rank: {stats()?.ladder_rank}</p>
+            <div class="flex w-full gap-2 justify-between pr-4">
+              <p>win: {stats()?.wins}</p>
+              <p>loss: {stats()?.losses}</p>
+            </div>
           </div>
-          <ul class="flex flex-col text-white">
+          <ul class="flex flex-col gap-2 text-white">
             <Show
               when={currentUser() && parseInt(params.id) !== currentUser().id}
             >

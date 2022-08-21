@@ -20,9 +20,6 @@ const RoomList: Component<{ room: RoomInfo[]; keyword: string }> = (props) => {
           <div
             onClick={() => {
               setCurrentRoomId(room.room_id);
-              if (!state.chatUi.showMessages) {
-                toggleShowMessages();
-              }
             }}
             class="flex p-2 items-center"
           >

@@ -8,8 +8,12 @@ const Avatar: Component<{
   return (
     <div class="relative">
       <img
+        style={{
+          'min-height': '40px',
+          'min-width': '40px',
+        }}
         src={props.imgUrl ? props.imgUrl : defaultAvatar}
-        class="w-10 h-10 rounded-full"
+        class="h-10 w-10 rounded-full"
         alt="user avatar"
       />
       <Show when={props.color}>

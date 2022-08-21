@@ -16,7 +16,11 @@ import { blockUser, chatApi } from '../api/chat';
 import { TAB, useStore } from '../store/all';
 import toast from 'solid-toast';
 import { routes } from '../api/utils';
-import { RoomInfo, WsNotificationEvent } from '../types/chat.interface';
+import {
+  Message,
+  RoomInfo,
+  WsNotificationEvent,
+} from '../types/chat.interface';
 import { api } from '../utils/api';
 import { createTurboResource } from 'turbo-solid';
 import { User } from '../types/user.interface';
@@ -25,7 +29,6 @@ import { generateImageUrl } from '../utils/helpers';
 import { AxiosError } from 'axios';
 import autoAnimate from '@formkit/auto-animate';
 import { Link } from 'solid-app-router';
-import { Message } from 'postcss';
 import ChatHome from '../components/ChatHome';
 import { useSockets } from '../Providers/SocketProvider';
 
@@ -43,17 +46,12 @@ const Chat: Component = () => {
   const [blockedFriends, { refetch }] = createTurboResource<number[]>(
     () => routes.blocked,
   );
-  let ref: any;
-
-  onMount(() => {
-    autoAnimate(ref);
-  });
 
   const [friends] = createTurboResource<User[]>(() => routes.friends);
   const selectedFriend = () =>
     friends()?.find((friend) => friend.id === state.chat.friendId);
 
-  const [roomMessages, { refetch: updateRoomMessages }] = createResource(
+  const [roomMessages, { refetch: refetchRoomMessages }] = createResource(
     roomId,
     async (id: number) => {
       try {
@@ -62,8 +60,9 @@ const Chat: Component = () => {
         console.log(err);
       }
     },
+    { initialValue: [] },
   );
-  const [friendMessages, { refetch: updateFriendMessages }] = createResource(
+  const [friendMessages, { refetch: refetchFriendMessages }] = createResource(
     friendId,
     chatApi.getFriendMessages,
   );
@@ -136,28 +135,20 @@ const Chat: Component = () => {
         let res: { event: WsNotificationEvent; message: Message };
         res = JSON.parse(e.data);
         if (res.event === 'chat_room_msg') {
-          updateRoomMessages();
+          refetchRoomMessages();
         } else if (res.event === 'chat_dm') {
-          updateFriendMessages();
+          refetchFriendMessages();
         }
       });
     }
   });
 
-  const [isOnline, setIsOnline] = createSignal(false);
-
-  createEffect(() => {
-    if (selectedFriend()) {
-      setIsOnline(state.onlineUsers.includes(selectedFriend()!.id));
-    }
-  });
-
   return (
-    <div class="grid grid-cols-6 h-full">
-      <div class="flex row-span-4 flex-col w-fit col-span-1 border-x-header-menu border-x">
+    <div class="grid grid-cols-6 h-95">
+      <div class="flex row-span-4 flex-col col-span-1 border-x-header-menu border-x">
         <ChatSideBar />
       </div>
-      <div class="col-span-4 w-full flex flex-col pl-1 pr-1 h-full">
+      <div class="col-span-4 w-full flex flex-col h-95 pl-1 pr-1">
         <Switch>
           <Match when={state.chatUi.tab === TAB.ROOMS}>
             <ChatMessagesBox
@@ -176,10 +167,7 @@ const Chat: Component = () => {
           </Match>
         </Switch>
       </div>
-      <div
-        ref={ref}
-        class="flex relative row-span-4 flex-col border-x shadow-md border-x-header-menu col-span-1"
-      >
+      <div class="flex relative row-span-4 flex-col border-x shadow-md border-x-header-menu col-span-1">
         <Switch>
           <Match when={state.chatUi.tab === TAB.ROOMS}>
             <ChatRightSideBar />
@@ -188,28 +176,6 @@ const Chat: Component = () => {
             <div class="pt-5 px-2 w-full">
               <Show when={selectedFriend()} fallback={<p>Select a friend</p>}>
                 <div class="flex flex-col">
-                  <div class="mb-2 flex items-center text-white">
-                    <Avatar
-                      color={isOnline() ? 'bg-green-400' : 'bg-red-400'}
-                      imgUrl={
-                        selectedFriend()!.avatarId
-                          ? generateImageUrl(selectedFriend()!.avatarId)
-                          : undefined
-                      }
-                    />
-                    <div class="flex flex-col pl-3 w-full">
-                      <h1 class="text-lg">{selectedFriend()!.display_name}</h1>
-                      <div class="text-sm flex w-full">
-                        <p class="pr-2">status:</p>
-                        <Show
-                          when={isOnline()}
-                          fallback={<span class="text-red-500">offline</span>}
-                        >
-                          <span class="text-green-500">online</span>
-                        </Show>
-                      </div>
-                    </div>
-                  </div>
                   <button
                     onClick={inviteFriend}
                     type="button"

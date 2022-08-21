@@ -19,7 +19,6 @@ import { routes } from '../api/utils';
 import { RoomInfo, WsNotificationEvent } from '../types/chat.interface';
 import RoomList from './RoomList';
 import { useAuth } from '../Providers/AuthProvider';
-import JoinableRoomList from './JoinableRoomList';
 import { useSockets } from '../Providers/SocketProvider';
 
 const ChatSideBar: Component = () => {
@@ -34,13 +33,6 @@ const ChatSideBar: Component = () => {
     () => routes.getRooms,
   );
 
-  const joinableRooms = () =>
-    publicRooms()?.filter((rooms) => {
-      const b = rooms.users.find((user) => user.id === auth.user.id);
-      if (b) return false;
-      return true;
-    });
-
   const myRooms = () =>
     rooms()?.filter((rooms) => {
       const b = rooms.users.find((user) => user.id === auth.user.id);
@@ -54,7 +46,6 @@ const ChatSideBar: Component = () => {
         let res: { event: WsNotificationEvent };
         res = JSON.parse(e.data);
         if (res.event === 'chat_new_group') {
-          console.log('res: ', res);
           refetchPublicRooms();
           refetchRooms();
         } else if (res.event === 'chat_new_user_in_group') {
@@ -67,27 +58,27 @@ const ChatSideBar: Component = () => {
 
   return (
     <>
-      <ul class="text-white items-center lg:flex">
+      <ul class="text-white text-start flex-col">
         <li
           onClick={() => changeTab(TAB.HOME)}
-          class="p-2 hover:text-gray-400 transition-all"
+          class="btn-primary text-start hover:text-gray-400 transition-all"
         >
-          Home
+          Pulbic Channels
         </li>
         <li
           onClick={() => changeTab(TAB.ROOMS)}
-          class="p-2 hover:text-gray-400 transition-all"
+          class="btn-primary text-start hover:text-gray-400 transition-all"
         >
           Rooms
         </li>
         <li
           onClick={() => changeTab(TAB.FRIENDS)}
-          class="p-2 hover:text-gray-400 transition-all"
+          class="btn-primary text-start hover:text-gray-400 transition-all"
         >
           Friends
         </li>
       </ul>
-      <Scrollbars id="room_users" class="h-full">
+      <div id="room_users" class="h-full">
         <Switch>
           <Match when={state.chatUi.tab === TAB.ROOMS}>
             <Search
@@ -105,7 +96,7 @@ const ChatSideBar: Component = () => {
             <FriendList />
           </Match>
         </Switch>
-      </Scrollbars>
+      </div>
     </>
   );
 };

@@ -18,12 +18,9 @@ import Search from './Search';
 
 const FriendList: Component = () => {
   const [keyword, setKeyword] = createSignal('');
-  const [state, { setFriendId, toggleShowMessages }] = useStore();
+  const [state, { setFriendId }] = useStore();
   const onLoadFriendMessages = (friend: Friend) => {
     setFriendId(friend.id);
-    if (!state.chatUi.showMessages) {
-      toggleShowMessages();
-    }
   };
   const [friends] = createTurboResource<Friend[]>(() => routes.friends);
   const filteredFriends = () =>
@@ -32,10 +29,6 @@ const FriendList: Component = () => {
     });
 
   let ref: any;
-
-  onMount(() => {
-    autoAnimate(ref);
-  });
 
   return (
     <div ref={ref} class="h-full">

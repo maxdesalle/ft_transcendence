@@ -20,9 +20,7 @@ const ChatMessagesBox: Component<{
   onSendMessage: (message: string) => void;
   messages: Message[];
 }> = (props) => {
-  const [state] = useStore();
   const [currentUser] = createTurboResource(() => routes.currentUser);
-  const roomId = state.chat.roomId;
   const [message, setMessage] = createSignal('');
 
   return (
@@ -33,8 +31,8 @@ const ChatMessagesBox: Component<{
             .slice()
             .sort((a, b) =>
               compareAsc(
-                parseISO(a.timestamp.toString()),
                 parseISO(b.timestamp.toString()),
+                parseISO(a.timestamp.toString()),
               ),
             )}
           id={currentUser()?.id}
