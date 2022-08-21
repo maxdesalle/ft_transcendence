@@ -63,7 +63,7 @@ const ChatRightSideBar: Component<{}> = () => {
         </Show>
       </div>
       <div class="text-white">
-        <ul class="flex bg-skin-menu-background">
+        <ul class="lg:flex bg-skin-menu-background">
           <li onClick={() => setTab(0)} class="text-center p-2">
             Members
           </li>

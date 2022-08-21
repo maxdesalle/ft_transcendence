@@ -47,5 +47,9 @@ export type WsNotificationEvent =
   | 'pong: invitation'
   | 'pong: invitation_accepted'
   | 'pong: player_joined'
+  | 'pong: new_session'
+  | 'pong: session_over'
   | 'ladder_change'
-  | 'users: new_user';
+  | 'users: new_user'
+  | 'isOnline'
+  | 'isInGame';

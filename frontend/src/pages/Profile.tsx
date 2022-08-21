@@ -1,5 +1,5 @@
 import { Link, useParams } from 'solid-app-router';
-import { Component, For, Show } from 'solid-js';
+import { Component, createEffect, createResource, For, Show } from 'solid-js';
 import { User } from '../types/user.interface';
 import defaultAvatar from '../../../backend/images/avatardefault.png';
 import { generateImageUrl, notifyError, notifySuccess } from '../utils/helpers';
@@ -7,7 +7,7 @@ import { createTurboResource } from 'turbo-solid';
 import { routes } from '../api/utils';
 import { MatchDTO } from '../types/stats.interface';
 import MatchHistoryCard from '../components/MatchHistoryCard';
-import { sendFriendReq } from '../api/user';
+import { fetchUserById, sendFriendReq } from '../api/user';
 import { AxiosError } from 'axios';
 import { useStore } from '../store';
 import Scrollbars from 'solid-custom-scrollbars';
@@ -20,10 +20,17 @@ const Profile: Component = () => {
   const [matches] = createTurboResource<MatchDTO[]>(
     () => `${routes.matches}/${parseInt(params.id)}`,
   );
-  const [user] = createTurboResource<User>(
-    () => `${routes.users}/${params.id}`,
-  );
+  // const [user] = createTurboResource<User>(
+  //   () => `${routes.users}/${params.id}`,
+  // );
+
+  const id = () => Number(params.id);
+  const [user] = createResource(id, fetchUserById);
   const [currentUser] = createTurboResource(() => routes.currentUser);
+
+  createEffect(() => {
+    console.log(user());
+  });
 
   const onSendFriendReq = () => {
     if (user()) {
@@ -63,12 +70,12 @@ const Profile: Component = () => {
               when={currentUser() && parseInt(params.id) !== currentUser().id}
             >
               <li>
-                <button onClick={onSendFriendReq} class="btn-primary">
+                <button onClick={onSendFriendReq} class="btn-primary w-full">
                   Send friend request
                 </button>
               </li>
               <li>
-                <button onClick={onInviteUser} class="btn-primary">
+                <button onClick={onInviteUser} class="btn-primary w-full">
                   Invite to play
                 </button>
               </li>

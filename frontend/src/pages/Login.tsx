@@ -15,6 +15,7 @@ const Login: Component = () => {
   const [auth, { setToken: setAuthToken, setIsAuth, setUser }] = useAuth();
   const notify = (msg: string) => toast.error(msg);
   const [loading, setLoading] = createSignal(false);
+  const location = useLocation();
 
   const onLogin = () => {
     if (!username().length) return;
