@@ -25,11 +25,15 @@ const Login: Component = () => {
         if (token) {
           setToken(token);
           setAuthToken(token);
-          setIsAuth(true);
-          setUser(res.data);
-          navigate('/', { replace: true });
+          if (!res.data.isTwoFactorAuthenticationEnabled) {
+            setIsAuth(true);
+            navigate('/', { replace: true });
+          } else {
+            navigate('/2fa');
+            setUser(res.data);
+            setLoading(false);
+          }
         }
-        setLoading(false);
       })
       .catch((err) => {
         notify(err.message);

@@ -12,7 +12,7 @@ const MessageCard: Component<{
 
   return (
     <Show when={user()}>
-      <div class="flex items-center pl-3 pb-1">
+      <div class="flex items-center pl-3 pb-1 hover:bg-slate-800 transition-all">
         <Avatar
           imgUrl={
             user()!.avatarId ? generateImageUrl(user()!.avatarId) : undefined
@@ -25,7 +25,7 @@ const MessageCard: Component<{
               {format(parseISO(message.timestamp.toString()), 'pp')}
             </p>
           </div>
-          <p class="text-sm text-left from-neutral-300">{message.message}</p>
+          <p class="text-left text-sm font-thin">{message.message}</p>
         </div>
       </div>
     </Show>

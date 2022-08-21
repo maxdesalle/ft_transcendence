@@ -52,15 +52,10 @@ const EditProfile: Component = () => {
     changeAvatar(formData)
       .then((res) => {
         setUserAvatarId(res.data);
-        console.log('After change avatar: ', res.data);
         notifySuccess('Great success 🙂');
       })
-      .catch((e) => notifyError('error 😥'));
+      .catch(() => notifyError('error 😥'));
   };
-
-  createEffect(() => {
-    console.log('user updated: ', auth.user);
-  });
 
   return (
     <div class="pt-5 text-white flex">
@@ -94,8 +89,12 @@ const EditProfile: Component = () => {
           </Match>
         </Switch>
         <Modal isOpen={isOpen()} toggleModal={setIsOpen}>
-          <img src={pathUrl()} alt="qr code" />
-          <Link href="/login">Go back to login</Link>
+          <div class="flex flex-col">
+            <img src={pathUrl()} alt="qr code" />
+            <Link class="btn-primary w-full" href="/login">
+              Go back to login
+            </Link>
+          </div>
         </Modal>
       </div>
       <div class="flex flex-col w-fit p-2">

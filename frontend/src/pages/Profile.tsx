@@ -15,7 +15,6 @@ import { useSockets } from '../Providers/SocketProvider';
 import { getPlayerStats } from '../api/stats';
 
 const Profile: Component = () => {
-  const [state] = useStore();
   const [{ pongWs }] = useSockets();
   const params = useParams<{ id: string }>();
   const [matches] = createTurboResource<MatchDTO[]>(
@@ -37,10 +36,6 @@ const Profile: Component = () => {
         });
     }
   };
-
-  createEffect(() => {
-    console.log(stats());
-  });
 
   const onInviteUser = () => {
     if (!user()) return;

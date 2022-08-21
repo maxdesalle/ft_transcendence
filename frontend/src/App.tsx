@@ -41,7 +41,7 @@ const App: Component = () => {
     useSockets();
 
   const [pendingFriendReq] = createResource(
-    () => auth.token,
+    () => auth.isAuth,
     async () => {
       const res = await api.get<{ req_user: User; status: number }[]>(
         routes.receivedFriendReq,

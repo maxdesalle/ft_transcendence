@@ -2,13 +2,14 @@ import Cookies from 'js-cookie';
 import { useNavigate } from 'solid-app-router';
 import { Component, createSignal } from 'solid-js';
 import { urls } from '../api/utils';
+import { useAuth } from '../Providers/AuthProvider';
 import { useStore } from '../store/all';
 import { api } from '../utils/api';
 
 const TwoFactorAuth: Component = () => {
   const [code, setCode] = createSignal('');
+  const [auth, { setIsAuth, setToken }] = useAuth();
   const navigate = useNavigate();
-  const [_, { setToken }] = useStore();
   const onSendCode = () => {
     api
       .post<{ success: boolean }>(
@@ -19,9 +20,11 @@ const TwoFactorAuth: Component = () => {
       )
       .then(() => {
         const token = Cookies.get('jwt_token');
-        console.log(token);
-        setToken(token);
-        navigate('/');
+        if (token) {
+          setIsAuth(true);
+          setToken(token);
+          navigate('/');
+        }
       });
   };
 
