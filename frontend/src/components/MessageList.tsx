@@ -1,3 +1,4 @@
+import autoAnimate from '@formkit/auto-animate';
 import {
   Component,
   createEffect,
@@ -16,8 +17,11 @@ const MessageList: Component<{ messages?: Message[]; id?: number }> = (
 ) => {
   createEffect(() => {
     props.messages;
+    // ref.scrollTop = ref.scrollHeight;
+    ref.scrollIntoView();
     //TODO: Srool bottom
   });
+  let ref: any;
 
   const [blockedUsers] = createTurboResource<number[]>(() => routes.blocked);
 
@@ -39,19 +43,16 @@ const MessageList: Component<{ messages?: Message[]; id?: number }> = (
 
   return (
     <Show when={props.messages}>
-      <div class="flex flex-col w-full first:mt-auto overflow-y-scroll scrollbar scrollbar-thumb-gray-700 scrollbar-track-gray-500 h-82">
+      <div
+        ref={ref}
+        class="flex flex-col-reverse gap-3 bg-skin-menu-background w-full first:mt-auto overflow-y-scroll scrollbar scrollbar-thumb-gray-700 scrollbar-track-gray-500 h-full"
+      >
         <For each={props.messages}>
           {(msg) => (
             <Show
               when={blockedUsers() && !blockedUsers()!.includes(msg.user_id)}
             >
-              <MessageCard
-                title={msg.user_id === props.id ? '' : `username`}
-                message={msg}
-                position={
-                  msg.user_id === props.id ? 'bg-blue-400' : 'bg-orange-400'
-                }
-              />
+              <MessageCard message={msg} />
             </Show>
           )}
         </For>

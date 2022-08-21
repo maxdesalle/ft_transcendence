@@ -22,7 +22,7 @@ const Pong: Component = () => {
   });
 
   return (
-    <div class="flex flex-col mt-3 items-center">
+    <div class="flex items-center flex-col h-95">
       <canvas ref={ref} id="pongCanvas"></canvas>
     </div>
   );

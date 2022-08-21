@@ -10,6 +10,6 @@ import { WsModule } from 'src/ws/ws.module';
   controllers: [ChatController],
   providers: [ChatService],
   imports: [JwtModule.registerAsync(jwtConfig), UsersModule, WsModule],
-  exports: [ChatService]
+  exports: [ChatService],
 })
 export class ChatModule {}

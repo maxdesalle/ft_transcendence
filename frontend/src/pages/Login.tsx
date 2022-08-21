@@ -1,12 +1,12 @@
 import Cookies from 'js-cookie';
-import { useLocation, useNavigate } from 'solid-app-router';
-import { Component, createEffect, createSignal, onMount, Show } from 'solid-js';
+import { useNavigate } from 'solid-app-router';
+import { Component, createEffect, createSignal, Show } from 'solid-js';
 import toast from 'solid-toast';
 import { loginFromMockApi } from '../api/mock';
 import { routes } from '../api/utils';
 import Loader from '../components/Loader';
 import { useAuth } from '../Providers/AuthProvider';
-import { useStore } from '../store';
+import { useStore } from '../store/all';
 
 const Login: Component = () => {
   const [username, setUsername] = createSignal<string>('');
@@ -15,7 +15,6 @@ const Login: Component = () => {
   const [auth, { setToken: setAuthToken, setIsAuth, setUser }] = useAuth();
   const notify = (msg: string) => toast.error(msg);
   const [loading, setLoading] = createSignal(false);
-  const location = useLocation();
 
   const onLogin = () => {
     if (!username().length) return;
@@ -26,11 +25,15 @@ const Login: Component = () => {
         if (token) {
           setToken(token);
           setAuthToken(token);
-          setIsAuth(true);
-          setUser(res.data);
-          navigate('/', { replace: true });
+          if (!res.data.isTwoFactorAuthenticationEnabled) {
+            setIsAuth(true);
+            navigate('/', { replace: true });
+          } else {
+            navigate('/2fa');
+            setUser(res.data);
+            setLoading(false);
+          }
         }
-        setLoading(false);
       })
       .catch((err) => {
         notify(err.message);

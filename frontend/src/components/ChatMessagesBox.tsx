@@ -7,7 +7,7 @@ import {
   Show,
 } from 'solid-js';
 import MessageList from './MessageList';
-import { useStore } from '../store';
+import { useStore } from '../store/all';
 import ChatForm from './ChatForm';
 import { Message, RoomInfo } from '../types/chat.interface';
 import PendingFriendReqCard from './PendingFriendReqCard';
@@ -20,9 +20,7 @@ const ChatMessagesBox: Component<{
   onSendMessage: (message: string) => void;
   messages: Message[];
 }> = (props) => {
-  const [state] = useStore();
   const [currentUser] = createTurboResource(() => routes.currentUser);
-  const roomId = state.chat.roomId;
   const [message, setMessage] = createSignal('');
 
   return (
@@ -33,8 +31,8 @@ const ChatMessagesBox: Component<{
             .slice()
             .sort((a, b) =>
               compareAsc(
-                parseISO(a.timestamp.toString()),
                 parseISO(b.timestamp.toString()),
+                parseISO(a.timestamp.toString()),
               ),
             )}
           id={currentUser()?.id}

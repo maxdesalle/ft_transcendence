@@ -13,3 +13,12 @@ export interface LadderDto {
   display_name: any;
   points: any;
 }
+
+export interface PlayerStatsDto {
+  ladder_rank: number;
+  points: any;
+  matches_played: number;
+  wins: number;
+  losses: number;
+  wins_percent: number;
+}

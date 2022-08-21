@@ -1,18 +1,11 @@
 import { Link, useNavigate } from 'solid-app-router';
-import {
-  Component,
-  createEffect,
-  createSignal,
-  For,
-  onMount,
-  Show,
-} from 'solid-js';
+import { Component, createSignal, For, onMount, Show } from 'solid-js';
 import logo from '../assets/logo.png';
 import { BiSearchAlt2 } from 'solid-icons/bi';
 import HeaderProfileMenu from './HeaderProfileMenu';
 import Modal from './Modal';
 import Avatar from './Avatar';
-import { useStore } from '../store/index';
+import { useStore } from '../store/all';
 import SearchUserCard from './SearchUserCard';
 import { generateImageUrl } from '../utils/helpers';
 import { createTurboResource } from 'turbo-solid';
@@ -26,7 +19,7 @@ import PendingFriendReqCard from './PendingFriendReqCard';
 import { AxiosError } from 'axios';
 import { useSockets } from '../Providers/SocketProvider';
 import { useAuth } from '../Providers/AuthProvider';
-import { unwrap } from 'solid-js/store';
+import { IoChatbubblesSharp } from 'solid-icons/io';
 const LINKS = ['chat', 'leaderboard'];
 
 const Header: Component = () => {
@@ -41,13 +34,8 @@ const Header: Component = () => {
   const notifyError = (msg: string) => toast.error(msg);
   const [isOpen, setIsOpen] = createSignal(false);
   const [isNotifOpen, setIsNotifOpen] = createSignal(false);
-  const [uRef, setUref] = createSignal<any>();
   let ref: any;
   let notifRef: any;
-
-  createEffect(() => {
-    console.log('auth user: ', unwrap(auth.user.display_name));
-  });
 
   const onSendFriendReq = (userId: number, userName: string) => {
     api
@@ -60,30 +48,19 @@ const Header: Component = () => {
       });
   };
 
-  const onAcceptInvite = () => {
-    const data = {
-      event: 'accept',
-      data: state.pong.friendInvitation?.user_id,
-    };
-    sockets.pongWs!.send(JSON.stringify(data));
-    navigate('/pong');
-    setFriendInvitation(null);
-  };
-
   onMount(() => {
     autoAnimate(ref);
     autoAnimate(notifRef);
-    autoAnimate(uRef());
   });
 
   return (
     <>
-      <header class="flex items-center relative z-20 bg-skin-header-background py-1 px-6 justify-between">
-        <div class="flex items-center">
+      <header class="flex px-3 h-hh items-center relative z-20 w-full bg-skin-header-background justify-between">
+        <div class="flex sm:w-full lg:w-fit md:w-fit items-center gap-5">
           <Link href="/">
             <img class="w-9 rounded-xl mr-2 h-8" src={logo} alt="logo" />
           </Link>
-          <span class="flex items-center rounded-md bg-inherit text-slate-300 h-8 border shadow-md p-1 border-header-menu">
+          <span class="flex items-center  rounded-md bg-inherit text-slate-300 h-8 border shadow-md p-1 border-header-menu">
             <BiSearchAlt2 size={22} />
             <input
               value={keyword()}
@@ -93,16 +70,7 @@ const Header: Component = () => {
               autocomplete="off"
             />
           </span>
-        </div>
-        <ul class="flex p-1 justify-between w-64 items-center">
-          <For each={LINKS}>
-            {(link) => (
-              <li class="text-white first-letter:capitalize">
-                <Link href={`/${link}`}>{link}</Link>
-              </li>
-            )}
-          </For>
-          <li
+          <div
             class="items-center justify-center px-2 py-1 text-xs leading-none text-red-100 bg-blue-600 rounded-full"
             ref={notifRef}
           >
@@ -110,47 +78,60 @@ const Header: Component = () => {
               class="flex items-center text-black"
               onClick={() => setIsNotifOpen(!isNotifOpen())}
             >
-              <IoNotificationsSharp color="#000" />
+              <IoNotificationsSharp color="#11ad" />
               <span class="text-sm">
-                {state.currentUser.friendReqCount < 2
-                  ? state.currentUser.friendReqCount
-                  : `${state.currentUser.friendReqCount}+`}
+                {state.currentUser.pendingFriendReq.length
+                  ? state.currentUser.pendingFriendReq.length
+                  : `${state.currentUser.pendingFriendReq.length}+`}
               </span>
             </button>
             <Modal isOpen={isNotifOpen()} toggleModal={setIsNotifOpen}>
               <PendingFriendReqCard />
             </Modal>
-          </li>
-          <Show when={state.pong.friendInvitation}>
-            <li>
-              <button onClick={onAcceptInvite} class="btn-primary">
-                Accept
-              </button>
-            </li>
-          </Show>
-        </ul>
-        <div ref={ref} class="relative">
-          <button onClick={() => setIsOpen(!isOpen())}>
-            <Avatar
-              imgUrl={
-                auth.user.avatarId
-                  ? `${generateImageUrl(auth.user.avatarId)}`
-                  : undefined
-              }
-            />
-          </button>
-          <Modal isOpen={isOpen()} toggleModal={setIsOpen}>
-            <Show when={currentUser()}>
-              <div class="bg-skin-menu-background w-60 absolute border-header-menu -right-4 border shadow-sm p-2 -top-1">
-                <HeaderProfileMenu user={auth.user} />
-              </div>
-            </Show>
-          </Modal>
+          </div>
         </div>
-      </header>
-      <div ref={setUref} class="relative">
+        <div class="flex">
+          <ul class="p-1 lg:flex md:flex hidden w-64 items-center gap-5">
+            <For each={LINKS}>
+              {(link) => (
+                <li class="text-white first-letter:capitalize">
+                  <Link href={`/${link}`}>{link}</Link>
+                </li>
+              )}
+            </For>
+          </ul>
+          <Link
+            href="/chat"
+            class="lg:hidden my-auto bg-transparent md:hidden block xl:hidden"
+          >
+            <IoChatbubblesSharp
+              class="shadow-md bg-transparent"
+              size={20}
+              color="#001a4d"
+            />
+          </Link>
+          <div ref={ref} class="relative">
+            <button onClick={() => setIsOpen(!isOpen())}>
+              <Avatar
+                color="bg-green-400"
+                imgUrl={
+                  auth.user.avatarId
+                    ? `${generateImageUrl(auth.user.avatarId)}`
+                    : undefined
+                }
+              />
+            </button>
+            <Modal isOpen={isOpen()} toggleModal={setIsOpen}>
+              <Show when={currentUser()}>
+                <div class="bg-skin-menu-background w-60 absolute border-header-menu -right-4 border shadow-sm p-2 -top-1">
+                  <HeaderProfileMenu user={auth.user} />
+                </div>
+              </Show>
+            </Modal>
+          </div>
+        </div>
         <Show when={keyword()}>
-          <div class="absolute top-0 z-10 ml-16">
+          <div class="absolute top-10 z-10 ml-16">
             <For
               each={users()
                 ?.slice(0)
@@ -159,13 +140,14 @@ const Header: Component = () => {
                     .toLocaleLowerCase()
                     .includes(keyword().toLocaleLowerCase()),
                 )
-                .slice(0, 15)}
+                .slice(0, 10)}
             >
               {(user) => (
                 <div class="w-60">
                   <SearchUserCard
                     onClick={() => {
                       onSendFriendReq(user.id, user.display_name);
+                      setKeyword('');
                     }}
                     user={user}
                   />
@@ -174,7 +156,7 @@ const Header: Component = () => {
             </For>
           </div>
         </Show>
-      </div>
+      </header>
     </>
   );
 };

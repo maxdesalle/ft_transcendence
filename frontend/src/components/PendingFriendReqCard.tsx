@@ -1,26 +1,28 @@
 import { AxiosError } from 'axios';
+import { useNavigate } from 'solid-app-router';
 import { Component, createEffect, For, onMount, Show } from 'solid-js';
 import { createTurboResource } from 'turbo-solid';
 import { acceptFriendReq, rejectFriendReq } from '../api/user';
 import { routes } from '../api/utils';
 import { useSockets } from '../Providers/SocketProvider';
+import { useStore } from '../store/all';
 import { WsNotificationEvent } from '../types/chat.interface';
 import { User } from '../types/user.interface';
 import { notifyError, notifySuccess } from '../utils/helpers';
 
 const PendingFriendReqCard: Component = () => {
-  const [pendingFriendReq, { refetch }] = createTurboResource<
-    {
-      req_user: User;
-      status: number;
-    }[]
-  >(() => routes.receivedFriendReq);
   const [sockets] = useSockets();
+  const [state, { setPendigFriendReq, setFriendInvitation }] = useStore();
+  const navigate = useNavigate();
   const onAcceptFriendReq = (id: number) => {
     acceptFriendReq(id)
       .then(() => {
         notifySuccess('success');
-        refetch();
+        setPendigFriendReq(
+          state.currentUser.pendingFriendReq.filter(
+            (req) => req.req_user.id !== id,
+          ),
+        );
       })
       .catch((err) => notifyError(err.message));
   };
@@ -29,28 +31,30 @@ const PendingFriendReqCard: Component = () => {
     rejectFriendReq(id)
       .then(() => {
         notifySuccess('success: friend request rejected');
-        refetch();
+        setPendigFriendReq(
+          state.currentUser.pendingFriendReq.filter(
+            (req) => req.req_user.id !== id,
+          ),
+        );
       })
       .catch((err: AxiosError<{ message: string }>) =>
         notifyError(err.response?.data.message as string),
       );
   };
 
-  createEffect(() => {
-    if (sockets.notificationWs) {
-      sockets.notificationWs.addEventListener('message', (e) => {
-        let res: { event: WsNotificationEvent };
-        res = JSON.parse(e.data);
-        if (res.event === 'friends: new_request') {
-          refetch();
-        }
-      });
-    }
-  });
+  const onAcceptInvite = () => {
+    const data = {
+      event: 'accept',
+      data: state.pong.friendInvitation?.user_id,
+    };
+    sockets.pongWs!.send(JSON.stringify(data));
+    navigate('/pong');
+    setFriendInvitation(null);
+  };
 
   return (
     <Show
-      when={pendingFriendReq() && pendingFriendReq()?.length}
+      when={state.currentUser.pendingFriendReq.length}
       fallback={
         <p class="bg-gray-700 p-3 border-1 text-white shadow-md border-red-600">
           No friend requests 🥲
@@ -58,7 +62,7 @@ const PendingFriendReqCard: Component = () => {
       }
     >
       <div class="border border-header-menu p-2 pt-4 shadow-md rounded-md bg-skin-menu-background">
-        <For each={pendingFriendReq()}>
+        <For each={state.currentUser.pendingFriendReq}>
           {(user) => (
             <div class="grid grid-cols-2">
               <h1 class="text-white pr-2 text-lg">
@@ -81,6 +85,13 @@ const PendingFriendReqCard: Component = () => {
             </div>
           )}
         </For>
+        <Show when={state.pong.friendInvitation}>
+          <li>
+            <button onClick={onAcceptInvite} class="btn-primary">
+              Accept
+            </button>
+          </li>
+        </Show>
       </div>
     </Show>
   );

@@ -5,17 +5,24 @@ import {
   WebSocketGateway,
 } from '@nestjs/websockets';
 import { IncomingMessage } from 'http';
-import { connected_users, playing } from 'src/pong/pong.gateway';
+import { ChatService } from 'src/chat/chat.service';
+import { playing } from 'src/pong/pong.gateway';
+import { User } from 'src/users/entities/user.entity';
+import { UsersService } from 'src/users/users.service';
 import { WebSocket } from 'ws';
 import { WsService } from './ws.service';
 
 @WebSocketGateway()
 export class WsGateway implements OnGatewayConnection, OnGatewayDisconnect {
-  constructor(private wsService: WsService) {}
+  constructor(
+    private wsService: WsService,
+    private chatService: ChatService,
+    private usersService: UsersService,
+  ) {}
 
   async handleConnection(client: WebSocket, req: IncomingMessage) {
     // authenticate user
-    let user: { id: number; login42: string };
+    let user: User;
     try {
       user = await this.wsService.authenticateUser(req);
     } catch (error) {
@@ -54,21 +61,43 @@ export class WsGateway implements OnGatewayConnection, OnGatewayDisconnect {
     );
     // notify state change to friends
     this.wsService.notifyStatusChangeToFriends(user.id, 'online');
+    const rooms = await (
+      await this.chatService.get_convs(user)
+    ).filter((room) => room.type !== 'DM');
+    const users = rooms.map((room) => room.users.map((user) => user.id));
+    const user_ids = users.reduce((prev, next) => {
+      return prev.concat(next);
+    }, []);
+    this.wsService.sendMsgToUsersList(user_ids, {
+      event: 'group: online',
+      data: { user_id: user.id },
+    });
   }
 
-  handleDisconnect(client: WebSocket) {
+  async handleDisconnect(client: WebSocket) {
     const user_id = this.wsService.getUserFromSocket(client);
     // remove entry from map
     if (this.wsService.setUserOffline(user_id)) {
       console.log(`user ${user_id} disconnected from Notifications wss.`);
       this.wsService.notifyStatusChangeToFriends(user_id, 'offline');
     }
+    const user = await this.usersService.findById(user_id);
+    const rooms = await (
+      await this.chatService.get_convs(user)
+    ).filter((room) => room.type !== 'DM');
+    const users_ids = rooms
+      .map((room) => room.users.map((user) => user.id))
+      .reduce((prev, next) => prev.concat(next), []);
+    this.wsService.sendMsgToUsersList(users_ids, {
+      event: 'group: offline',
+      data: { user_id: user.id },
+    });
   }
 
   @SubscribeMessage('isOnline')
   isOnline(client: WebSocket, data: { user_id: number; sender: number }) {
     const connectedUsers = this.wsService.getConnectedUsersIDs();
-    const status = connectedUsers.includes(data.user_id) ? 'online' : 'offline';
+    console.log('connected users: ', connectedUsers);
     this.wsService.sendMsgToUser(data.sender, {
       event: 'isOnline',
       data: connectedUsers,
@@ -76,8 +105,10 @@ export class WsGateway implements OnGatewayConnection, OnGatewayDisconnect {
   }
 
   @SubscribeMessage('isInGame')
-  isInGame(client: WebSocket, data: { user_id: number; sender: number }) {
+  async isInGame(client: WebSocket, data: { user_id: number; sender: number }) {
     const inGame = Array.from(playing);
+    const user = await this.usersService.findById(data.sender);
+    console.log(`${user.display_name}: In game users: `, inGame);
     this.wsService.sendMsgToUser(data.sender, {
       event: 'isInGame',
       data: { inGame: inGame },

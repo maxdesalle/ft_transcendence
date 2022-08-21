@@ -3,7 +3,7 @@ import { render } from 'solid-js/web';
 import { Router } from 'solid-app-router';
 import './index.css';
 import App from './App';
-import { StoreProvider } from './store/index';
+import { StoreProvider } from './store/all';
 import { TurboContext } from 'turbo-solid';
 import { api } from './utils/api';
 import { AuthProvider } from './Providers/AuthProvider';

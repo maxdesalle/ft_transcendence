@@ -20,7 +20,7 @@ export const AuthProvider = (props: any) => {
       login42: '',
       isTwoFactorAuthenticationEnabled: false,
     },
-    token: Cookies.get('jwt_token'),
+    token: undefined,
     isAuth: false,
   });
 

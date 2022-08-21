@@ -10,7 +10,7 @@ import {
 } from 'solid-js';
 import { createTurboResource } from 'turbo-solid';
 import { routes } from '../api/utils';
-import { useStore } from '../store';
+import { useStore } from '../store/all';
 import { Friend, User } from '../types/user.interface';
 import AddFriend from './AddFriend';
 import FriendCard from './FriendCard';
@@ -18,12 +18,9 @@ import Search from './Search';
 
 const FriendList: Component = () => {
   const [keyword, setKeyword] = createSignal('');
-  const [state, { setFriendId, toggleShowMessages }] = useStore();
+  const [state, { setFriendId }] = useStore();
   const onLoadFriendMessages = (friend: Friend) => {
     setFriendId(friend.id);
-    if (!state.chatUi.showMessages) {
-      toggleShowMessages();
-    }
   };
   const [friends] = createTurboResource<Friend[]>(() => routes.friends);
   const filteredFriends = () =>
@@ -32,10 +29,6 @@ const FriendList: Component = () => {
     });
 
   let ref: any;
-
-  onMount(() => {
-    autoAnimate(ref);
-  });
 
   return (
     <div ref={ref} class="h-full">

@@ -7,12 +7,8 @@ import {
   deactivate2fa,
 } from '../api/user';
 import Modal from '../components/Modal';
-import { useStore } from '../store';
 import QRCode from 'qrcode';
 import { notifyError, notifySuccess } from '../utils/helpers';
-import { createTurboResource } from 'turbo-solid';
-import { routes } from '../api/utils';
-import { User } from '../types/user.interface';
 import { useAuth } from '../Providers/AuthProvider';
 
 const EditProfile: Component = () => {
@@ -21,15 +17,10 @@ const EditProfile: Component = () => {
   const [image, setImage] = createSignal<File | null>(null);
   const [pathUrl, setPathUrl] = createSignal('');
   const [auth, { setUser, setUserAvatarId }] = useAuth();
-  const [currentUser] = createTurboResource<User>(() => routes.currentUser);
-
-  createEffect(() => {
-    console.log('updated: ', auth.user);
-  });
 
   const onChangeName = () => {
     if (newName()) {
-      changeDisplayName(newName());
+      changeDisplayName(newName()).then((res) => setUser(res.data));
       setNewName('');
     }
   };
@@ -60,10 +51,10 @@ const EditProfile: Component = () => {
     formData.append('file', image()!, image()!.name);
     changeAvatar(formData)
       .then((res) => {
-        setUserAvatarId(res.data.avatarId);
+        setUserAvatarId(res.data);
         notifySuccess('Great success 🙂');
       })
-      .catch((e) => notifyError('error 😥'));
+      .catch(() => notifyError('error 😥'));
   };
 
   return (
@@ -98,8 +89,12 @@ const EditProfile: Component = () => {
           </Match>
         </Switch>
         <Modal isOpen={isOpen()} toggleModal={setIsOpen}>
-          <img src={pathUrl()} alt="qr code" />
-          <Link href="/login">Go back to login</Link>
+          <div class="flex flex-col">
+            <img src={pathUrl()} alt="qr code" />
+            <Link class="btn-primary w-full" href="/login">
+              Go back to login
+            </Link>
+          </div>
         </Modal>
       </div>
       <div class="flex flex-col w-fit p-2">

@@ -1,6 +1,6 @@
 import { HiSolidUserGroup } from 'solid-icons/hi';
 import { Component, For, Show } from 'solid-js';
-import { useStore } from '../store';
+import { useStore } from '../store/all';
 import { RoomInfo } from '../types/chat.interface';
 
 const RoomList: Component<{ room: RoomInfo[]; keyword: string }> = (props) => {
@@ -20,9 +20,6 @@ const RoomList: Component<{ room: RoomInfo[]; keyword: string }> = (props) => {
           <div
             onClick={() => {
               setCurrentRoomId(room.room_id);
-              if (!state.chatUi.showMessages) {
-                toggleShowMessages();
-              }
             }}
             class="flex p-2 items-center"
           >

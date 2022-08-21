@@ -23,7 +23,7 @@ export interface Message {
   message: string;
   timestamp: Date;
   room_id?: number;
-  chosen_name: string;
+  display_name: string;
 }
 
 export interface UserRole {
@@ -52,4 +52,7 @@ export type WsNotificationEvent =
   | 'ladder_change'
   | 'users: new_user'
   | 'isOnline'
-  | 'isInGame';
+  | 'isInGame'
+  | 'group: online'
+  | 'group: offline'
+  | 'first login';
