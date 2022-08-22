@@ -50,7 +50,7 @@ const ChatRightSideBar: Component<{}> = () => {
 
   return (
     <Show when={state.chat.roomId}>
-      <div class="text-white">
+      <div class="text-white h-full">
         <h4 class="p-2 text-start">Owner</h4>
         <Show when={owner()}>
           <div class="p-2 flex items-center">
@@ -104,7 +104,7 @@ const ChatRightSideBar: Component<{}> = () => {
                 height: '70vh',
               }}
             >
-              <h1>Admin</h1>
+              <h1 class="p-2">Admin</h1>
               <Show
                 when={currentRoom() && owner() && currentUser()}
                 fallback={<Loader />}
@@ -161,6 +161,9 @@ const ChatRightSideBar: Component<{}> = () => {
                 </For>
               </Show>
             </Scrollbars>
+            <div class="w-full p-1">
+              <button class="btn-secondary">Leave channel</button>
+            </div>
           </Match>
           <Match when={tab() == 1}>
             <RoomSettings refetch={refetch} />
