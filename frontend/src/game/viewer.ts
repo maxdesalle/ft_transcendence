@@ -1,10 +1,12 @@
 import { Slider } from './slider';
 import { p5 } from './newPong';
 
-const socketServerIP = 'localhost';
-const socketServerPort = 3000;
-const httpServerIP = 'localhost';
-const httpServerPort = 3000;
+import { urls } from '../api/utils';
+
+// const socketServerIP = 'localhost';
+// const socketServerPort = 3000;
+// const httpServerIP = 'localhost';
+// const httpServerPort = 3000;
 const socketServerPath = 'pong_viewer';
 let socketErrObject: any = undefined;
 let ws: any; // webSocket
@@ -66,7 +68,8 @@ let scoreSound: any = undefined;
 
 //connects to server
 export function initViewerSocket() {
-  const serverAddress = `ws://${socketServerIP}:${socketServerPort}/${socketServerPath}`;
+  // const serverAddress = `ws://${socketServerIP}:${socketServerPort}/${socketServerPath}`;
+  const serverAddress = `${urls.wsUrl}/${socketServerPath}`;
   ws = new WebSocket(serverAddress);
 
   ws.addEventListener('open', () => {

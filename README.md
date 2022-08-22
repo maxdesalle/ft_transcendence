@@ -5,10 +5,6 @@
 - remove CORS enable (if the setup allows so...)
 - HTTPS ?
 
-## Bugs... ?
-A major massive multi package upgrade was performed (26 july). And, of course, plenty of bugs had to be fixed. If you find a bug, that might be the reason... (and, of course, report it!)
-
-
 ## How to make stuff happen
 
 First you need a .env file inside **backend** directory, like this: (cannot put secret stuff in a public repo, sorry)
@@ -33,10 +29,21 @@ First you need a .env file inside **backend** directory, like this: (cannot put 
     FRONTEND_URL="http://127.0.01:8000"
 ```
 Then:
-OR: `./launch.sh` (have the **.env** file ready)
+
+### dev-mode: 2 servers (front a backend)
+`./launch.sh` (have the **.env** file ready)
 
 Frontend app should be available at `http://127.0.01:8000`
 
+### production mode: 1 server only, frontend app served as static files
+* Have the **.env** file ready
+* setup the first line of the script serve_static.sh accordingly (if you're using localhost or 127.0.0.1)
+* `./serve_static.sh` 
+
+
+App should be available at `http://127.0.01:3000`
+
+## Obs: do not mix localhost and 127.0.0.1
 -----------------------
 
 ### How to access the database:

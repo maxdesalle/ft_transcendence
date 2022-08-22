@@ -44,13 +44,19 @@ export class MockAuthController {
       id: user.id,
       login42: user.login42,
     });
-    res.cookie('jwt_token', jwtToken, { sameSite: 'none', secure: true });
+    if (this.configService.get('SERVE_STATIC'))
+      res.cookie('jwt_token', jwtToken, { sameSite: 'strict'});
+    else
+      res.cookie('jwt_token', jwtToken, { sameSite: 'none', secure: true });
     return user;
   }
 
   @Get('logout')
   logout(@Res({ passthrough: true }) res: Response) {
-    res.clearCookie('jwt_token', { sameSite: 'none', secure: true });
+    if (this.configService.get('SERVE_STATIC'))
+      res.clearCookie('jwt_token');
+    else
+      res.clearCookie('jwt_token', { sameSite: 'none', secure: true });
     return `Logged out`;
   }
 
