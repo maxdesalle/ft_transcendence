@@ -1,6 +1,6 @@
 import Cookies from 'js-cookie';
 import { useLocation, useNavigate } from 'solid-app-router';
-import { Component, createSignal, Show } from 'solid-js';
+import { Component, createEffect, createSignal, Show } from 'solid-js';
 import toast from 'solid-toast';
 import { loginFromMockApi } from '../api/mock';
 import { routes } from '../api/utils';

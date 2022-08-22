@@ -2,9 +2,7 @@ import {
   Component,
   createEffect,
   createResource,
-  createSignal,
   Match,
-  onMount,
   Show,
   Switch,
 } from 'solid-js';
@@ -12,9 +10,8 @@ import ChatSideBar from '../components/ChatSideBar';
 import ChatMessagesBox from '../components/ChatMessagesBox';
 import ChatRightSideBar from '../components/ChatRightSideBar';
 import 'simplebar';
-import { blockUser, chatApi } from '../api/chat';
+import { chatApi } from '../api/chat';
 import { TAB, useStore } from '../store/all';
-import toast from 'solid-toast';
 import { routes } from '../api/utils';
 import {
   Message,
@@ -22,13 +19,8 @@ import {
   WsNotificationEvent,
 } from '../types/chat.interface';
 import { api } from '../utils/api';
-import { createTurboResource } from 'turbo-solid';
-import { User } from '../types/user.interface';
-import Avatar from '../components/Avatar';
-import { generateImageUrl, notifyError } from '../utils/helpers';
+import { notifyError } from '../utils/helpers';
 import { AxiosError } from 'axios';
-import autoAnimate from '@formkit/auto-animate';
-import { Link } from 'solid-app-router';
 import ChatHome from '../components/ChatHome';
 import { useSockets } from '../Providers/SocketProvider';
 import FriendSideBar from '../components/FriendSideBar';

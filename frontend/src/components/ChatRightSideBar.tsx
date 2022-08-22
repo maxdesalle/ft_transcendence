@@ -101,7 +101,7 @@ const ChatRightSideBar: Component<{}> = () => {
             </div>
             <Scrollbars
               style={{
-                height: '80vh',
+                height: '70vh',
               }}
             >
               <h1>Admin</h1>
@@ -111,7 +111,10 @@ const ChatRightSideBar: Component<{}> = () => {
               >
                 <For
                   each={currentRoom()!.users.filter(
-                    (user) => user.id !== owner()!.id && user.role === 'admin',
+                    (user) =>
+                      user.id !== owner()!.id &&
+                      user.role === 'admin' &&
+                      state.onlineUsers.includes(user.id),
                   )}
                 >
                   {(user) => (
