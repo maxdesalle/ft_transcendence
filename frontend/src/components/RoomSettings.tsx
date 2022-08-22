@@ -3,7 +3,7 @@ import { Component, createResource, createSignal, For, Show } from 'solid-js';
 import { chatApi } from '../api/chat';
 import { routes } from '../api/utils';
 import { useAuth } from '../Providers/AuthProvider';
-import { TAB, useStore } from '../store';
+import { TAB, useStore } from '../store/all';
 import { RoomInfo } from '../types/chat.interface';
 import { api } from '../utils/api';
 import { notifyError, notifySuccess } from '../utils/helpers';
@@ -94,7 +94,7 @@ const RoomSettings: Component<{ refetch?: () => void }> = (props) => {
         <input
           value={password()}
           onInput={(e) => setPassword(e.currentTarget.value)}
-          class="p-1 rounded-sm bg-skin-header-background"
+          class="p-1 rounded-sm outline-none bg-skin-header-background"
           type="password"
           placeholder="Enter new password"
           name="update_pw"

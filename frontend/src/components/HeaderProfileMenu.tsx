@@ -7,35 +7,35 @@ import settingsLogo from '../assets/settings.png';
 import matchHistoryLogo from '../assets/pong.png';
 import logOutLogo from '../assets/log-out.png';
 import { Link, useNavigate } from 'solid-app-router';
-import { useStore } from '../store';
 import { routes, urls } from '../api/utils';
 import { createTurboResource, forget } from 'turbo-solid';
 import Cookies from 'js-cookie';
 import { useAuth } from '../Providers/AuthProvider';
+import { useSockets } from '../Providers/SocketProvider';
 
 const HeaderProfileMenu: Component<{ user: User }> = (props) => {
   const navigate = useNavigate();
-  const [_, { setToken }] = useAuth();
+  const [_, { setToken, setIsAuth }] = useAuth();
   const [currentUser] = createTurboResource<User>(() => routes.currentUser);
+  const [__, { disconnect }] = useSockets();
   const onLogout = () => {
     setToken(undefined);
     Cookies.remove('jwt_token', { sameSite: 'none', secure: true });
     forget();
+    disconnect();
+    setIsAuth(false);
     navigate('/login');
   };
 
-  const avatarId = () => props.user.avatarId;
-  createEffect(() => {
-    console.log('user: ', avatarId());
-  });
+  const [auth] = useAuth();
 
   return (
     <Show when={props.user}>
       <div class="flex flex-col items-center py-3">
         <Avatar
           imgUrl={
-            props.user.avatarId
-              ? `${urls.backendUrl}/database-files/${props.user.avatarId}`
+            auth.user.avatarId
+              ? `${urls.backendUrl}/database-files/${auth.user.avatarId}`
               : undefined
           }
         />

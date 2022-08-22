@@ -2,10 +2,20 @@
 module.exports = {
   content: ['./src/**/*.{js,jsx,ts,tsx}', './public/index.html'],
   theme: {
+    screens: {
+      xs: '480px',
+      sm: '640px',
+      md: '768px',
+      lg: '1024px',
+      xl: '1280px',
+      '2xl': '1536px',
+    },
     extend: {
       height: {
-        90: '94vh',
-        82: '89vh',
+        hh: '5vh',
+        mh: '8vh',
+        92: '92vh',
+        95: '95vh',
       },
       textColor: {
         skin: {

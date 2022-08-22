@@ -1,11 +1,16 @@
 import Scrollbars from 'solid-custom-scrollbars';
-import { Component, createEffect, For, Show } from 'solid-js';
+import { Component, createEffect, createResource, For, Show } from 'solid-js';
 import { createTurboResource } from 'turbo-solid';
 import { routes } from '../api/utils';
 import { LadderDto } from '../types/stats.interface';
+import { api } from '../utils/api';
 
 const LeaderBoard: Component = () => {
-  const [ladder] = createTurboResource<LadderDto[]>(() => routes.ladder);
+  // const [ladder] = createTurboResource<LadderDto[]>(() => routes.ladder);
+  const [ladder] = createResource(async () => {
+    const res = await api.get<LadderDto[]>(routes.ladder);
+    return res.data;
+  });
 
   return (
     <div class="flex flex-col">

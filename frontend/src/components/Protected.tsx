@@ -1,5 +1,5 @@
 import Cookies from 'js-cookie';
-import { Navigate, Outlet, useLocation, useNavigate } from 'solid-app-router';
+import { Outlet } from 'solid-app-router';
 import {
   Component,
   createEffect,
@@ -15,25 +15,23 @@ import { api } from '../utils/api';
 
 const Protected: Component<{ children: JSXElement }> = (props) => {
   const [state, { setUser, setToken, setIsAuth }] = useAuth();
-  const [data] = createResource(async () => {
-    try {
-      const res = await api.get<User>(routes.currentUser);
-      setIsAuth(true);
-      setUser(res.data);
-      setToken(Cookies.get('jwt_token'));
-      return res.data;
-    } catch (error) {
-      setIsAuth(false);
-    }
-  });
-  const navigate = useNavigate();
-  createEffect(() => {
-    if (!data.loading && state.isAuth) {
-      navigate('/');
-    }
-  });
+  const [data] = createResource(
+    () => Cookies.get('jwt_token'),
+    async () => {
+      try {
+        const res = await api.get<User>(routes.currentUser);
+        setIsAuth(true);
+        setUser(res.data);
+        setToken(Cookies.get('jwt_token'));
+        return res.data;
+      } catch (error) {
+        setIsAuth(false);
+      }
+    },
+  );
+
   return (
-    <Show when={state.isAuth} fallback={<Login />}>
+    <Show when={!data.loading && state.isAuth} fallback={<Login />}>
       {props.children}
       <Outlet />
     </Show>

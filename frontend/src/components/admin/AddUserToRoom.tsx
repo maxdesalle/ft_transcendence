@@ -3,7 +3,7 @@ import toast from 'solid-toast';
 import { createTurboResource } from 'turbo-solid';
 import { addUserToRoomByName } from '../../api/chat';
 import { routes } from '../../api/utils';
-import { useStore } from '../../store';
+import { useStore } from '../../store/all';
 import { RoomInfo } from '../../types/chat.interface';
 import { api } from '../../utils/api';
 

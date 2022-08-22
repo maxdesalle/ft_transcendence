@@ -5,14 +5,13 @@ import {
   createSignal,
   For,
   Match,
-  onMount,
   Show,
   Switch,
 } from 'solid-js';
 import { AiOutlinePlusCircle } from 'solid-icons/ai';
 import Modal from './Modal';
 import AddUserToRoom from './admin/AddUserToRoom';
-import { useStore } from '../store';
+import { useStore } from '../store/all';
 import Avatar from './Avatar';
 import ChatRoomUserCard from './ChatRoomUserCard';
 import { RoomUser, User } from '../types/user.interface';
@@ -22,6 +21,8 @@ import { routes } from '../api/utils';
 import { RoomInfo } from '../types/chat.interface';
 import { api } from '../utils/api';
 import RoomSettings from './RoomSettings';
+import Loader from './Loader';
+import { IoSettingsOutline } from 'solid-icons/io';
 
 const ChatRightSideBar: Component<{}> = () => {
   const [isOpen, setIsOpen] = createSignal(false);
@@ -48,10 +49,15 @@ const ChatRightSideBar: Component<{}> = () => {
   return (
     <Show when={state.chat.roomId}>
       <div class="text-white">
-        <h4 class="text-center p-2 bg-skin-menu-background">Owner</h4>
+        <h4 class="p-2 text-start">Owner</h4>
         <Show when={owner()}>
           <div class="p-2 flex items-center">
             <Avatar
+              color={
+                state.onlineUsers.includes(owner()!.id)
+                  ? 'bg-green-400'
+                  : 'bg-red-400'
+              }
               imgUrl={
                 owner()?.avatarId
                   ? `${generateImageUrl(owner()!.avatarId)}`
@@ -63,12 +69,12 @@ const ChatRightSideBar: Component<{}> = () => {
         </Show>
       </div>
       <div class="text-white">
-        <ul class="lg:flex bg-skin-menu-background">
-          <li onClick={() => setTab(0)} class="text-center p-2">
+        <ul class="flex">
+          <li onClick={() => setTab(0)} class="text-start p-2">
             Members
           </li>
-          <li onClick={() => setTab(1)} class="text-center p-2">
-            Settings
+          <li onClick={() => setTab(1)} class="text-start p-2">
+            <IoSettingsOutline size={24} color="#000000" />
           </li>
         </ul>
         <Switch>
@@ -89,8 +95,11 @@ const ChatRightSideBar: Component<{}> = () => {
                 </Modal>
               </Show>
             </div>
-            <div class="h-full flex flex-col items-center">
-              <Show when={currentRoom() && owner() && currentUser()}>
+            <div class="flex flex-col">
+              <Show
+                when={currentRoom() && owner() && currentUser()}
+                fallback={<Loader />}
+              >
                 <For
                   each={currentRoom()?.users.filter(
                     (user) => user.id !== owner()!.id,

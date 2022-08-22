@@ -82,8 +82,12 @@ export class UsersController {
   @UseInterceptors(FileInterceptor('file'))
   async addAvatar(@Usr() user, @UploadedFile() file: Express.Multer.File) {
     if (!file) throw new BadRequestException();
-    this.usersService.changeAvatar(user.id, file.buffer, file.originalname);
-    return user;
+    const id = this.usersService.changeAvatar(
+      user.id,
+      file.buffer,
+      file.originalname,
+    );
+    return id;
   }
 
   @Post('set_display_name')

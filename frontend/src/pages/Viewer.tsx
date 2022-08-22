@@ -36,7 +36,7 @@ const Viewer: Component = () => {
   });
 
   return (
-    <div class="flex flex-col items-center pt-3">
+    <div class="flex flex-col h-95 items-center pt-3">
       <canvas ref={setRef}></canvas>
     </div>
   );
