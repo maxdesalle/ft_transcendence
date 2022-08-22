@@ -50,13 +50,16 @@ export class AuthController {
       id: user.id,
       login42: user.login42,
     });
-    res.cookie('jwt_token', jwtToken, { sameSite: 'none', secure: true });
+    if (this.configService.get('SERVE_STATIC'))
+      res.cookie('jwt_token', jwtToken, { sameSite: 'strict'});
+    else
+      res.cookie('jwt_token', jwtToken, { sameSite: 'none', secure: true });
     if (user.isTwoFactorAuthenticationEnabled) {
       return res.redirect(
         `${this.configService.get<string>('FRONTEND_URL')}/2fa`,
       );
     }
-    return res.redirect(this.configService.get<string>('FRONTEND_URL'));
+    return res.redirect(this.configService.get<string>('FRONTEND_URL') + '/');
   }
 
   @Get('/settings/activate-2fa')
@@ -104,8 +107,16 @@ export class AuthController {
       validTwoFactorAuthentication: true,
     });
 
-    res.clearCookie('jwt_token', { sameSite: 'none', secure: true });
-    res.cookie('jwt_token', jwtToken, { sameSite: 'none', secure: true });
+    if (this.configService.get('SERVE_STATIC'))
+    {
+      res.clearCookie('jwt_token');
+      res.cookie('jwt_token', jwtToken, { sameSite: 'strict'});
+    }
+    else
+    {
+      res.clearCookie('jwt_token', { sameSite: 'none', secure: true });
+      res.cookie('jwt_token', jwtToken, { sameSite: 'none', secure: true });
+    }
     return { success: true };
   }
 

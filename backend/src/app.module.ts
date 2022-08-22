@@ -28,7 +28,7 @@ import { SummaryModule } from './summary/summary.module';
 		MockAuthModule,
 		FriendsModule,
 		ServeStaticModule.forRoot({
-			rootPath: join(__dirname, '..', 'client'),
+			rootPath: join(__dirname, '../../frontend', 'dist'),
 		}),
 		WsModule,
 		PongModule,
