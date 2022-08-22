@@ -4,9 +4,10 @@ import defaultAvatar from '../../../backend/images/avatardefault.png';
 const Avatar: Component<{
   imgUrl?: string;
   color?: string;
+  class?: string;
 }> = (props) => {
   return (
-    <div class="relative">
+    <div class={`${props.class} relative`}>
       <img
         style={{
           'min-height': '40px',

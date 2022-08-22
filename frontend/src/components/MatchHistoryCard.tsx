@@ -6,6 +6,7 @@ import { User } from '../types/user.interface';
 import { generateImageUrl } from '../utils/helpers';
 import defaultAvatar from '../../../backend/images/avatardefault.png';
 import { useParams } from 'solid-app-router';
+import ResultsCard from './ResultsCard';
 
 const MatchHistoryCard: Component<{ match: MatchDTO }> = (props) => {
   const [player1] = createTurboResource<User>(
@@ -29,36 +30,24 @@ const MatchHistoryCard: Component<{ match: MatchDTO }> = (props) => {
     <Show when={player1() && player2()}>
       <div
         classList={{
-          'bg-blue-700': currentUserWon(),
-          'bg-red-700': !currentUserWon(),
+          'bg-green-500': currentUserWon(),
+          'bg-red-500': !currentUserWon(),
         }}
-        class={`flex py-2 px-4 justify-between border-b text-white`}
+        class="grid border-b-2 border-b-gray-600 grid-cols-3 justify-between"
       >
-        <div class="flex flex-col items-center">
-          <img
-            class="w-12 h-12 rounded-full"
-            src={
-              player1()?.avatarId
-                ? generateImageUrl(player1()!.avatarId)
-                : defaultAvatar
-            }
-          />
-          <h1 class="capitalize">{props.match.p1.display_name}</h1>
-          <p class="text-center">{props.match.p1Score}</p>
-        </div>
-        <h1 class="mt-auto mb-auto">VS</h1>
-        <div class="flex flex-col items-center">
-          <img
-            class="w-12 h-12 rounded-full"
-            src={
-              player2()?.avatarId
-                ? generateImageUrl(player2()!.avatarId)
-                : defaultAvatar
-            }
-          />
-          <h1 class="capitalize">{props.match.p2.display_name}</h1>
-          <p class="text-center">{props.match.p2Score}</p>
-        </div>
+        <ResultsCard
+          position="before"
+          name={props.match.p1.display_name}
+          score={props.match.p1Score}
+          avatarId={player1()!.avatarId}
+        />
+        <h1 class="m-auto">VS</h1>
+        <ResultsCard
+          position="after"
+          name={props.match.p2.display_name}
+          score={props.match.p2Score}
+          avatarId={player2()!.avatarId}
+        />
       </div>
     </Show>
   );

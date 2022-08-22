@@ -30,6 +30,7 @@ export interface ActionsType {
   removeDisconnectedUser: (user_id: number) => void;
   setOnlineUsers: (ids: number[]) => void;
   setInGameUsers: (ids: number[]) => void;
+  resetStore: () => void;
 }
 
 export type Status = 'idle' | 'loading' | 'success' | 'failed';
@@ -79,7 +80,7 @@ export function StoreProvider(props: any) {
     roomMsg: Resource<Message[] | undefined>,
     friendMsg: Resource<Message[] | undefined>;
 
-  const [state, setState] = createStore<StoreState>({
+  const initialState: StoreState = {
     token: Cookies.get('jwt_token'),
     onlineUsers: [],
     inGameUsers: [],
@@ -109,7 +110,9 @@ export function StoreProvider(props: any) {
       pendingFriendReq: [],
       friendReqCount: 0,
     },
-  });
+  };
+
+  const [state, setState] = createStore<StoreState>(initialState);
 
   const actions: ActionsType = {
     changeTab(tab) {
@@ -167,6 +170,14 @@ export function StoreProvider(props: any) {
     },
     setInGameUsers(ids) {
       setState('inGameUsers', ids);
+    },
+    resetStore() {
+      setState(
+        produce((e) => {
+          e.chat.roomId = undefined;
+          e.chat.friendId = undefined;
+        }),
+      );
     },
   };
   const store: [StoreState, ActionsType] = [state, actions];

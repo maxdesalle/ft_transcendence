@@ -68,11 +68,11 @@ export const addUserToRoomByName = async (data: {
 };
 
 export const blockUser = async (data: { user_id: number }) => {
-  return await api.post(routes.blockUser, data);
+  return await api.post<number[]>(routes.blockUser, data);
 };
 
 const unblockUser = async (data: { user_id: number }) => {
-  return await api.post(routes.unblockUser, data);
+  return await api.post<number[]>(routes.unblockUser, data);
 };
 
 const banUser = async (data: {

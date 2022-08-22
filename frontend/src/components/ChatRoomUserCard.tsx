@@ -3,6 +3,7 @@ import {
   createEffect,
   createResource,
   createSignal,
+  onCleanup,
   onMount,
   Show,
 } from 'solid-js';
@@ -16,7 +17,7 @@ import { createTurboResource } from 'turbo-solid';
 import { routes } from '../api/utils';
 import { User } from '../types/user.interface';
 import toast from 'solid-toast';
-import { RoomInfo } from '../types/chat.interface';
+import { RoomInfo, WsNotificationEvent } from '../types/chat.interface';
 import { api } from '../utils/api';
 import { generateImageUrl, notifyError, notifySuccess } from '../utils/helpers';
 import { AxiosError } from 'axios';
@@ -172,6 +173,43 @@ const ChatRoomUserCard: Component<{
 
   onMount(() => {
     autoAnimate(ref);
+    if (sockets.notifWsState === WebSocket.OPEN) {
+      sockets.notificationWs!.addEventListener('message', (e) => {
+        let res: { event: WsNotificationEvent; data: any };
+        res = JSON.parse(e.data);
+        switch (res.event) {
+          case 'chat: banned':
+            props.refetch();
+            break;
+          case 'chat: demoted':
+            props.refetch();
+            break;
+          case 'chat: unbanned':
+            props.refetch();
+            break;
+          case 'chat: promoted':
+            props.refetch();
+            break;
+          case 'chat: muted':
+            props.refetch();
+            break;
+          case 'chat: unmuted':
+            props.refetch();
+            break;
+          case 'chat_new_user_in_group':
+            props.refetch();
+            break;
+          default:
+            break;
+        }
+      });
+    }
+  });
+
+  onCleanup(() => {
+    if (sockets.notifWsState === WebSocket.OPEN) {
+      sockets.notificationWs?.removeEventListener('message', () => {});
+    }
   });
 
   createEffect(() => {
@@ -186,11 +224,7 @@ const ChatRoomUserCard: Component<{
   return (
     <div ref={ref} class="w-full rounded-lg shadow-md">
       <div
-        class={
-          props.user.role === 'admin'
-            ? 'bg-pink-700 hover:bg-pink-900 flex items-center justify-between transition-all p-3'
-            : `flex items-center hover:bg-gray-900 justify-between transition-all px-1 py-2`
-        }
+        class={`flex items-center hover:bg-gray-900 justify-between transition-all px-1 py-2`}
       >
         <div
           classList={{ 'animate-pulse': isInGame() }}

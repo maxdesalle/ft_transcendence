@@ -12,22 +12,23 @@ import { createTurboResource, forget } from 'turbo-solid';
 import Cookies from 'js-cookie';
 import { useAuth } from '../Providers/AuthProvider';
 import { useSockets } from '../Providers/SocketProvider';
+import { useStore } from '../store/all';
 
 const HeaderProfileMenu: Component<{ user: User }> = (props) => {
   const navigate = useNavigate();
-  const [_, { setToken, setIsAuth }] = useAuth();
+  const [auth, { setToken, setIsAuth }] = useAuth();
   const [currentUser] = createTurboResource<User>(() => routes.currentUser);
   const [__, { disconnect }] = useSockets();
+  const [___, { resetStore }] = useStore();
   const onLogout = () => {
     setToken(undefined);
     Cookies.remove('jwt_token', { sameSite: 'none', secure: true });
     forget();
+    resetStore();
     disconnect();
     setIsAuth(false);
     navigate('/login');
   };
-
-  const [auth] = useAuth();
 
   return (
     <Show when={props.user}>

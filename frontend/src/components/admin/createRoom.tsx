@@ -1,7 +1,10 @@
 import { Component, createSignal } from 'solid-js';
 import { chatApi } from '../../api/chat';
+import { notifySuccess } from '../../utils/helpers';
 
-const CreateRoom: Component<{ refetch: () => void }> = (props) => {
+const CreateRoom: Component<{ refetch: () => void; class?: string }> = (
+  props,
+) => {
   const [roomName, setRoomName] = createSignal('');
   const [password, setPassword] = createSignal('');
   const [isPrivate, setIsPrivate] = createSignal(false);
@@ -14,20 +17,22 @@ const CreateRoom: Component<{ refetch: () => void }> = (props) => {
         private: isPrivate(),
         password: password(),
       })
-      .then((res) => {
+      .then(() => {
         props.refetch();
+        notifySuccess(`${roomName()} created`);
+        setRoomName('');
       });
-    setRoomName('');
   };
 
   return (
-    <div class="flex flex-col">
+    <div class={`flex flex-col ${props.class}`}>
       <div>
         <input
+          value={roomName()}
           onInput={(e) => setRoomName(e.currentTarget.value)}
           autocomplete="off"
           type="text"
-          class="bg-white px-4 py-2 rounded border-b focus:outline-none border-b-blue-800 focus:text-blue-600"
+          class="bg-white px-2 w-full py-1 rounded border-b focus:outline-none border-b-blue-800 focus:text-blue-600"
           name="room_name"
           id="room_name"
           placeholder="Enter name"
@@ -38,7 +43,7 @@ const CreateRoom: Component<{ refetch: () => void }> = (props) => {
           onInput={(e) => setPassword(e.currentTarget.value)}
           autocomplete="off"
           type="text"
-          class="bg-white px-4 py-2 rounded border-b focus:outline-none border-b-blue-800 focus:text-blue-600"
+          class="bg-white px-2 py-1 w-full rounded border-b focus:outline-none border-b-blue-800 focus:text-blue-600"
           name="room_password"
           id="room_password"
           placeholder="Enter password"

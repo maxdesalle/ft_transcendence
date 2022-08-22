@@ -1,5 +1,12 @@
 import { Link, useParams } from 'solid-app-router';
-import { Component, createEffect, createResource, For, Show } from 'solid-js';
+import {
+  Component,
+  createEffect,
+  createResource,
+  For,
+  onMount,
+  Show,
+} from 'solid-js';
 import { User } from '../types/user.interface';
 import defaultAvatar from '../../../backend/images/avatardefault.png';
 import { generateImageUrl, notifyError, notifySuccess } from '../utils/helpers';
@@ -9,13 +16,13 @@ import { MatchDTO } from '../types/stats.interface';
 import MatchHistoryCard from '../components/MatchHistoryCard';
 import { fetchUserById, sendFriendReq } from '../api/user';
 import { AxiosError } from 'axios';
-import { useStore } from '../store/all';
 import Scrollbars from 'solid-custom-scrollbars';
 import { useSockets } from '../Providers/SocketProvider';
 import { getPlayerStats } from '../api/stats';
+import { blockUser } from '../api/chat';
 
 const Profile: Component = () => {
-  const [{ pongWs }] = useSockets();
+  const [sockets] = useSockets();
   const params = useParams<{ id: string }>();
   const [matches] = createTurboResource<MatchDTO[]>(
     () => `${routes.matches}/${parseInt(params.id)}`,
@@ -40,7 +47,7 @@ const Profile: Component = () => {
   const onInviteUser = () => {
     if (!user()) return;
     const data = { event: 'invite', data: user()!.id };
-    pongWs!.send(JSON.stringify(data));
+    sockets.pongWs!.send(JSON.stringify(data));
   };
 
   return (
@@ -77,6 +84,9 @@ const Profile: Component = () => {
                   Invite to play
                 </button>
               </li>
+              <li>
+                <button class="btn-secondary w-full">Block</button>
+              </li>
             </Show>
             <Show
               when={currentUser() && currentUser().id === parseInt(params.id)}
@@ -96,22 +106,22 @@ const Profile: Component = () => {
           <h1 class="text-center font-bold text-2xl py-2 text-blue-600">
             Match History
           </h1>
-          <Show when={matches()}>
-            <Scrollbars
-              style={{
-                height: '89vh',
-                display: 'flex',
-                'flex-direction': 'column',
-                'justify-content': 'flex-end',
-                gap: '0.5rem',
-                width: '100%',
-              }}
-            >
+          <Scrollbars
+            style={{
+              height: '89vh',
+              display: 'flex',
+              'flex-direction': 'column',
+              'justify-content': 'flex-end',
+              gap: '0.5rem',
+              width: '100%',
+            }}
+          >
+            <Show when={matches()}>
               <For each={matches()}>
                 {(match) => <MatchHistoryCard match={match} />}
               </For>
-            </Scrollbars>
-          </Show>
+            </Show>
+          </Scrollbars>
         </div>
       </div>
     </Show>

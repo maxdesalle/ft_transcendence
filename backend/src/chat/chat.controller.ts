@@ -81,7 +81,13 @@ export class ChatController {
     @Body() _body: UserIdDto,
   ) {
     await this.chatService.block_user(me, blocked_id);
-    return this.chatService.listBlockedUsers(me.id);
+
+    const blocked = await this.chatService.listBlockedUsers(me.id);
+    this.wsService.sendMsgToUser(blocked_id, {
+      event: 'chat: blocked',
+      data: me.id,
+    });
+    return blocked;
   }
 
   @Post('unblock')
@@ -235,7 +241,12 @@ export class ChatController {
     @Body() _body: BanMuteDTO,
   ) {
     await this.chatService.ban_group_user(me, room_id, user_id, ban_minutes);
-    return this.chatService.roomInfo(room_id);
+    const room = await this.chatService.roomInfo(room_id);
+    const users_id = room.users.map((user) => user.id);
+    this.wsService.sendMsgToUsersList([...users_id, user_id], {
+      event: 'chat: banned',
+    });
+    return room;
   }
 
   @Post('unban_group_user')
@@ -247,7 +258,12 @@ export class ChatController {
     @Body() _body: RoomAndUserDto,
   ) {
     await this.chatService.unban_group_user(me, room_id, user_id);
-    return this.chatService.roomInfo(room_id);
+    const room = await this.chatService.roomInfo(room_id);
+    const users_id = room.users.map((user) => user.id);
+    this.wsService.sendMsgToUsersList([...users_id, user_id], {
+      event: 'chat: unbanned',
+    });
+    return room;
   }
 
   @Post('mute_group_user')
@@ -260,7 +276,12 @@ export class ChatController {
     @Body() _body: BanMuteDTO,
   ) {
     await this.chatService.mute_user(me, room_id, user_id, mute_minutes);
-    return this.chatService.roomInfo(room_id);
+    const room = await this.chatService.roomInfo(room_id);
+    const users_id = room.users.map((user) => user.id);
+    this.wsService.sendMsgToUsersList(users_id, {
+      event: 'chat: muted',
+    });
+    return room;
   }
 
   @Post('unmute_group_user')
@@ -272,7 +293,12 @@ export class ChatController {
     @Body() _body: RoomAndUserDto,
   ) {
     await this.chatService.unmute_user(me, room_id, user_id);
-    return this.chatService.roomInfo(room_id);
+    const room = await this.chatService.roomInfo(room_id);
+    const users_id = room.users.map((user) => user.id);
+    this.wsService.sendMsgToUsersList(users_id, {
+      event: 'chat: unmuted',
+    });
+    return room;
   }
 
   @Post('promote_group_user')
@@ -284,7 +310,13 @@ export class ChatController {
     @Body() _body: RoomAndUserDto,
   ) {
     await this.chatService.add_admin_group(me, room_id, user_id);
-    return this.chatService.roomInfo(room_id);
+    const room = await this.chatService.roomInfo(room_id);
+    const users_id = room.users.map((user) => user.id);
+    // send notification to all users in this room
+    this.wsService.sendMsgToUsersList(users_id, {
+      event: 'chat: promoted',
+    });
+    return room;
   }
 
   @Post('demote_group_user')
@@ -296,7 +328,13 @@ export class ChatController {
     @Body() _body: RoomAndUserDto,
   ) {
     await this.chatService.rm_admin_group(me, room_id, user_id);
-    return this.chatService.roomInfo(room_id);
+    const room = await this.chatService.roomInfo(room_id);
+    const users_id = room.users.map((user) => user.id);
+    // send notification to all users in this room
+    this.wsService.sendMsgToUsersList(users_id, {
+      event: 'chat: demoted',
+    });
+    return room;
   }
 
   // password: NULL or undefined to remove password

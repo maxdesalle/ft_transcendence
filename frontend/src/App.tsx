@@ -1,4 +1,10 @@
-import { Component, createEffect, createResource, onCleanup } from 'solid-js';
+import {
+  Component,
+  createEffect,
+  createResource,
+  onCleanup,
+  onMount,
+} from 'solid-js';
 import { Route, Routes, useNavigate } from 'solid-app-router';
 import Chat from './pages/Chat';
 import Pong from './pages/Pong';
@@ -64,6 +70,7 @@ const App: Component = () => {
         res = JSON.parse(e.data);
         switch (res.event) {
           case 'pong: invitation':
+            console.log(res);
             setFriendInvitation(res);
             break;
           case 'pong: invitation_accepted':
@@ -123,6 +130,10 @@ const App: Component = () => {
     if (pendingFriendReq()) {
       setPendigFriendReq(pendingFriendReq()!);
     }
+  });
+
+  onMount(() => {
+    // console.log = () => {};
   });
 
   createEffect(() => {

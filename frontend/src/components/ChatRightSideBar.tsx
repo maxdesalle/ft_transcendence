@@ -23,6 +23,7 @@ import { api } from '../utils/api';
 import RoomSettings from './RoomSettings';
 import Loader from './Loader';
 import { IoSettingsOutline } from 'solid-icons/io';
+import Scrollbars from 'solid-custom-scrollbars';
 
 const ChatRightSideBar: Component<{}> = () => {
   const [isOpen, setIsOpen] = createSignal(false);
@@ -40,6 +41,7 @@ const ChatRightSideBar: Component<{}> = () => {
   );
   const currentUserRole = () =>
     currentRoom()?.users.find((user) => user.id === currentUser()?.id)?.role;
+
   createEffect(() => {
     setOwner(currentRoom()?.users.find((user) => user.role === 'owner'));
   });
@@ -73,9 +75,11 @@ const ChatRightSideBar: Component<{}> = () => {
           <li onClick={() => setTab(0)} class="text-start p-2">
             Members
           </li>
-          <li onClick={() => setTab(1)} class="text-start p-2">
-            <IoSettingsOutline size={24} color="#000000" />
-          </li>
+          <Show when={currentUserRole() !== 'participant'}>
+            <li onClick={() => setTab(1)} class="text-start p-2">
+              <IoSettingsOutline size={24} color="#000000" />
+            </li>
+          </Show>
         </ul>
         <Switch>
           <Match when={tab() == 0}>
@@ -95,14 +99,56 @@ const ChatRightSideBar: Component<{}> = () => {
                 </Modal>
               </Show>
             </div>
-            <div class="flex flex-col">
+            <Scrollbars
+              style={{
+                height: '70vh',
+              }}
+            >
+              <h1>Admin</h1>
               <Show
                 when={currentRoom() && owner() && currentUser()}
                 fallback={<Loader />}
               >
                 <For
-                  each={currentRoom()?.users.filter(
-                    (user) => user.id !== owner()!.id,
+                  each={currentRoom()!.users.filter(
+                    (user) =>
+                      user.id !== owner()!.id &&
+                      user.role === 'admin' &&
+                      state.onlineUsers.includes(user.id),
+                  )}
+                >
+                  {(user) => (
+                    <ChatRoomUserCard
+                      refetch={refetch}
+                      user={user}
+                      ownerId={owner()!.id}
+                    />
+                  )}
+                </For>
+                <h1 class="p-2">online</h1>
+                <For
+                  each={currentRoom()!.users.filter(
+                    (user) =>
+                      user.id !== owner()!.id &&
+                      user.role === 'participant' &&
+                      state.onlineUsers.includes(user.id),
+                  )}
+                >
+                  {(user) => (
+                    <ChatRoomUserCard
+                      refetch={refetch}
+                      user={user}
+                      ownerId={owner()!.id}
+                    />
+                  )}
+                </For>
+                <h1 class="p-2">offline</h1>
+                <For
+                  each={currentRoom()!.users.filter(
+                    (user) =>
+                      user.id !== owner()!.id &&
+                      user.role === 'participant' &&
+                      !state.onlineUsers.includes(user.id),
                   )}
                 >
                   {(user) => (
@@ -114,7 +160,7 @@ const ChatRightSideBar: Component<{}> = () => {
                   )}
                 </For>
               </Show>
-            </div>
+            </Scrollbars>
           </Match>
           <Match when={tab() == 1}>
             <RoomSettings refetch={refetch} />

@@ -34,6 +34,9 @@ export class UsersService {
         event: 'users: new_user',
         user_id: new_user.id,
       });
+      const user_first: any = user;
+      user_first.first_login = true;
+      return user_first;
     }
     return user;
   }

@@ -55,4 +55,11 @@ export type WsNotificationEvent =
   | 'isInGame'
   | 'group: online'
   | 'group: offline'
-  | 'first login';
+  | 'first login'
+  | 'chat: blocked'
+  | 'chat: promoted'
+  | 'chat: demoted'
+  | 'chat: muted'
+  | 'chat: unmuted'
+  | 'chat: banned'
+  | 'chat: unbanned';
