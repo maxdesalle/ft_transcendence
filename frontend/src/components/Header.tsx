@@ -17,19 +17,16 @@ import autoAnimate from '@formkit/auto-animate';
 import { IoNotificationsSharp } from 'solid-icons/io';
 import PendingFriendReqCard from './PendingFriendReqCard';
 import { AxiosError } from 'axios';
-import { useSockets } from '../Providers/SocketProvider';
 import { useAuth } from '../Providers/AuthProvider';
 import { IoChatbubblesSharp } from 'solid-icons/io';
 const LINKS = ['chat', 'leaderboard'];
 
 const Header: Component = () => {
   const [keyword, setKeyword] = createSignal<string>('');
-  const [state, { setFriendInvitation }] = useStore();
+  const [state] = useStore();
   const [users] = createTurboResource<User[]>(() => routes.users);
   const [currentUser] = createTurboResource<User>(() => routes.currentUser);
-  const [sockets] = useSockets();
-  const [auth, { setUser }] = useAuth();
-  const navigate = useNavigate();
+  const [auth] = useAuth();
   const notifySuccess = (msg: string) => toast.success(msg);
   const notifyError = (msg: string) => toast.error(msg);
   const [isOpen, setIsOpen] = createSignal(false);
@@ -80,7 +77,7 @@ const Header: Component = () => {
             >
               <IoNotificationsSharp color="#11ad" />
               <span class="text-sm">
-                {state.currentUser.pendingFriendReq.length
+                {!state.currentUser.pendingFriendReq.length
                   ? state.currentUser.pendingFriendReq.length
                   : `${state.currentUser.pendingFriendReq.length}+`}
               </span>

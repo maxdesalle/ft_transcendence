@@ -1,5 +1,5 @@
-import { Link } from 'solid-app-router';
-import { Component, createEffect, createSignal, Match, Switch } from 'solid-js';
+import { Link, useNavigate } from 'solid-app-router';
+import { Component, createSignal, Match, Switch } from 'solid-js';
 import {
   activate2fa,
   changeAvatar,
@@ -10,13 +10,15 @@ import Modal from '../components/Modal';
 import QRCode from 'qrcode';
 import { notifyError, notifySuccess } from '../utils/helpers';
 import { useAuth } from '../Providers/AuthProvider';
+import { useStore } from '../store/all';
 
 const EditProfile: Component = () => {
   const [newName, setNewName] = createSignal('');
   const [isOpen, setIsOpen] = createSignal(false);
   const [image, setImage] = createSignal<File | null>(null);
   const [pathUrl, setPathUrl] = createSignal('');
-  const [auth, { setUser, setUserAvatarId }] = useAuth();
+  const [auth, { setUser, setUserAvatarId, setToken, setIsAuth }] = useAuth();
+  const [_, { resetStore }] = useStore();
 
   const onChangeName = () => {
     if (newName()) {
@@ -57,6 +59,12 @@ const EditProfile: Component = () => {
       .catch(() => notifyError('error 😥'));
   };
 
+  const onNavigate = () => {
+    resetStore();
+    setToken(undefined);
+    setIsAuth(false);
+  };
+
   return (
     <div class="pt-5 text-white flex">
       <div class="p-2">
@@ -91,9 +99,9 @@ const EditProfile: Component = () => {
         <Modal isOpen={isOpen()} toggleModal={setIsOpen}>
           <div class="flex flex-col">
             <img src={pathUrl()} alt="qr code" />
-            <Link class="btn-primary w-full" href="/login">
+            <button class="btn-primary w-full" onClick={onNavigate}>
               Go back to login
-            </Link>
+            </button>
           </div>
         </Modal>
       </div>

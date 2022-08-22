@@ -186,11 +186,7 @@ const ChatRoomUserCard: Component<{
   return (
     <div ref={ref} class="w-full rounded-lg shadow-md">
       <div
-        class={
-          props.user.role === 'admin'
-            ? 'bg-pink-700 hover:bg-pink-900 flex items-center justify-between transition-all p-3'
-            : `flex items-center hover:bg-gray-900 justify-between transition-all px-1 py-2`
-        }
+        class={`flex items-center hover:bg-gray-900 justify-between transition-all px-1 py-2`}
       >
         <div
           classList={{ 'animate-pulse': isInGame() }}

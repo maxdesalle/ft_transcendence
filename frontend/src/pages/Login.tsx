@@ -1,6 +1,6 @@
 import Cookies from 'js-cookie';
-import { useNavigate } from 'solid-app-router';
-import { Component, createEffect, createSignal, Show } from 'solid-js';
+import { useLocation, useNavigate } from 'solid-app-router';
+import { Component, createSignal, Show } from 'solid-js';
 import toast from 'solid-toast';
 import { loginFromMockApi } from '../api/mock';
 import { routes } from '../api/utils';
@@ -15,6 +15,7 @@ const Login: Component = () => {
   const [auth, { setToken: setAuthToken, setIsAuth, setUser }] = useAuth();
   const notify = (msg: string) => toast.error(msg);
   const [loading, setLoading] = createSignal(false);
+  const location = useLocation();
 
   const onLogin = () => {
     if (!username().length) return;
@@ -27,11 +28,11 @@ const Login: Component = () => {
           setAuthToken(token);
           if (!res.data.isTwoFactorAuthenticationEnabled) {
             setIsAuth(true);
-            navigate('/', { replace: true });
+            navigate(location.state?.from || '/', { replace: true });
           } else {
-            navigate('/2fa');
             setUser(res.data);
             setLoading(false);
+            navigate('/2fa');
           }
         }
       })

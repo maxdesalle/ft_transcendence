@@ -105,10 +105,8 @@ export class WsGateway implements OnGatewayConnection, OnGatewayDisconnect {
   }
 
   @SubscribeMessage('isInGame')
-  async isInGame(client: WebSocket, data: { user_id: number; sender: number }) {
+  isInGame(client: WebSocket, data: { user_id: number; sender: number }) {
     const inGame = Array.from(playing);
-    const user = await this.usersService.findById(data.sender);
-    console.log(`${user.display_name}: In game users: `, inGame);
     this.wsService.sendMsgToUser(data.sender, {
       event: 'isInGame',
       data: { inGame: inGame },

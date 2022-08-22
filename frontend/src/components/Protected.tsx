@@ -1,5 +1,5 @@
 import Cookies from 'js-cookie';
-import { Outlet } from 'solid-app-router';
+import { Outlet, useLocation, useNavigate } from 'solid-app-router';
 import {
   Component,
   createEffect,
@@ -8,10 +8,10 @@ import {
   Show,
 } from 'solid-js';
 import { routes } from '../api/utils';
-import Login from '../pages/Login';
 import { useAuth } from '../Providers/AuthProvider';
 import { User } from '../types/user.interface';
 import { api } from '../utils/api';
+import Loader from './Loader';
 
 const Protected: Component<{ children: JSXElement }> = (props) => {
   const [state, { setUser, setToken, setIsAuth }] = useAuth();
@@ -30,8 +30,16 @@ const Protected: Component<{ children: JSXElement }> = (props) => {
     },
   );
 
+  const navigate = useNavigate();
+  const location = useLocation();
+  createEffect(() => {
+    if (!data.loading && !state.isAuth) {
+      navigate('/login', { replace: true, state: { from: location.pathname } });
+    }
+  });
+
   return (
-    <Show when={!data.loading && state.isAuth} fallback={<Login />}>
+    <Show when={!data.loading && state.isAuth} fallback={<Loader />}>
       {props.children}
       <Outlet />
     </Show>

@@ -1,13 +1,9 @@
 import { AxiosError } from 'axios';
 import { useNavigate } from 'solid-app-router';
-import { Component, createEffect, For, onMount, Show } from 'solid-js';
-import { createTurboResource } from 'turbo-solid';
+import { Component, For, onMount, Show } from 'solid-js';
 import { acceptFriendReq, rejectFriendReq } from '../api/user';
-import { routes } from '../api/utils';
 import { useSockets } from '../Providers/SocketProvider';
 import { useStore } from '../store/all';
-import { WsNotificationEvent } from '../types/chat.interface';
-import { User } from '../types/user.interface';
 import { notifyError, notifySuccess } from '../utils/helpers';
 
 const PendingFriendReqCard: Component = () => {
@@ -54,7 +50,9 @@ const PendingFriendReqCard: Component = () => {
 
   return (
     <Show
-      when={state.currentUser.pendingFriendReq.length}
+      when={
+        state.currentUser.pendingFriendReq.length || state.pong.friendInvitation
+      }
       fallback={
         <p class="bg-gray-700 p-3 border-1 text-white shadow-md border-red-600">
           No friend requests 🥲
@@ -85,13 +83,9 @@ const PendingFriendReqCard: Component = () => {
             </div>
           )}
         </For>
-        <Show when={state.pong.friendInvitation}>
-          <li>
-            <button onClick={onAcceptInvite} class="btn-primary">
-              Accept
-            </button>
-          </li>
-        </Show>
+        <button onClick={onAcceptInvite} class="btn-primary">
+          Accept
+        </button>
       </div>
     </Show>
   );

@@ -4,18 +4,18 @@
 - [x] 📃 block: anyone
 - [x] 🎉 user status on the chat
 - [x] 📃 make edit profile reactive
-- [-] 🎉 better login flow
+- [x] 🎉 better login flow
+
+- [-] 📃 player stats on the profile page
 
 
 - [ ] 🎉 block users on the profile page
-- [ ] 📃 user status on the profile page
 - [ ] 📃 watch friend game from chat interface
 - [ ] 📃 mini tutorial on how to play the game
-- [ ] 📃 player stats on the profile page
-
+- [ ] 🎉 refetch data when a user is blocked or unblocked
 
 (#1) App:
-- [ ] 🎉 Clear app state
+- [x] 🎉 Clear app state
 ----
 
 (#2) pong:
