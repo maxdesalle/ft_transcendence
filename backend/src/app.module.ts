@@ -21,7 +21,7 @@ import { SummaryModule } from './summary/summary.module';
 		AuthModule, 
 		UsersModule, 
 		DatabaseFilesModule, 
-		HtmlModule,
+		// HtmlModule,
 		ConfigModule.forRoot({isGlobal: true}),
 		TypeOrmModule.forRootAsync(typeormConfig),
 		ChatModule,
