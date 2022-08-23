@@ -9,8 +9,8 @@ import { readFileSync } from 'node:fs';
 async function bootstrap() {
   // HTTPS
   const httpsOptions = {
-    key: readFileSync('/home/rodolpho/ft_transcendence/secrets/key.pem'),
-    cert: readFileSync('/home/rodolpho/ft_transcendence/secrets/cert.pem'),
+    key: readFileSync('../secrets/key.pem'),
+    cert: readFileSync('../secrets/cert.pem'),
   };
   const app = await NestFactory.create(AppModule, {httpsOptions});
 

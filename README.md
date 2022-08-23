@@ -3,31 +3,13 @@
 - remove mock auth module
 - typeORM config: no 'synchronize' in production!
 - remove CORS enable (if the setup allows so...)
-- HTTPS ?
 
 ## How to make stuff happen
 
-First you need a .env file inside **backend** directory, like this: (cannot put secret stuff in a public repo, sorry)
-```
-    # auth
-    FORTYTWO_CLIENT_ID=<you gotta provide the right one>  
-    FORTYTWO_CLIENT_SECRET=<you gotta provide the right one>  
-    FORTYTWO_CALLBACK_URL="http://127.0.0.1:3000/login/42/return"  
-    JWT_TOKEN_SECRET=<whatever you wish>  
-    JWT_TOKEN_EXPIRY=<some time, like "3600s"> 
+* .env file inside the **backend** directory
+* cert.pem and key.pem inside a **secrets** directory (which should be located at the repo's root)
 
-    # database
-    DB_PASSWORD=<whatever you wish, but DON'T USE QUOTES around it>
-    DB_HOST=127.0.0.1
-    DB_PORT=5432
 
-    # avatar photo
-    AVATAR_DEFAULT_FILE="images/avatardefault.png"
-    AVATAR_MAX_SIZE=1000000
-    
-    # frontend url
-    FRONTEND_URL="http://127.0.01:8000"
-```
 Then:
 
 ### dev-mode: 2 servers (front a backend)
