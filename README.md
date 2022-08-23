@@ -2,28 +2,20 @@
 - no more need to serve "client" dir (backend)
 - remove mock auth module
 - typeORM config: no 'synchronize' in production!
-- remove CORS enable (if the setup allows so...)
+- remove CORS enable (serve static = 1 server only)
 
 ## How to make stuff happen
 
 * .env file inside the **backend** directory
 * cert.pem and key.pem inside a **secrets** directory (which should be located at the repo's root)
 
+For now, only working when serving frontend as static files.
 
-Then:
-
-### dev-mode: 2 servers (front a backend)
-`./launch.sh` (have the **.env** file ready)
-
-Frontend app should be available at `http://127.0.01:8000`
-
-### production mode: 1 server only, frontend app served as static files
-* Have the **.env** file ready
-* setup the first line of the script serve_static.sh accordingly (if you're using localhost or 127.0.0.1)
-* `./serve_static.sh` 
+`./serve_static.sh` 
 
 
-App should be available at `http://127.0.01:3000`
+App should be available at `httsp://127.0.01:3000` (mind the S in httpS !)
+
 
 ## Obs: do not mix localhost and 127.0.0.1
 -----------------------
