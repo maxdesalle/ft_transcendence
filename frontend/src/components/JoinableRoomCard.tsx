@@ -1,9 +1,7 @@
 import { AxiosError } from 'axios';
 import { HiSolidUserGroup } from 'solid-icons/hi';
 import { Component, createSignal } from 'solid-js';
-import { mutate } from 'turbo-solid';
 import { chatApi } from '../api/chat';
-import { routes } from '../api/utils';
 import { RoomInfo } from '../types/chat.interface';
 import { notifyError, notifySuccess } from '../utils/helpers';
 import Modal from './Modal';

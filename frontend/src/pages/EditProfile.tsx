@@ -1,4 +1,3 @@
-import { Link, useNavigate } from 'solid-app-router';
 import { Component, createSignal, Match, Switch } from 'solid-js';
 import {
   activate2fa,
@@ -11,6 +10,7 @@ import QRCode from 'qrcode';
 import { notifyError, notifySuccess } from '../utils/helpers';
 import { useAuth } from '../Providers/AuthProvider';
 import { useStore } from '../store/all';
+import { useSockets } from '../Providers/SocketProvider';
 
 const EditProfile: Component = () => {
   const [newName, setNewName] = createSignal('');
@@ -19,6 +19,7 @@ const EditProfile: Component = () => {
   const [pathUrl, setPathUrl] = createSignal('');
   const [auth, { setUser, setUserAvatarId, setToken, setIsAuth }] = useAuth();
   const [_, { resetStore }] = useStore();
+  const [sockes, { disconnect }] = useSockets();
 
   const onChangeName = () => {
     if (newName()) {
@@ -63,6 +64,7 @@ const EditProfile: Component = () => {
     resetStore();
     setToken(undefined);
     setIsAuth(false);
+    disconnect();
   };
 
   return (
@@ -96,10 +98,11 @@ const EditProfile: Component = () => {
             </button>
           </Match>
         </Switch>
-        <Modal isOpen={isOpen()} toggleModal={setIsOpen}>
-          <div class="flex flex-col">
+        <Modal class="bg-purple-300 opacity-30 z-30" isOpen={isOpen()}>
+          <div class="flex bg-skin-page gap-2 flex-col opacity-100 p-2 border border-header-menu">
+            <h1 class="text-xl p-2">Please scan the QR code</h1>
             <img src={pathUrl()} alt="qr code" />
-            <button class="btn-primary w-full" onClick={onNavigate}>
+            <button class="btn-primary w-full px-2 py-4" onClick={onNavigate}>
               Go back to login
             </button>
           </div>

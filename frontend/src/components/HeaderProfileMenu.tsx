@@ -17,7 +17,6 @@ import { useStore } from '../store/all';
 const HeaderProfileMenu: Component<{ user: User }> = (props) => {
   const navigate = useNavigate();
   const [auth, { setToken, setIsAuth }] = useAuth();
-  const [currentUser] = createTurboResource<User>(() => routes.currentUser);
   const [__, { disconnect }] = useSockets();
   const [___, { resetStore }] = useStore();
   const onLogout = () => {
