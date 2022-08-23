@@ -8,7 +8,7 @@ ROOT_DIR=$(pwd)
 # execute if --stop argument provided
 kill_all() {
 	cd $ROOT_DIR/backend
-    docker-compose down
+    docker-compose --env-file ../.env down
 	cd $ROOT_DIR
     [[ -f $PID_FILE_NAME ]] || return 0
     grep FRONTEND_PID $ROOT_DIR/$PID_FILE_NAME | awk '{print $2}' | xargs kill
@@ -30,8 +30,8 @@ kill_subprocesses() {
 trap kill_subprocesses SIGINT
 
 check_env() {
-    if [ ! -f "$ROOT_DIR/backend/.env" ]; then
-        echo 'Error: Missing backend/.env' 1>&2
+    if [ ! -f "$ROOT_DIR/.env" ]; then
+        echo 'Error: .env' 1>&2
         kill_subprocesses
         exit 1
     fi
@@ -40,7 +40,6 @@ check_env() {
 build_backend () {
     cd $ROOT_DIR/backend
     npm install
-    # npm run prebuild # To avoid the "Cannot find stats.service module' error.
 }
 
 build_frontend () {
@@ -55,7 +54,7 @@ exec_backend () {
     cd $ROOT_DIR/backend
     npm install
     # Execute docker db if no argument passed
-    [[ $1 = '--no-db' ]] || docker-compose up -d
+    [[ $1 = '--no-db' ]] || docker-compose --env-file ../.env up -d
     npm run start:dev & BACKEND_PID=$!
     echo BACKEND_PID $BACKEND_PID >> $ROOT_DIR/$PID_FILE_NAME
     wait $BACKEND_PID

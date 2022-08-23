@@ -1,4 +1,4 @@
-# export VITE_HOST=127.0.0.1
+export VITE_HOST=127.0.0.1
 
 # display warning
 printf "\033[31;1m"
@@ -12,8 +12,8 @@ cd frontend && npm run build && cd .. # comment out this line to skip build
 
 # restart DB with a fresh one
 cd backend
-docker-compose down
-docker-compose up -d
+docker-compose --env-file ../.env down
+docker-compose --env-file ../.env  up -d
 
 # set env vars
 export FRONTEND_URL="" # overwriting this variable 
