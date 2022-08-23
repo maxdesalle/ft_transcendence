@@ -1,4 +1,4 @@
-import { Link, useNavigate } from 'solid-app-router';
+import { Link } from 'solid-app-router';
 import { Component, createSignal, For, onMount, Show } from 'solid-js';
 import logo from '../assets/logo.png';
 import { BiSearchAlt2 } from 'solid-icons/bi';
@@ -14,11 +14,11 @@ import { User } from '../types/user.interface';
 import { api } from '../utils/api';
 import toast from 'solid-toast';
 import autoAnimate from '@formkit/auto-animate';
-import { IoNotificationsSharp } from 'solid-icons/io';
-import PendingFriendReqCard from './PendingFriendReqCard';
 import { AxiosError } from 'axios';
 import { useAuth } from '../Providers/AuthProvider';
 import { IoChatbubblesSharp } from 'solid-icons/io';
+import GameInviteNotif from './GameInviteNotif';
+import FriendRequests from './FriendRequest';
 const LINKS = ['chat', 'leaderboard'];
 
 const Header: Component = () => {
@@ -32,7 +32,6 @@ const Header: Component = () => {
   const [isOpen, setIsOpen] = createSignal(false);
   const [isNotifOpen, setIsNotifOpen] = createSignal(false);
   let ref: any;
-  let notifRef: any;
 
   const onSendFriendReq = (userId: number, userName: string) => {
     api
@@ -47,7 +46,6 @@ const Header: Component = () => {
 
   onMount(() => {
     autoAnimate(ref);
-    autoAnimate(notifRef);
   });
 
   return (
@@ -67,25 +65,8 @@ const Header: Component = () => {
               autocomplete="off"
             />
           </span>
-          <div
-            class="items-center justify-center px-2 py-1 text-xs leading-none text-red-100 bg-blue-600 rounded-full"
-            ref={notifRef}
-          >
-            <button
-              class="flex items-center text-black"
-              onClick={() => setIsNotifOpen(!isNotifOpen())}
-            >
-              <IoNotificationsSharp color="#11ad" />
-              <span class="text-sm">
-                {!state.currentUser.pendingFriendReq.length
-                  ? state.currentUser.pendingFriendReq.length
-                  : `${state.currentUser.pendingFriendReq.length}+`}
-              </span>
-            </button>
-            <Modal isOpen={isNotifOpen()} toggleModal={setIsNotifOpen}>
-              <PendingFriendReqCard />
-            </Modal>
-          </div>
+          <FriendRequests />
+          <GameInviteNotif />
         </div>
         <div class="flex">
           <ul class="p-1 lg:flex md:flex hidden w-64 items-center gap-5">

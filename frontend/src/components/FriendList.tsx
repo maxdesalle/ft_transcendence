@@ -1,13 +1,4 @@
-import autoAnimate from '@formkit/auto-animate';
-import Scrollbars from 'solid-custom-scrollbars';
-import {
-  Component,
-  createEffect,
-  createSignal,
-  For,
-  onMount,
-  Show,
-} from 'solid-js';
+import { Component, createSignal, For, Show } from 'solid-js';
 import { createTurboResource } from 'turbo-solid';
 import { routes } from '../api/utils';
 import { useStore } from '../store/all';

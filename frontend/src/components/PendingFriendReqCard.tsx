@@ -1,18 +1,25 @@
 import { AxiosError } from 'axios';
 import { useNavigate } from 'solid-app-router';
 import { Component, For, onMount, Show } from 'solid-js';
+import { createTurboResource } from 'turbo-solid';
 import { acceptFriendReq, rejectFriendReq } from '../api/user';
+import { routes } from '../api/utils';
 import { useSockets } from '../Providers/SocketProvider';
 import { useStore } from '../store/all';
+import { Friend } from '../types/user.interface';
 import { notifyError, notifySuccess } from '../utils/helpers';
 
 const PendingFriendReqCard: Component = () => {
   const [sockets] = useSockets();
   const [state, { setPendigFriendReq, setFriendInvitation }] = useStore();
+  const [friends, { refetch }] = createTurboResource<Friend[]>(
+    () => routes.friends,
+  );
   const navigate = useNavigate();
   const onAcceptFriendReq = (id: number) => {
     acceptFriendReq(id)
       .then(() => {
+        refetch();
         notifySuccess('success');
         setPendigFriendReq(
           state.currentUser.pendingFriendReq.filter(
@@ -50,9 +57,7 @@ const PendingFriendReqCard: Component = () => {
 
   return (
     <Show
-      when={
-        state.currentUser.pendingFriendReq.length || state.pong.friendInvitation
-      }
+      when={state.currentUser.pendingFriendReq.length}
       fallback={
         <p class="bg-gray-700 p-3 border-1 text-white shadow-md border-red-600">
           No friend requests 🥲
@@ -83,9 +88,6 @@ const PendingFriendReqCard: Component = () => {
             </div>
           )}
         </For>
-        <button onClick={onAcceptInvite} class="btn-primary">
-          Accept
-        </button>
       </div>
     </Show>
   );

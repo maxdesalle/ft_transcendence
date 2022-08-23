@@ -74,6 +74,7 @@ const App: Component = () => {
             setFriendInvitation(res);
             break;
           case 'pong: invitation_accepted':
+            console.log(res);
             navigate('/pong');
             break;
           case 'isOnline':
