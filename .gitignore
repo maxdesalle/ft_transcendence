@@ -41,6 +41,8 @@ lerna-debug.log*
 !.vscode/extensions.json
 
 .env
-**/.notenv
+**/.env*
+secrets
+
 # Rodolpho added this (temp stuff):
 TODO

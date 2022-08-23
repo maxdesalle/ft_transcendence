@@ -126,6 +126,15 @@ export class ChatController {
     @Body() _room: RoomAndPasswordDto,
   ) {
     await this.chatService.join_public_group(me, room_id, password);
+    // notify all users in group
+    this.wsService.sendMsgToUsersList(
+      await this.chatService.listRoomParticipants(room_id),
+      {
+        event: 'chat_new_user_in_group',
+        room_id,
+        user_id: me.id,
+      },
+    );
     return this.chatService.roomInfo(room_id);
   }
 

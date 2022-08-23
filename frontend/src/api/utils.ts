@@ -1,10 +1,8 @@
+const host_ip = import.meta.env.VITE_HOST;
+
 export const urls = {
-  // frontendUrl: 'http://localhost:8000',
-  // backendUrl: 'http://localhost:3000',
-  // backendUrl: 'http://127.0.0.1:3000',
-  backendUrl: 'http://' + import.meta.env.VITE_HOST,
-  // wsUrl: 'ws://localhost:3000',
-  wsUrl: 'ws://' + import.meta.env.VITE_HOST,
+  backendUrl: `http://${ host_ip ? host_ip : 'localhost' }:3000`,
+  wsUrl: `ws://${ host_ip ? host_ip : 'localhost' }:3000`,
 };
 
 //TODO: add endpoints

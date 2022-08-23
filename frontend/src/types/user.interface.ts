@@ -4,6 +4,7 @@ export interface User {
   id: number;
   avatarId: number;
   isTwoFactorAuthenticationEnabled: boolean;
+  first_login?: boolean;
 }
 
 export interface Friend {

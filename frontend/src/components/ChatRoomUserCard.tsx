@@ -1,6 +1,7 @@
 import {
   Component,
   createEffect,
+  createMemo,
   createResource,
   createSignal,
   onCleanup,
@@ -12,7 +13,7 @@ import Modal from './Modal';
 import { TAB, useStore } from '../store/all';
 import { Link } from 'solid-app-router';
 import Avatar from './Avatar';
-import { chatApi } from '../api/chat';
+import { blockUser, chatApi } from '../api/chat';
 import { createTurboResource } from 'turbo-solid';
 import { routes } from '../api/utils';
 import { User } from '../types/user.interface';
@@ -41,8 +42,11 @@ const ChatRoomUserCard: Component<{
     return res.data;
   });
   const [friends] = createTurboResource<number[]>(() => `${routes.friends}/id`);
+  const [blockedUsers, { mutate }] = createTurboResource<number[]>(
+    () => routes.blocked,
+  );
   const notify = (msg: string) => toast.success(msg);
-  const [isFriend, setIsFriend] = createSignal(false);
+  // const [isFriend, setIsFriend] = createSignal(false);
   const inviteUser = () => {
     const data = { event: 'invite', data: props.user.id };
     sockets.pongWs!.send(JSON.stringify(data));
@@ -51,6 +55,29 @@ const ChatRoomUserCard: Component<{
 
   const currentUserRole = () =>
     currentRoom()?.users.find((user) => user.id === currentUser()?.id)?.role;
+
+  const onBlockUser = () => {
+    blockUser({ user_id: props.user.id })
+      .then((res) => {
+        notifySuccess(`${props.user.display_name}: blocked`);
+        mutate([...res.data]);
+      })
+      .catch((err: AxiosError<{ message: string }>) => {
+        notifyError(err.response?.data.message as string);
+      });
+  };
+
+  const onUnblockUser = () => {
+    chatApi
+      .unblockUser({ user_id: props.user.id })
+      .then((res) => {
+        mutate([...res.data]);
+        notifySuccess(`${props.user.display_name}: unblocked`);
+      })
+      .catch((err: AxiosError<{ message: string }>) => {
+        notifyError(err.response?.data.message as string);
+      });
+  };
 
   const onMuteUser = () => {
     if (currentRoom()) {
@@ -196,9 +223,6 @@ const ChatRoomUserCard: Component<{
           case 'chat: unmuted':
             props.refetch();
             break;
-          case 'chat_new_user_in_group':
-            props.refetch();
-            break;
           default:
             break;
         }
@@ -212,14 +236,10 @@ const ChatRoomUserCard: Component<{
     }
   });
 
-  createEffect(() => {
-    if (friends()) {
-      setIsFriend(friends()!.includes(props.user.id));
-    }
-  });
-
-  const isOnline = () => state.onlineUsers.includes(props.user.id);
-  const isInGame = () => state.inGameUsers.includes(props.user.id);
+  const isOnline = createMemo(() => state.onlineUsers.includes(props.user.id));
+  const isInGame = createMemo(() => state.inGameUsers.includes(props.user.id));
+  const isBlocked = () => blockedUsers()?.includes(props.user.id);
+  const isFriend = () => friends()?.includes(props.user.id);
 
   return (
     <div ref={ref} class="w-full rounded-lg shadow-md">
@@ -262,7 +282,25 @@ const ChatRoomUserCard: Component<{
             Send invite
           </button>
           <Show
-            when={isFriend() === true}
+            when={isBlocked()}
+            fallback={
+              <button
+                onClick={onBlockUser}
+                class="text-start hover:bg-red-700 px-3 rounded-sm transition-all"
+              >
+                Block
+              </button>
+            }
+          >
+            <button
+              onClick={onUnblockUser}
+              class="text-start hover:bg-red-700 px-3 rounded-sm transition-all"
+            >
+              Unblock
+            </button>
+          </Show>
+          <Show
+            when={isFriend()}
             fallback={
               <button
                 onClick={onSendFriendReq}

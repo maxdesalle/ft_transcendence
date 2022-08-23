@@ -33,24 +33,31 @@ export class MockAuthController {
   // 	return this.usersService.createNewUser(username);
   // }
 
-	@Post('login')
-	async getUserLoggedIn(
-		@Res({ passthrough: true }) res: Response,
-		@Body('login42') login42: string,
-		@Body() _body: LoginDTO
-	) {
-		const user: User = await this.usersService.createNewUser(login42);
-		const jwtToken = this.jwtService.sign({
-			id: user.id,
-			login42: user.login42
-		});
-		res.cookie('jwt_token', jwtToken, {sameSite: 'strict'});
-		return user;
-	}
+
+  @Post('login')
+  async getUserLoggedIn(
+    @Res({ passthrough: true }) res: Response,
+    @Body('login42') login42: string,
+    @Body() _body: LoginDTO,
+  ) {
+    const user: User = await this.usersService.createNewUser(login42);
+    const jwtToken = this.jwtService.sign({
+      id: user.id,
+      login42: user.login42,
+    });
+    if (this.configService.get('SERVE_STATIC'))
+      res.cookie('jwt_token', jwtToken, { sameSite: 'strict'});
+    else
+      res.cookie('jwt_token', jwtToken, { sameSite: 'none', secure: true });
+    return user;
+  }
 
   @Get('logout')
   logout(@Res({ passthrough: true }) res: Response) {
-    res.clearCookie('jwt_token', { sameSite: 'none', secure: true });
+    if (this.configService.get('SERVE_STATIC'))
+      res.clearCookie('jwt_token');
+    else
+      res.clearCookie('jwt_token', { sameSite: 'none', secure: true });
     return `Logged out`;
   }
 

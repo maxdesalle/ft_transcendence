@@ -4,7 +4,7 @@ import { useStore } from '../store/all';
 import { RoomInfo } from '../types/chat.interface';
 
 const RoomList: Component<{ room: RoomInfo[]; keyword: string }> = (props) => {
-  const [state, { setCurrentRoomId, toggleShowMessages }] = useStore();
+  const [, { setCurrentRoomId }] = useStore();
   return (
     <Show when={props.room}>
       <For
@@ -24,7 +24,7 @@ const RoomList: Component<{ room: RoomInfo[]; keyword: string }> = (props) => {
             class="flex p-2 items-center"
           >
             <HiSolidUserGroup color="#2564eb" size={24} />
-            <div class="hidden lg:block pl-2 text-white hover:text-slate-400 transition-all">
+            <div class="pl-2 text-white hover:text-slate-400 transition-all">
               <p class="font-bold first-letter:capitalize">{room.room_name}</p>
             </div>
           </div>

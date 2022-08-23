@@ -4,10 +4,7 @@ import { Slider } from './slider';
 import { useStore } from '../store/all';
 
 import { urls } from '../api/utils';
-// const socketServerIP = 'localhost';
-// const socketServerIP = '127.0.0.1';
-// const socketServerPort = 3000;
-// const socketServerIP = '127.0.0.1';
+
 const socketServerPath = 'pong';
 let isDisconnected = false;
 let socketErrObject: any = undefined; // if not undefined, socket returned an error
@@ -72,16 +69,16 @@ let scoreSound: any = undefined;
 let isReady = false; //this player is done with settings
 let isOtherPlayerReady = false; //other player is done with settings
 export function initSocket(): WebSocket {
-  // const serverAddress = `ws://${socketServerIP}:${socketServerPort}/${socketServerPath}`;
   const serverAddress = `${urls.wsUrl}/${socketServerPath}`;
   ws = new WebSocket(serverAddress);
 
   ws.addEventListener('open', (e: any) => {
-    console.log(`connected to ${serverAddress}`);
+    // console.log(`connected to ${serverAddress}`, e);
   });
   ws.addEventListener('close', (e: any) => {
     isDisconnected = true;
     playerNumber = 0;
+    console.log('disconneted');
   });
   ws.addEventListener('error', (e: any) => {
     socketErrObject = e;
@@ -249,24 +246,24 @@ export const sketch = (
     }
 
     //TODO: for some reason isDisconnected is true by some magic
-    // if (isDisconnected) {
-    //   console.log('player disconnected');
-    //   sliders.forEach((s) => s.p5Slider.remove());
-    //   myP5.textAlign('center', 'center');
-    //   myP5.fill(
-    //     colors[colorIndex].r,
-    //     colors[colorIndex].g,
-    //     colors[colorIndex].b,
-    //     255,
-    //   );
-    //   myP5.text(
-    //     'The other player has been disconnected.',
-    //     canvasWidth / 2,
-    //     canvasHeight / 2,
-    //   );
-    //   displayOkButton();
-    //   return true;
-    // }
+    if (isDisconnected) {
+      console.log('player disconnected');
+      sliders.forEach((s) => s.p5Slider.remove());
+      myP5.textAlign('center', 'center');
+      myP5.fill(
+        colors[colorIndex].r,
+        colors[colorIndex].g,
+        colors[colorIndex].b,
+        255,
+      );
+      myP5.text(
+        'The other player has been disconnected.',
+        canvasWidth / 2,
+        canvasHeight / 2,
+      );
+      displayOkButton();
+      return true;
+    }
     if (state.pong.inMatchMaking && sessionId === -1) {
       myP5.textAlign('center', 'center');
       myP5.fill(

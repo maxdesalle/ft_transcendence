@@ -62,4 +62,5 @@ export type WsNotificationEvent =
   | 'chat: muted'
   | 'chat: unmuted'
   | 'chat: banned'
-  | 'chat: unbanned';
+  | 'chat: unbanned'
+  | 'pong: opponent_disconnected';

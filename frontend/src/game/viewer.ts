@@ -2,11 +2,10 @@ import { Slider } from './slider';
 import { p5 } from './newPong';
 import { urls } from '../api/utils';
 
-// const socketServerIP = 'localhost';
-// const socketServerIP = '127.0.0.1';
-// const socketServerPort = 3000;
-// const httpServerIP = 'localhost';
-// const httpServerPort = 3000;
+
+import { urls } from '../api/utils';
+
+
 const socketServerPath = 'pong_viewer';
 let socketErrObject: any = undefined;
 let ws: any; // webSocket
@@ -68,6 +67,7 @@ let scoreSound: any = undefined;
 
 //connects to server
 export function initViewerSocket() {
+
   const serverAddress = `${urls.wsUrl}/${socketServerPath}`;
   ws = new WebSocket(serverAddress);
 
@@ -87,7 +87,6 @@ export function initViewerSocket() {
     gameStarted = dataOB.gameStarted ?? gameStarted;
     gameFinished = dataOB.gameFinished ?? gameFinished;
     sessionIdsArray = dataOB.sessionIdsArray ?? sessionIdsArray;
-    console.log(sessionIdsArray);
     const scoreTmp = [df.p1Score, df.p2Score];
     const ballSpeedTmp = [df.ballSpeedX, df.ballSpeedY];
     if (dataOB.powerUpsMap)
@@ -303,7 +302,8 @@ export const viewerSketch = (p5: MyP5) => {
       !sessionIdsArray.includes(parseInt(idText))
     ) {
       console.log(`${idText} is an invalid id`);
-      (document.getElementById('user_id') as HTMLInputElement)!.placeholder = 'Invalid id';
+      (document.getElementById('user_id') as HTMLInputElement)!.placeholder =
+        'Invalid id';
       (document.getElementById('user_id') as HTMLInputElement)!.value = '';
       return;
     }
@@ -312,7 +312,8 @@ export const viewerSketch = (p5: MyP5) => {
     doneChoosing = true;
     gameStarted = false;
     gameFinished = false;
-    (document.getElementById('user_id') as HTMLInputElement)!.placeholder = 'Enter id';
+    (document.getElementById('user_id') as HTMLInputElement)!.placeholder =
+      'Enter id';
     (document.getElementById('user_id') as HTMLInputElement)!.value = '';
   }
 
@@ -457,7 +458,8 @@ export const viewerSketch = (p5: MyP5) => {
     input.position(widthOffset, canvasHeight / 20 + heightOffset);
     input.size(canvasWidth / 7, canvasHeight / 25);
     input.id('user_id');
-    (document.getElementById('user_id') as HTMLInputElement)!.placeholder = 'Enter id';
+    (document.getElementById('user_id') as HTMLInputElement)!.placeholder =
+      'Enter id';
     (document.getElementById('user_id') as HTMLInputElement)!.value = '';
     // create submit button
     button = p5.createButton('submit');
@@ -472,8 +474,6 @@ export const viewerSketch = (p5: MyP5) => {
   };
 
   p5.draw = () => {
-    console.log(doneChoosing);
-    
     p5.background(0);
     handleWindowResize();
     if (handleSocketError()) return; //check if we are connected to server
