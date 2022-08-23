@@ -8,26 +8,21 @@ import {
   onMount,
   Show,
 } from 'solid-js';
-import { unwrap } from 'solid-js/store';
 import { createTurboResource } from 'turbo-solid';
 import { routes, urls } from '../api/utils';
+import Avatar from '../components/Avatar';
 import { useAuth } from '../Providers/AuthProvider';
 import { useSockets } from '../Providers/SocketProvider';
 import { useStore } from '../store/all';
 import { WsNotificationEvent } from '../types/chat.interface';
 import { User } from '../types/user.interface';
-import { notifyError } from '../utils/helpers';
+import { generateImageUrl, notifyError } from '../utils/helpers';
 
 interface GameSession {
   session_id: number;
-  p1: {
-    id: number;
-    display_name: string;
-  };
-  p2: {
-    id: number;
-    display_name: string;
-  };
+  avatarId: number;
+  p1: Partial<User>;
+  p2: Partial<User>;
 }
 
 const Matchmaking: Component = () => {
@@ -65,15 +60,14 @@ const Matchmaking: Component = () => {
   const onCancelQueue = () => {
     sockets.pongWs!.send(JSON.stringify({ event: 'cancel' }));
     setButtonText('Play');
+    ref().classList.toggle('animate-pulse');
     setInQueue(false);
+    toggleMatchMaking(false);
   };
 
   const onButtonClick = () => {
-    console.log('playing');
-
     if (inQueue()) {
       onCancelQueue();
-      toggleMatchMaking(false);
       return;
     }
     onPlay();
@@ -115,15 +109,33 @@ const Matchmaking: Component = () => {
       >
         <h1 class="text-4xl text-center w-full">{buttonText()}</h1>
       </button>
-      <div>
+      <div class="flex flex-col gap-2 h-full mt-10">
         <Show when={gameSessions()}>
           <For each={gameSessions()}>
             {(session) => (
               <Link href={`/viewer/${session.session_id}`}>
-                <div class="flex">
-                  <p>{session.p1.display_name}</p>
-                  <p>vs</p>
-                  <p>{session.p2.display_name}</p>
+                <div class="flex gap-2 p-3 bg-amber-800 items-center rounded-md">
+                  <div class="flex flex-col items-center">
+                    <Avatar
+                      imgUrl={
+                        session.p1.avatarId
+                          ? generateImageUrl(session.p1.avatarId)
+                          : undefined
+                      }
+                    />
+                    <p>{session.p1.display_name}</p>
+                  </div>
+                  <p class="text-xl">vs</p>
+                  <div class="flex flex-col items-center">
+                    <Avatar
+                      imgUrl={
+                        session.p2.avatarId
+                          ? generateImageUrl(session.p2.avatarId)
+                          : undefined
+                      }
+                    />
+                    <p>{session.p2.display_name}</p>
+                  </div>
                 </div>
               </Link>
             )}

@@ -1,36 +1,29 @@
 import { Link, useParams } from 'solid-app-router';
-import {
-  Component,
-  createEffect,
-  createResource,
-  For,
-  onMount,
-  Show,
-} from 'solid-js';
-import { User } from '../types/user.interface';
+import { Component, createResource, For, Show } from 'solid-js';
 import defaultAvatar from '../../../backend/images/avatardefault.png';
 import { generateImageUrl, notifyError, notifySuccess } from '../utils/helpers';
 import { createTurboResource } from 'turbo-solid';
 import { routes } from '../api/utils';
-import { MatchDTO } from '../types/stats.interface';
+import { MatchDTO, PlayerStatsDto } from '../types/stats.interface';
 import MatchHistoryCard from '../components/MatchHistoryCard';
-import { fetchUserById, sendFriendReq } from '../api/user';
+import { sendFriendReq } from '../api/user';
 import { AxiosError } from 'axios';
 import Scrollbars from 'solid-custom-scrollbars';
 import { useSockets } from '../Providers/SocketProvider';
-import { getPlayerStats } from '../api/stats';
-import { blockUser } from '../api/chat';
+import { useAuth } from '../Providers/AuthProvider';
 
 const Profile: Component = () => {
   const [sockets] = useSockets();
+  const [auth] = useAuth();
   const params = useParams<{ id: string }>();
   const [matches] = createTurboResource<MatchDTO[]>(
     () => `${routes.matches}/${parseInt(params.id)}`,
   );
-  const id = () => Number(params.id);
-  const [user] = createResource(id, fetchUserById);
-  const [currentUser] = createTurboResource(() => routes.currentUser);
-  const [stats] = createResource(() => parseInt(params.id), getPlayerStats);
+  const userByIdUrl = () => (params.id ? `${routes.users}/${params.id}` : null);
+  const userStatsUrl = () =>
+    params.id ? `${routes.playerStats}/${params.id}` : null;
+  const [user] = createTurboResource(() => userByIdUrl());
+  const [stats] = createTurboResource<PlayerStatsDto>(() => userStatsUrl());
 
   const onSendFriendReq = () => {
     if (user()) {
@@ -71,9 +64,7 @@ const Profile: Component = () => {
             </div>
           </div>
           <ul class="flex flex-col gap-2 text-white">
-            <Show
-              when={currentUser() && parseInt(params.id) !== currentUser().id}
-            >
+            <Show when={auth.user && parseInt(params.id) !== auth.user.id}>
               <li>
                 <button onClick={onSendFriendReq} class="btn-primary w-full">
                   Send friend request
@@ -88,9 +79,7 @@ const Profile: Component = () => {
                 <button class="btn-secondary w-full">Block</button>
               </li>
             </Show>
-            <Show
-              when={currentUser() && currentUser().id === parseInt(params.id)}
-            >
+            <Show when={auth.user && auth.user.id === parseInt(params.id)}>
               <li>
                 <Link class="btn-primary" href="/edit_profile">
                   Edit profile
