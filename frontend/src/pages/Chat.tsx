@@ -2,6 +2,7 @@ import {
   Component,
   createEffect,
   createResource,
+  createSignal,
   Match,
   Show,
   Switch,
@@ -25,15 +26,19 @@ import ChatHome from '../components/ChatHome';
 import { useSockets } from '../Providers/SocketProvider';
 import FriendSideBar from '../components/FriendSideBar';
 import { fetchUserById } from '../api/user';
+import Viewer from './Viewer';
 
 const Chat: Component = () => {
   const [state] = useStore();
   const roomId = () => state.chat.roomId;
   const friendId = () => state.chat.friendId;
-  const [currentRoom] = createResource(roomId, async (id: number) => {
-    const res = await api.get<RoomInfo>(`${routes.chat}/room_info/${id}`);
-    return res.data;
-  });
+  const [currentRoom, { refetch }] = createResource(
+    roomId,
+    async (id: number) => {
+      const res = await api.get<RoomInfo>(`${routes.chat}/room_info/${id}`);
+      return res.data;
+    },
+  );
   const [sockets] = useSockets();
 
   const [friend] = createResource(() => state.chat.friendId, fetchUserById);
@@ -91,6 +96,8 @@ const Chat: Component = () => {
     }
   });
 
+  const [isWatching, setIsWatching] = createSignal(false);
+
   return (
     <div class="grid grid-cols-6 h-95">
       <div class="flex row-span-4 flex-col col-span-1 border-x-header-menu border-x">
@@ -105,10 +112,12 @@ const Chat: Component = () => {
             />
           </Match>
           <Match when={state.chatUi.tab === TAB.FRIENDS}>
-            <ChatMessagesBox
-              messages={friendMessages()!}
-              onSendMessage={onSendMessageToFriend}
-            />
+            <Show when={!isWatching()} fallback={<Viewer />}>
+              <ChatMessagesBox
+                messages={friendMessages()!}
+                onSendMessage={onSendMessageToFriend}
+              />
+            </Show>
           </Match>
           <Match when={state.chatUi.tab === TAB.HOME}>
             <ChatHome />
@@ -122,7 +131,7 @@ const Chat: Component = () => {
           </Match>
           <Match when={state.chatUi.tab === TAB.FRIENDS}>
             <Show when={friend()}>
-              <FriendSideBar friend={friend()!} />
+              <FriendSideBar setIsWatching={setIsWatching} friend={friend()!} />
             </Show>
           </Match>
         </Switch>

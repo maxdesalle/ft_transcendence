@@ -18,6 +18,18 @@ import { WsNotificationEvent } from '../types/chat.interface';
 import { User } from '../types/user.interface';
 import { notifyError } from '../utils/helpers';
 
+interface GameSession {
+  session_id: number;
+  p1: {
+    id: number;
+    display_name: string;
+  };
+  p2: {
+    id: number;
+    display_name: string;
+  };
+}
+
 const Matchmaking: Component = () => {
   const [state, { toggleMatchMaking }] = useStore();
   const [ref, setRef] = createSignal<any>();
@@ -26,7 +38,7 @@ const Matchmaking: Component = () => {
   const [buttonText, setButtonText] = createSignal('Play');
   const [currentUser] = createTurboResource<User>(() => routes.currentUser);
   const [friends] = createTurboResource<User[]>(() => routes.friends);
-  const [gameSessions] = createTurboResource<number[]>(
+  const [gameSessions] = createTurboResource<GameSession[]>(
     () => `${urls.backendUrl}/pong/sessions`,
   );
   const [sockets] = useSockets();
@@ -57,8 +69,11 @@ const Matchmaking: Component = () => {
   };
 
   const onButtonClick = () => {
+    console.log('playing');
+
     if (inQueue()) {
       onCancelQueue();
+      toggleMatchMaking(false);
       return;
     }
     onPlay();
@@ -103,9 +118,13 @@ const Matchmaking: Component = () => {
       <div>
         <Show when={gameSessions()}>
           <For each={gameSessions()}>
-            {(id) => (
-              <Link href={`/viewer/${id}`}>
-                <p>{id}</p>
+            {(session) => (
+              <Link href={`/viewer/${session.session_id}`}>
+                <div class="flex">
+                  <p>{session.p1.display_name}</p>
+                  <p>vs</p>
+                  <p>{session.p2.display_name}</p>
+                </div>
               </Link>
             )}
           </For>

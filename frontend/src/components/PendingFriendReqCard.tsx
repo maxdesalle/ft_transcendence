@@ -1,26 +1,20 @@
 import { AxiosError } from 'axios';
-import { useNavigate } from 'solid-app-router';
-import { Component, For, onMount, Show } from 'solid-js';
-import { createTurboResource } from 'turbo-solid';
+import { Component, For, Show } from 'solid-js';
+import { mutate } from 'turbo-solid';
 import { acceptFriendReq, rejectFriendReq } from '../api/user';
 import { routes } from '../api/utils';
-import { useSockets } from '../Providers/SocketProvider';
 import { useStore } from '../store/all';
-import { Friend } from '../types/user.interface';
 import { notifyError, notifySuccess } from '../utils/helpers';
 
 const PendingFriendReqCard: Component = () => {
-  const [sockets] = useSockets();
-  const [state, { setPendigFriendReq, setFriendInvitation }] = useStore();
-  const [friends, { refetch }] = createTurboResource<Friend[]>(
-    () => routes.friends,
-  );
-  const navigate = useNavigate();
+  const [state, { setPendigFriendReq }] = useStore();
+
   const onAcceptFriendReq = (id: number) => {
     acceptFriendReq(id)
-      .then(() => {
-        refetch();
+      .then((res) => {
         notifySuccess('success');
+        console.log('res: ', res.data);
+        mutate(routes.friends, [...res.data]);
         setPendigFriendReq(
           state.currentUser.pendingFriendReq.filter(
             (req) => req.req_user.id !== id,
@@ -43,16 +37,6 @@ const PendingFriendReqCard: Component = () => {
       .catch((err: AxiosError<{ message: string }>) =>
         notifyError(err.response?.data.message as string),
       );
-  };
-
-  const onAcceptInvite = () => {
-    const data = {
-      event: 'accept',
-      data: state.pong.friendInvitation?.user_id,
-    };
-    sockets.pongWs!.send(JSON.stringify(data));
-    navigate('/pong');
-    setFriendInvitation(null);
   };
 
   return (

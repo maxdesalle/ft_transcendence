@@ -1,6 +1,7 @@
 import {
   Component,
   createEffect,
+  createMemo,
   createResource,
   createSignal,
   onCleanup,
@@ -45,7 +46,7 @@ const ChatRoomUserCard: Component<{
     () => routes.blocked,
   );
   const notify = (msg: string) => toast.success(msg);
-  const [isFriend, setIsFriend] = createSignal(false);
+  // const [isFriend, setIsFriend] = createSignal(false);
   const inviteUser = () => {
     const data = { event: 'invite', data: props.user.id };
     sockets.pongWs!.send(JSON.stringify(data));
@@ -222,9 +223,6 @@ const ChatRoomUserCard: Component<{
           case 'chat: unmuted':
             props.refetch();
             break;
-          case 'chat_new_user_in_group':
-            props.refetch();
-            break;
           default:
             break;
         }
@@ -238,15 +236,10 @@ const ChatRoomUserCard: Component<{
     }
   });
 
-  createEffect(() => {
-    if (friends()) {
-      setIsFriend(friends()!.includes(props.user.id));
-    }
-  });
-
-  const isOnline = () => state.onlineUsers.includes(props.user.id);
-  const isInGame = () => state.inGameUsers.includes(props.user.id);
+  const isOnline = createMemo(() => state.onlineUsers.includes(props.user.id));
+  const isInGame = createMemo(() => state.inGameUsers.includes(props.user.id));
   const isBlocked = () => blockedUsers()?.includes(props.user.id);
+  const isFriend = () => friends()?.includes(props.user.id);
 
   return (
     <div ref={ref} class="w-full rounded-lg shadow-md">

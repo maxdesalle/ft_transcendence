@@ -38,7 +38,7 @@ interface playerScoresInterface {
 export const sockets: gameSocketsInterface[] = []; // array that will contain session objects
 
 // keeps track of who is connected to /pong/ gateway (socket - user_id pairs)
-export const connected_users= new Map<WebSocket, number>();
+export const connected_users = new Map<WebSocket, number>();
 // pending invitations to play (inviting user_id - invited user_id pairs )
 const invitations = new Map<number, number>();
 // player waiting to be matched with the first to join
@@ -61,7 +61,7 @@ export class PongGateway implements OnGatewayConnection, OnGatewayDisconnect {
   async handleConnection(ws: WebSocket, req: IncomingMessage) {
     let user: { id: number; login42: string };
     try {
-			user = await this.wsService.authenticateUser(req);
+      user = await this.wsService.authenticateUser(req);
     } catch (error) {
       ws.close(1008, 'Bad credentials');
       console.log('Authentication to Pong wss failed');
@@ -76,7 +76,8 @@ export class PongGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
   handleDisconnect(client: WebSocket) {
     const user_id = connected_users.get(client);
-    if (!user_id) // auth-fail
+    if (!user_id)
+      // auth-fail
       return;
     const remaining_player = removeGameSession(client);
     if (remaining_player) {
@@ -286,15 +287,15 @@ export class PongViewerGateway implements OnGatewayInit {
 
 function removeGameSession(ws: WebSocket) {
   const i = sockets.findIndex((s) => s.p1Socket === ws || s.p2Socket === ws);
-  if (i === -1) // not part of a session
+  if (i === -1)
+    // not part of a session
     return;
   const leaving_player = connected_users.get(ws);
   let remaining_player: number;
   if (sockets[i].p1Socket === ws) {
     console.log(`p1 of session ${sockets[i].id} left`);
     remaining_player = connected_users.get(sockets[i].p2Socket);
-  }
-  else {
+  } else {
     console.log(`p2 of session ${sockets[i].id} left`);
     remaining_player = connected_users.get(sockets[i].p1Socket);
   }
@@ -364,9 +365,8 @@ async function startGame(id: number) {
   console.log(`deleting session ${id}`);
   deleteGameSession(gameSockets.id);
   ///// Rodolpho added these lines: remove session from sockets array
-  const session_idx = sockets.findIndex(val => val.id === id);
-  if (session_idx >= 0)
-    sockets.splice(session_idx, 1);
+  const session_idx = sockets.findIndex((val) => val.id === id);
+  if (session_idx >= 0) sockets.splice(session_idx, 1);
   //////
   viewerSockets.forEach((s) => {
     if (s.id === gameSockets.id) {

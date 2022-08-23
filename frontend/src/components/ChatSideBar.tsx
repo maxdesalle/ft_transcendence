@@ -4,6 +4,7 @@ import {
   createSignal,
   For,
   Match,
+  onCleanup,
   onMount,
   Show,
   Switch,
@@ -14,7 +15,7 @@ import FriendList from './FriendList';
 import Search from './Search';
 import CreateRoom from './admin/createRoom';
 import Scrollbars from 'solid-custom-scrollbars';
-import { createTurboResource } from 'turbo-solid';
+import { createTurboResource, mutate } from 'turbo-solid';
 import { routes } from '../api/utils';
 import { RoomInfo, WsNotificationEvent } from '../types/chat.interface';
 import RoomList from './RoomList';
@@ -48,11 +49,14 @@ const ChatSideBar: Component = () => {
         if (res.event === 'chat_new_group') {
           refetchPublicRooms();
           refetchRooms();
-        } else if (res.event === 'chat_new_user_in_group') {
-          refetchPublicRooms();
-          refetchRooms();
         }
       });
+    }
+  });
+
+  onCleanup(() => {
+    if (sockets.notificationWs) {
+      sockets.notificationWs.removeEventListener('message', () => {});
     }
   });
 
@@ -86,7 +90,7 @@ const ChatSideBar: Component = () => {
               placeHolder="Search for room"
               popperMsg="Create new room"
             >
-              <CreateRoom refetch={refetchPublicRooms} />
+              <CreateRoom />
             </Search>
             <Show when={publicRooms()}>
               <RoomList room={myRooms()!} keyword={keyword()} />
@@ -97,7 +101,7 @@ const ChatSideBar: Component = () => {
           </Match>
           <Match when={state.chatUi.tab === TAB.HOME}>
             <p class="text-white p-2">Create room</p>
-            <CreateRoom class="px-2" refetch={refetchPublicRooms} />
+            <CreateRoom class="px-2" />
           </Match>
         </Switch>
       </div>

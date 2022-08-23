@@ -1,5 +1,5 @@
 import { friendReqEventDto } from '../types/friendship.interface';
-import { User } from '../types/user.interface';
+import { Friend, User } from '../types/user.interface';
 import { api } from '../utils/api';
 import { routes } from './utils';
 
@@ -33,7 +33,7 @@ export const deactivate2fa = async () => {
 };
 
 export const acceptFriendReq = async (user_id: number) => {
-  return await api.post<friendReqEventDto>(routes.acceptFriendReq, {
+  return await api.post<Friend[]>(routes.acceptFriendReq, {
     user_id,
   });
 };

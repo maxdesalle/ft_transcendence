@@ -9,7 +9,7 @@ import { connected_users } from './pong.gateway';
 @ApiTags('pong')
 @UseGuards(JwtGuard)
 export class PongController {
-  constructor (private usersService: UsersService) {}
+  constructor(private usersService: UsersService) {}
 
   @Get('sessions')
   async getSessions() {
@@ -23,12 +23,12 @@ export class PongController {
         session_id: s.id,
         p1: {
           id: p1.id,
-          diplay_name: p1.display_name
+          display_name: p1.display_name,
         },
         p2: {
           id: p2.id,
-          display_name: p2.display_name
-        }
+          display_name: p2.display_name,
+        },
       });
     }
     return res;
