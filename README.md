@@ -417,6 +417,11 @@ a game session has just ended
 }
 ```
 
+opponent is disconnected from the pong wss (e.g. closed browser tab)
+```
+{event: 'pong: opponent_disconnected'}
+```
+
 ### Ladder change
 When a Pong match is over, points in the general ladder are changed
 ```
