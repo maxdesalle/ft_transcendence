@@ -7,13 +7,15 @@ services:
       - ${DB_PORT}:5432
     environment:
       POSTGRES_PASSWORD: ${DB_PASSWORD}
+    volumes:
+      - pgdata:/var/lib/postgresql/data
 
-  adminer:
-    image: adminer
-    restart: always
-    ports:
-      - 8080:8080
+  # adminer:
+  #   image: adminer
+  #   restart: always
+  #   ports:
+  #     - 8080:8080
 
-
-# how to access the database client:
-# docker exec -it db psql -U postgres
+volumes:
+  pgdata:
+    external: false

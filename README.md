@@ -1,36 +1,46 @@
-## TODO's before push
-- no more need to serve "client" dir (backend)
-- remove mock auth module
-- typeORM config: no 'synchronize' in production!
-- remove CORS enable (if the setup allows so...)
-- HTTPS ?
-
 ## How to make stuff happen
 
-First you need a .env file inside **backend** directory, like this: (cannot put secret stuff in a public repo, sorry)
+### your new best friend:
+`./clear_docker_hell.sh`  
+When to use it? Follow your heart.
+
+### might be useful:
+`./reset_db.sh`
+
+There are now 3 (!) ways to bring up the whole thing, because we're masochists.
+
+1) docker-compose up
+2) ./launch.sh
+3) ./serve_static.sh
+
+Either way, you need an .env file at the **ROOT** of the repo.
+
+Last know working .env:
 ```
-    # auth
-    FORTYTWO_CLIENT_ID=<you gotta provide the right one>  
-    FORTYTWO_CLIENT_SECRET=<you gotta provide the right one>  
-    FORTYTWO_CALLBACK_URL="http://127.0.0.1:3000/login/42/return"  
-    JWT_TOKEN_SECRET=<whatever you wish>  
-    JWT_TOKEN_EXPIRY=<some time, like "3600s"> 
+APP_HOST=127.0.0.1
 
-    # database
-    DB_PASSWORD=<whatever you wish, but DON'T USE QUOTES around it>
-    DB_HOST=127.0.0.1
-    DB_PORT=5432
+# auth
+FORTYTWO_CLIENT_ID=XXXXXXXXXX
+FORTYTWO_CLIENT_SECRET=XXXXXXXXXXXXXX
+FORTYTWO_CALLBACK_URL=http://127.0.0.1:3000/login/42/return
+JWT_TOKEN_SECRET="hello there"
+JWT_TOKEN_EXPIRY=99999999999999999999
 
-    # avatar photo
-    AVATAR_DEFAULT_FILE="images/avatardefault.png"
-    AVATAR_MAX_SIZE=1000000
-    
-    # frontend url
-    FRONTEND_URL="http://127.0.01:8000"
+# database
+DB_PASSWORD=12345
+DB_PORT=5432
+DB_HOST=127.0.0.1
+
+# avatar photo
+FRONTEND_URL=http://127.0.0.1:8000
+AVATAR_DEFAULT_FILE=images/avatardefault.png
+AVATAR_MAX_SIZE=99999999999999999999999
+
 ```
-Then:
 
-### dev-mode: 2 servers (front a backend)
+More details:
+
+### dev-mode: 2 servers (front and backend)
 `./launch.sh` (have the **.env** file ready)
 
 Frontend app should be available at `http://127.0.01:8000`
@@ -38,13 +48,25 @@ Frontend app should be available at `http://127.0.01:8000`
 ### production mode: 1 server only, frontend app served as static files
 * Have the **.env** file ready
 * setup the first line of the script serve_static.sh accordingly (if you're using localhost or 127.0.0.1)
-* `./serve_static.sh` 
+* `./serve_static.sh`   
+
+App should be available at `http://127.0.01:3000`
+
+### production mode fully Dockerized:
+* `docker-compose up [--build]`
 
 
 App should be available at `http://127.0.01:3000`
 
 ## Obs: do not mix localhost and 127.0.0.1
 -----------------------
+## TODO's before push
+- no more need to serve "client" dir (backend)
+- remove mock auth module
+- typeORM config: no 'synchronize' in production!
+- remove CORS enable (if the setup allows so...)
+- HTTPS ?
+
 
 ### How to access the database:
 **Adminer** is available at 127.0.0.1:8080
