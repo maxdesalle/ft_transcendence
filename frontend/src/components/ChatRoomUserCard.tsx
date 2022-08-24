@@ -25,6 +25,7 @@ import { AxiosError } from 'axios';
 import autoAnimate from '@formkit/auto-animate';
 import { sendFriendReq } from '../api/user';
 import { useSockets } from '../Providers/SocketProvider';
+import { useAuth } from '../Providers/AuthProvider';
 
 const ChatRoomUserCard: Component<{
   user: RoomUser;
@@ -33,7 +34,6 @@ const ChatRoomUserCard: Component<{
 }> = (props) => {
   const [isOpen, setIsOpen] = createSignal(false);
   const [state, { changeTab, setFriendId }] = useStore();
-  const [currentUser] = createTurboResource<User>(() => routes.currentUser);
   const roomId = () => state.chat.roomId;
   let ref: any;
   const [sockets] = useSockets();
@@ -41,12 +41,12 @@ const ChatRoomUserCard: Component<{
     const res = await api.get<RoomInfo>(`${routes.chat}/room_info/${id}`);
     return res.data;
   });
+  const [auth] = useAuth();
   const [friends] = createTurboResource<number[]>(() => `${routes.friends}/id`);
   const [blockedUsers, { mutate }] = createTurboResource<number[]>(
     () => routes.blocked,
   );
   const notify = (msg: string) => toast.success(msg);
-  // const [isFriend, setIsFriend] = createSignal(false);
   const inviteUser = () => {
     const data = { event: 'invite', data: props.user.id };
     sockets.pongWs!.send(JSON.stringify(data));
@@ -54,7 +54,7 @@ const ChatRoomUserCard: Component<{
   };
 
   const currentUserRole = () =>
-    currentRoom()?.users.find((user) => user.id === currentUser()?.id)?.role;
+    currentRoom()?.users.find((user) => user.id === auth.user.id)?.role;
 
   const onBlockUser = () => {
     blockUser({ user_id: props.user.id })

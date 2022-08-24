@@ -51,9 +51,8 @@ export class AuthController {
       login42: user.login42,
     });
     if (this.configService.get('SERVE_STATIC'))
-      res.cookie('jwt_token', jwtToken, { sameSite: 'strict'});
-    else
-      res.cookie('jwt_token', jwtToken, { sameSite: 'none', secure: true });
+      res.cookie('jwt_token', jwtToken, { sameSite: 'strict' });
+    else res.cookie('jwt_token', jwtToken, { sameSite: 'none', secure: true });
     if (user.isTwoFactorAuthenticationEnabled) {
       return res.redirect(
         `${this.configService.get<string>('FRONTEND_URL')}/2fa`,
@@ -75,8 +74,9 @@ export class AuthController {
   @UseGuards(JwtGuard)
   async deactivateTwoFactorAuthentication(@Usr() user, @Res() res: Response) {
     await this.usersService.turnOffTwoFactorAuthentication(user.id);
+    const me = await this.usersService.findById(user.id);
 
-    return res.send({ user });
+    return res.send({ user: me });
     // return res.redirect(
     //   `${this.configService.get<string>('FRONTEND_URL')}/login`,
     // );
@@ -107,13 +107,10 @@ export class AuthController {
       validTwoFactorAuthentication: true,
     });
 
-    if (this.configService.get('SERVE_STATIC'))
-    {
+    if (this.configService.get('SERVE_STATIC')) {
       res.clearCookie('jwt_token');
-      res.cookie('jwt_token', jwtToken, { sameSite: 'strict'});
-    }
-    else
-    {
+      res.cookie('jwt_token', jwtToken, { sameSite: 'strict' });
+    } else {
       res.clearCookie('jwt_token', { sameSite: 'none', secure: true });
       res.cookie('jwt_token', jwtToken, { sameSite: 'none', secure: true });
     }

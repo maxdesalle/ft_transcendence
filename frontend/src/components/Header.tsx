@@ -100,11 +100,9 @@ const Header: Component = () => {
               />
             </button>
             <Modal isOpen={isOpen()} toggleModal={setIsOpen}>
-              <Show when={currentUser()}>
-                <div class="bg-skin-menu-background w-60 absolute border-header-menu -right-4 border shadow-sm p-2 -top-1">
-                  <HeaderProfileMenu user={auth.user} />
-                </div>
-              </Show>
+              <div class="bg-skin-menu-background rounded-md w-60 absolute border-header-menu -right-4 border shadow-sm p-2 -top-1">
+                <HeaderProfileMenu user={auth.user} />
+              </div>
             </Modal>
           </div>
         </div>

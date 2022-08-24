@@ -13,11 +13,11 @@ import {
 import { AiOutlinePlusCircle } from 'solid-icons/ai';
 import Modal from './Modal';
 import AddUserToRoom from './admin/AddUserToRoom';
-import { useStore } from '../store/all';
+import { TAB, useStore } from '../store/all';
 import Avatar from './Avatar';
 import ChatRoomUserCard from './ChatRoomUserCard';
 import { RoomUser, User } from '../types/user.interface';
-import { generateImageUrl } from '../utils/helpers';
+import { generateImageUrl, notifyError, notifySuccess } from '../utils/helpers';
 import { createTurboResource } from 'turbo-solid';
 import { routes } from '../api/utils';
 import { RoomInfo, WsNotificationEvent } from '../types/chat.interface';
@@ -27,20 +27,23 @@ import Loader from './Loader';
 import { IoSettingsOutline } from 'solid-icons/io';
 import Scrollbars from 'solid-custom-scrollbars';
 import { useSockets } from '../Providers/SocketProvider';
+import { useAuth } from '../Providers/AuthProvider';
+import { chatApi } from '../api/chat';
+import { AxiosError } from 'axios';
 
 const ChatRightSideBar: Component<{}> = () => {
   const [isOpen, setIsOpen] = createSignal(false);
-  const [state] = useStore();
+  const [state, { setCurrentRoomId, changeTab }] = useStore();
+  const [auth] = useAuth();
   const roomId = () => state.chat.roomId;
-  const [currentUser] = createTurboResource<User>(() => routes.currentUser);
   let addRef: any;
   const [sockets] = useSockets();
   const url = () => (roomId() ? `${routes.chat}/room_info/${roomId()}` : null);
 
-  const [currentRoom, { refetch }] = createTurboResource<RoomInfo>(() => url());
+  const [currentRoom, { refetch }] =
+    createTurboResource<RoomInfo>(() => url());
   const currentUserRole = createMemo(
-    () =>
-      currentRoom()?.users.find((user) => user.id === currentUser()?.id)?.role,
+    () => currentRoom()?.users.find((user) => user.id === auth.user.id)?.role,
   );
 
   const owner = () =>
@@ -70,12 +73,29 @@ const ChatRightSideBar: Component<{}> = () => {
         res = JSON.parse(e.data);
         if (res.event === 'chat_new_user_in_group') {
           refetch();
+        } else if (res.event === 'chat: userLeave') {
+          refetch();
         }
       });
     }
   });
 
   const [tab, setTab] = createSignal(0);
+
+  const onLeaveGroup = () => {
+    chatApi
+      .leaveGroup(currentRoom()!.room_id)
+      .then(() => {
+        notifySuccess(
+          `${auth.user.display_name} left ${currentRoom()!.room_name}`,
+        );
+        setCurrentRoomId(undefined);
+        changeTab(TAB.HOME);
+      })
+      .catch((err: AxiosError<{ message: string }>) => {
+        notifyError(err.response?.data.message as string);
+      });
+  };
 
   onCleanup(() => {
     if (sockets.notificationWs) {
@@ -179,7 +199,9 @@ const ChatRightSideBar: Component<{}> = () => {
               </Show>
             </Scrollbars>
             <div class="w-full p-1">
-              <button class="btn-secondary">Leave channel</button>
+              <button onClick={onLeaveGroup} class="btn-secondary">
+                Leave channel
+              </button>
             </div>
           </Match>
           <Match when={tab() == 1}>

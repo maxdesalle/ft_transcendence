@@ -146,6 +146,13 @@ export class ChatController {
     @Body() _room: RoomIdDto,
   ) {
     await this.chatService.leave_group(me, room_id);
+    this.wsService.sendMsgToUsersList(
+      await this.chatService.listRoomParticipants(room_id),
+      {
+        event: 'chat: userLeave',
+        room_id,
+      },
+    );
     return this.getConvs(me);
   }
 

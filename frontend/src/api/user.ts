@@ -29,7 +29,7 @@ export const activate2fa = async () => {
 };
 
 export const deactivate2fa = async () => {
-  return await api.get(routes.deactivate2fa);
+  return await api.get<{ user: User }>(routes.deactivate2fa);
 };
 
 export const acceptFriendReq = async (user_id: number) => {

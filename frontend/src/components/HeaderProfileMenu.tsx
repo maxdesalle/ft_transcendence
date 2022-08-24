@@ -7,8 +7,8 @@ import settingsLogo from '../assets/settings.png';
 import matchHistoryLogo from '../assets/pong.png';
 import logOutLogo from '../assets/log-out.png';
 import { Link, useNavigate } from 'solid-app-router';
-import { routes, urls } from '../api/utils';
-import { createTurboResource, forget } from 'turbo-solid';
+import { urls } from '../api/utils';
+import { forget } from 'turbo-solid';
 import Cookies from 'js-cookie';
 import { useAuth } from '../Providers/AuthProvider';
 import { useSockets } from '../Providers/SocketProvider';
@@ -42,18 +42,15 @@ const HeaderProfileMenu: Component<{ user: User }> = (props) => {
         <h3 class="text-slate-100 font-light">{props.user.display_name}</h3>
         <p class="text-slate-500 font-light">{props.user.login42}</p>
       </div>
-      <ul class="pl-3 text-white">
-        <li class="py-2 flex items-center">
-          <Link class="py-2 flex items-center" href="/leaderboard">
+      <ul class="pl-4 flex flex-col gap-3 items-start text-white">
+        <li class="flex items-center">
+          <Link class="flex items-center" href="/leaderboard">
             <img src={leaderboardLogo} alt="leaderboard logo" class="w-5 h-5" />
             <p class="pl-2">Leaderboard</p>
           </Link>
         </li>
         <li>
-          <Link
-            class="py-2 flex items-center"
-            href={`profile/${props.user.id}`}
-          >
+          <Link class="flex items-center" href={`profile/${props.user.id}`}>
             <img
               src={userProfileLogo}
               alt="user profile logo"
@@ -63,12 +60,12 @@ const HeaderProfileMenu: Component<{ user: User }> = (props) => {
           </Link>
         </li>
         <li>
-          <Link class="py-2 flex items-center" href="/edit_profile">
+          <Link class="flex items-center" href="/edit_profile">
             <img src={settingsLogo} alt="setting logo" class="w-5 h-5" />
             <p class="pl-2">Edit Profile</p>
           </Link>
         </li>
-        <li class="py-2 flex items-center">
+        <li class="flex items-center">
           <img
             src={matchHistoryLogo}
             alt="match history logo"
@@ -76,7 +73,7 @@ const HeaderProfileMenu: Component<{ user: User }> = (props) => {
           />
           <p class="pl-2">Match History</p>
         </li>
-        <li class="py-2">
+        <li>
           <button class="flex items-center" onClick={onLogout}>
             <img src={logOutLogo} alt="log out logo" />
             <p class="pl-2">Log out</p>

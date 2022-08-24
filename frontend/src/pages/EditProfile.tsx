@@ -1,4 +1,4 @@
-import { Component, createSignal, Match, Switch } from 'solid-js';
+import { Component, createEffect, createSignal, Match, Switch } from 'solid-js';
 import {
   activate2fa,
   changeAvatar,
@@ -11,6 +11,10 @@ import { notifyError, notifySuccess } from '../utils/helpers';
 import { useAuth } from '../Providers/AuthProvider';
 import { useStore } from '../store/all';
 import { useSockets } from '../Providers/SocketProvider';
+import { useNavigate } from 'solid-app-router';
+import Cookies from 'js-cookie';
+import { unwrap } from 'solid-js/store';
+import { forget } from 'turbo-solid';
 
 const EditProfile: Component = () => {
   const [newName, setNewName] = createSignal('');
@@ -34,6 +38,7 @@ const EditProfile: Component = () => {
         QRCode.toDataURL(res.otpauthUrl, (_, url) => {
           setPathUrl(url);
         });
+        setUser({ ...auth.user, isTwoFactorAuthenticationEnabled: true });
         notifySuccess('2fa activated please scan the qr code');
       })
       .catch((err) => {
@@ -42,9 +47,23 @@ const EditProfile: Component = () => {
     setIsOpen(true);
   };
 
+  const navigate = useNavigate();
+
+  const logout = () => {
+    setToken(undefined);
+    Cookies.remove('jwt_token', { sameSite: 'none', secure: true });
+    forget();
+    resetStore();
+    disconnect();
+    setIsAuth(false);
+    navigate('/login');
+  };
   const onDeactivate2fa = () => {
     deactivate2fa()
-      .then(() => notifySuccess('2fa deactivated'))
+      .then(() => {
+        logout();
+        navigate('/login');
+      })
       .catch((err) => notifyError(err.message));
   };
 
@@ -61,10 +80,7 @@ const EditProfile: Component = () => {
   };
 
   const onNavigate = () => {
-    resetStore();
-    setToken(undefined);
-    setIsAuth(false);
-    disconnect();
+    logout();
   };
 
   return (
