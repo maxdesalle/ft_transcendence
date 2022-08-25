@@ -1,26 +1,30 @@
 import { AxiosError } from 'axios';
-import { Component, createResource, createSignal, For, Show } from 'solid-js';
+import { Component, createEffect, createSignal, For, Show } from 'solid-js';
+import { createTurboResource } from 'turbo-solid';
 import { chatApi } from '../api/chat';
 import { routes } from '../api/utils';
 import { useAuth } from '../Providers/AuthProvider';
 import { TAB, useStore } from '../store/all';
 import { RoomInfo } from '../types/chat.interface';
-import { api } from '../utils/api';
 import { notifyError, notifySuccess } from '../utils/helpers';
 
 const RoomSettings: Component<{ refetch?: () => void }> = (props) => {
   const [state, { setCurrentRoomId, changeTab }] = useStore();
   const [userId, setUserId] = createSignal(0);
-  const roomId = () => state.chat.roomId;
   const [password, setPassword] = createSignal('');
   const [{ user }] = useAuth();
-  const [currentRoom, { refetch }] = createResource(
-    roomId,
-    async (id: number) => {
-      const res = await api.get<RoomInfo>(`${routes.chat}/room_info/${id}`);
-      return res.data;
-    },
+  const path = state.chat.roomId
+    ? `${routes.chat}/room_info/${state.chat.roomId}`
+    : null;
+  const [currentRoom, { refetch, mutate }] = createTurboResource<RoomInfo>(
+    () => path,
   );
+  const bannedUserUrl = () =>
+    state.chat.roomId ? `${routes.bannedUsers}/${state.chat.roomId}` : null;
+
+  const [bannedUsers, { refetch: refetchUnbaned }] = createTurboResource<
+    { id: number; login42: string; display_name: string; unban: Date }[]
+  >(() => bannedUserUrl());
 
   const onSetPrivate = () => {
     chatApi
@@ -75,6 +79,18 @@ const RoomSettings: Component<{ refetch?: () => void }> = (props) => {
         notifySuccess(`${user.display_name} left ${currentRoom()!.room_name}`);
         setCurrentRoomId(undefined);
         changeTab(TAB.HOME);
+      })
+      .catch((err: AxiosError<{ message: string }>) => {
+        notifyError(err.response?.data.message as string);
+      });
+  };
+
+  const onUnban = (user: { id: number; display_name: string }) => {
+    chatApi
+      .unbanUser({ user_id: user.id, room_id: currentRoom()!.room_id })
+      .then((res) => {
+        mutate({ ...res.data });
+        notifySuccess(`${user.display_name} got unbaned 😙`);
       })
       .catch((err: AxiosError<{ message: string }>) => {
         notifyError(err.response?.data.message as string);
@@ -137,10 +153,23 @@ const RoomSettings: Component<{ refetch?: () => void }> = (props) => {
         <button onClick={onSetPrivate} class="btn-primary w-full">
           Set private
         </button>
-        <button onClick={onLeaveGroup} class="btn-secondary w-full">
-          Leave
-        </button>
       </Show>
+      <button onClick={onLeaveGroup} class="btn-secondary w-full">
+        Leave
+      </button>
+      <div>
+        <p>Benned users</p>
+        <For each={bannedUsers()}>
+          {(user) => (
+            <div class="flex justify-between border px-1 pt-1 border-header-menu">
+              <h1 class="capitalize">{user.display_name}</h1>
+              <button onClick={() => onUnban(user)} class="btn-primary">
+                unban
+              </button>
+            </div>
+          )}
+        </For>
+      </div>
     </div>
   );
 };

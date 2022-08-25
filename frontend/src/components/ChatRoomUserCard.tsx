@@ -16,10 +16,8 @@ import Avatar from './Avatar';
 import { blockUser, chatApi } from '../api/chat';
 import { createTurboResource } from 'turbo-solid';
 import { routes } from '../api/utils';
-import { User } from '../types/user.interface';
 import toast from 'solid-toast';
 import { RoomInfo, WsNotificationEvent } from '../types/chat.interface';
-import { api } from '../utils/api';
 import { generateImageUrl, notifyError, notifySuccess } from '../utils/helpers';
 import { AxiosError } from 'axios';
 import autoAnimate from '@formkit/auto-animate';
@@ -30,17 +28,17 @@ import { useAuth } from '../Providers/AuthProvider';
 const ChatRoomUserCard: Component<{
   user: RoomUser;
   ownerId: number;
-  refetch: () => void;
 }> = (props) => {
   const [isOpen, setIsOpen] = createSignal(false);
-  const [state, { changeTab, setFriendId }] = useStore();
-  const roomId = () => state.chat.roomId;
+  const [state, { changeTab, setFriendId, setCurrentRoomId }] = useStore();
   let ref: any;
   const [sockets] = useSockets();
-  const [currentRoom] = createResource(roomId, async (id: number) => {
-    const res = await api.get<RoomInfo>(`${routes.chat}/room_info/${id}`);
-    return res.data;
-  });
+
+  const path = state.chat.roomId
+    ? `${routes.chat}/room_info/${state.chat.roomId}`
+    : null;
+  const [currentRoom, { mutate: mutateCurrentRoom }] =
+    createTurboResource<RoomInfo>(() => path);
   const [auth] = useAuth();
   const [friends] = createTurboResource<number[]>(() => `${routes.friends}/id`);
   const [blockedUsers, { mutate }] = createTurboResource<number[]>(
@@ -87,11 +85,11 @@ const ChatRoomUserCard: Component<{
           user_id: props.user.id,
           time_minutes: 5,
         })
-        .then(() => {
+        .then((res) => {
           notifySuccess(
             `${props.user.display_name} muted from ${currentRoom()!.room_name}`,
           );
-          props.refetch();
+          mutateCurrentRoom({ ...res.data });
         })
         .catch((e: AxiosError<{ message: string }>) => {
           notifyError(e.response?.data.message as string);
@@ -115,11 +113,11 @@ const ChatRoomUserCard: Component<{
         room_id: currentRoom()!.room_id,
         user_id: props.user.id,
       })
-      .then(() => {
+      .then((res) => {
         notifySuccess(
           `${props.user.display_name} unmuted from ${currentRoom()!.room_name}`,
         );
-        props.refetch();
+        mutateCurrentRoom({ ...res.data });
       });
   };
 
@@ -130,11 +128,11 @@ const ChatRoomUserCard: Component<{
         user_id: props.user.id,
         time_minutes: 5,
       })
-      .then(() => {
+      .then((res) => {
         notifySuccess(
           `${props.user.display_name} banned from ${currentRoom()!.room_name}`,
         );
-        props.refetch();
+        mutateCurrentRoom({ ...res.data });
       })
       .catch((e: AxiosError<{ message: string }>) => {
         notifyError(e.response?.data.message as string);
@@ -147,13 +145,13 @@ const ChatRoomUserCard: Component<{
         room_id: currentRoom()!.room_id,
         user_id: props.user.id,
       })
-      .then(() => {
+      .then((res) => {
         notifySuccess(
           `${props.user.display_name} unbanned from ${
             currentRoom()!.room_name
           }`,
         );
-        props.refetch();
+        mutateCurrentRoom({ ...res.data });
       })
       .catch((e: AxiosError<{ message: string }>) => {
         notifyError(e.response?.data.message as string);
@@ -166,13 +164,13 @@ const ChatRoomUserCard: Component<{
         room_id: currentRoom()!.room_id,
         user_id: props.user.id,
       })
-      .then(() => {
+      .then((res) => {
         notifySuccess(
           `${props.user.display_name} promoted as admin: ${
             currentRoom()!.room_name
           }`,
         );
-        props.refetch();
+        mutateCurrentRoom({ ...res.data });
       })
       .catch((e: AxiosError<{ message: string }>) => {
         notifyError(e.response?.data.message as string);
@@ -185,13 +183,13 @@ const ChatRoomUserCard: Component<{
         room_id: currentRoom()!.room_id,
         user_id: props.user.id,
       })
-      .then(() => {
+      .then((res) => {
         notifySuccess(
           `${props.user.display_name} demoted to participant: ${
             currentRoom()!.room_name
           }`,
         );
-        props.refetch();
+        mutateCurrentRoom({ ...res.data });
       })
       .catch((e: AxiosError<{ message: string }>) => {
         notifyError(e.response?.data.message as string);
@@ -202,26 +200,33 @@ const ChatRoomUserCard: Component<{
     autoAnimate(ref);
     if (sockets.notifWsState === WebSocket.OPEN) {
       sockets.notificationWs!.addEventListener('message', (e) => {
-        let res: { event: WsNotificationEvent; data: any };
+        let res: { event: WsNotificationEvent; data: any; room: RoomInfo };
         res = JSON.parse(e.data);
         switch (res.event) {
           case 'chat: banned':
-            props.refetch();
+            mutateCurrentRoom({ ...res.room! });
             break;
           case 'chat: demoted':
-            props.refetch();
+            mutateCurrentRoom({ ...res.room! });
             break;
           case 'chat: unbanned':
-            props.refetch();
+            mutateCurrentRoom({ ...res.room! });
             break;
           case 'chat: promoted':
-            props.refetch();
+            mutateCurrentRoom({ ...res.room! });
             break;
           case 'chat: muted':
-            props.refetch();
+            mutateCurrentRoom({ ...res.room! });
             break;
           case 'chat: unmuted':
-            props.refetch();
+            mutateCurrentRoom({ ...res.room! });
+            break;
+          case 'chat: youGotBanned':
+            notifySuccess(
+              `${auth.user.display_name} got banned from ${res.data.room_name}`,
+            );
+            setCurrentRoomId(undefined);
+            changeTab(TAB.HOME);
             break;
           default:
             break;

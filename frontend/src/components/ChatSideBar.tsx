@@ -14,7 +14,6 @@ import { TAB, useStore } from '../store/all';
 import FriendList from './FriendList';
 import Search from './Search';
 import CreateRoom from './admin/createRoom';
-import Scrollbars from 'solid-custom-scrollbars';
 import { createTurboResource, mutate } from 'turbo-solid';
 import { routes } from '../api/utils';
 import { RoomInfo, WsNotificationEvent } from '../types/chat.interface';

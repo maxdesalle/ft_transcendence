@@ -1,5 +1,3 @@
-import { ro } from 'date-fns/locale';
-import { createResource } from 'solid-js';
 import { Message, RoomInfo } from '../types/chat.interface';
 import { api } from '../utils/api';
 import { routes } from './utils';
@@ -14,15 +12,6 @@ export type ChatPostBody = {
   room_id: number;
   user_id: number;
   time_minutes?: number;
-};
-
-export const createRoomResource = () => {
-  const [data, { mutate, refetch }] = createResource(getRooms);
-  return {
-    rooms: data,
-    mutate,
-    refetch,
-  };
 };
 
 const createRoom = async (data: CreateRoomType) => {
@@ -126,6 +115,7 @@ const setOwner = async (data: { room_id: number; user_id: number }) => {
 const leaveGroup = async (id: number) => {
   return await api.post<RoomInfo[]>(routes.leaveGroup, { room_id: id });
 };
+
 export const chatApi = {
   createRoom,
   getRooms,

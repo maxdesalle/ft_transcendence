@@ -50,7 +50,7 @@ const CreateRoom: Component<{ class?: string }> = (props) => {
         />
       </div>
       <div class="mt-2 flex items-center">
-        <label class="pr-2 pl-1">Private?</label>
+        <label class="pr-2 pl-1 text-white">Private?</label>
         <input
           autocomplete="off"
           onInput={(e) => setIsPrivate(e.currentTarget.checked)}

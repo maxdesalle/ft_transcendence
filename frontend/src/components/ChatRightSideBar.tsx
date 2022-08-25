@@ -2,7 +2,6 @@ import {
   Component,
   createEffect,
   createMemo,
-  createResource,
   createSignal,
   For,
   Match,
@@ -21,7 +20,6 @@ import { generateImageUrl, notifyError, notifySuccess } from '../utils/helpers';
 import { createTurboResource } from 'turbo-solid';
 import { routes } from '../api/utils';
 import { RoomInfo, WsNotificationEvent } from '../types/chat.interface';
-import { api } from '../utils/api';
 import RoomSettings from './RoomSettings';
 import Loader from './Loader';
 import { IoSettingsOutline } from 'solid-icons/io';
@@ -40,8 +38,9 @@ const ChatRightSideBar: Component<{}> = () => {
   const [sockets] = useSockets();
   const url = () => (roomId() ? `${routes.chat}/room_info/${roomId()}` : null);
 
-  const [currentRoom, { refetch }] =
-    createTurboResource<RoomInfo>(() => url());
+  const [currentRoom, { refetch, mutate }] = createTurboResource<RoomInfo>(() =>
+    url(),
+  );
   const currentUserRole = createMemo(
     () => currentRoom()?.users.find((user) => user.id === auth.user.id)?.role,
   );
@@ -69,10 +68,10 @@ const ChatRightSideBar: Component<{}> = () => {
   createEffect(() => {
     if (sockets.notificationWs) {
       sockets.notificationWs.addEventListener('message', (e) => {
-        let res: { event: WsNotificationEvent };
+        let res: { event: WsNotificationEvent; room?: RoomInfo };
         res = JSON.parse(e.data);
         if (res.event === 'chat_new_user_in_group') {
-          refetch();
+          mutate({ ...res.room! });
         } else if (res.event === 'chat: userLeave') {
           refetch();
         }
@@ -104,7 +103,7 @@ const ChatRightSideBar: Component<{}> = () => {
   });
   return (
     <Show when={state.chat.roomId}>
-      <div class="text-white h-full">
+      <div class="text-white">
         <h4 class="p-2 text-start">Owner</h4>
         <Show when={owner()}>
           <div class="p-2 flex items-center">
@@ -162,21 +161,13 @@ const ChatRightSideBar: Component<{}> = () => {
               <Show when={admins()} fallback={<Loader />}>
                 <For each={admins()}>
                   {(user) => (
-                    <ChatRoomUserCard
-                      refetch={refetch}
-                      user={user}
-                      ownerId={owner()!.id}
-                    />
+                    <ChatRoomUserCard user={user} ownerId={owner()!.id} />
                   )}
                 </For>
                 <h1 class="p-2">online</h1>
                 <For each={onlineUsers()}>
                   {(user) => (
-                    <ChatRoomUserCard
-                      refetch={refetch}
-                      user={user}
-                      ownerId={owner()!.id}
-                    />
+                    <ChatRoomUserCard user={user} ownerId={owner()!.id} />
                   )}
                 </For>
                 <h1 class="p-2">offline</h1>
@@ -189,11 +180,7 @@ const ChatRightSideBar: Component<{}> = () => {
                   )}
                 >
                   {(user) => (
-                    <ChatRoomUserCard
-                      refetch={refetch}
-                      user={user}
-                      ownerId={owner()!.id}
-                    />
+                    <ChatRoomUserCard user={user} ownerId={owner()!.id} />
                   )}
                 </For>
               </Show>

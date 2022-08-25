@@ -1,6 +1,7 @@
 import {
   Component,
   createEffect,
+  createMemo,
   createResource,
   createSignal,
   Match,
@@ -19,7 +20,6 @@ import {
   RoomInfo,
   WsNotificationEvent,
 } from '../types/chat.interface';
-import { api } from '../utils/api';
 import { notifyError } from '../utils/helpers';
 import { AxiosError } from 'axios';
 import ChatHome from '../components/ChatHome';
@@ -27,33 +27,24 @@ import { useSockets } from '../Providers/SocketProvider';
 import FriendSideBar from '../components/FriendSideBar';
 import { fetchUserById } from '../api/user';
 import Viewer from './Viewer';
+import { createTurboResource } from 'turbo-solid';
 
 const Chat: Component = () => {
   const [state] = useStore();
   const roomId = () => state.chat.roomId;
   const friendId = () => state.chat.friendId;
-  const [currentRoom, { refetch }] = createResource(
-    roomId,
-    async (id: number) => {
-      const res = await api.get<RoomInfo>(`${routes.chat}/room_info/${id}`);
-      return res.data;
-    },
+  const path = () =>
+    state.chat.roomId ? `${routes.chat}/room_info/${state.chat.roomId}` : null;
+  const [currentRoom] = createTurboResource<RoomInfo>(() =>
+    path(),
   );
+
   const [sockets] = useSockets();
 
   const [friend] = createResource(() => state.chat.friendId, fetchUserById);
 
-  const [roomMessages, { refetch: refetchRoomMessages }] = createResource(
-    roomId,
-    async (id: number) => {
-      try {
-        return await chatApi.getMessagesByRoomId(id);
-      } catch (err) {
-        console.log(err);
-      }
-    },
-    { initialValue: [] },
-  );
+  const roomMsgPath = createMemo(() => state.chat.roomId ? `${routes.roomMessages}/${state.chat.roomId}` : null)
+  const [roomMessages, { forget, refetch: refetchRoomMessages }] = createTurboResource(() => roomMsgPath())
   const [friendMessages, { refetch: refetchFriendMessages }] = createResource(
     friendId,
     chatApi.getFriendMessages,
@@ -91,6 +82,8 @@ const Chat: Component = () => {
           refetchRoomMessages();
         } else if (res.event === 'chat_dm') {
           refetchFriendMessages();
+        } else if (res.event === 'chat: banned') {
+          forget();
         }
       });
     }

@@ -26,7 +26,6 @@ import { WsNotificationEvent } from './types/chat.interface';
 import { api } from './utils/api';
 import { User } from './types/user.interface';
 import { routes } from './api/utils';
-import { notifySuccess } from './utils/helpers';
 
 const App: Component = () => {
   const [
