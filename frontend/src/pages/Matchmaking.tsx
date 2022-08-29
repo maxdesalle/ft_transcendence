@@ -102,11 +102,6 @@ const Matchmaking: Component = () => {
       // sockets.pongWs!.send(JSON.stringify({ event: 'cancel' }));
     }
   });
-
-  createEffect(() => {
-    console.log(unwrap(auth.user));
-  });
-
   return (
     <>
       <Modal
