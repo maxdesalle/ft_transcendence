@@ -4,13 +4,22 @@ import * as cookieParser from 'cookie-parser';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { WsAdapter } from '@nestjs/platform-ws';
 import { ValidationPipe } from '@nestjs/common';
+import { readFileSync } from 'node:fs';
 
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule);
+  // HTTPS
+  const httpsOptions = {
+    key: readFileSync('../secrets/key.pem'),
+    cert: readFileSync('../secrets/cert.pem'),
+  };
+  const app = await NestFactory.create(AppModule, {httpsOptions});
+
+  // CORS: not needed for serve_static
   app.enableCors({
     origin: true,
     credentials: true,
   });
+
   app.use(cookieParser({}));
   app.useWebSocketAdapter(new WsAdapter(app));
   app.useGlobalPipes(new ValidationPipe());

@@ -16,6 +16,8 @@ services:
       SERVE_STATIC: 'true'
       FRONTEND_URL: ''
       DB_HOST: 'db'
+    volumes:
+      - ./secrets:/usr/src/secrets
     restart: always
 
   db:

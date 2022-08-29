@@ -40,8 +40,11 @@ lerna-debug.log*
 !.vscode/launch.json
 !.vscode/extensions.json
 
+# important stuff
 .env
 **/.env*
 secrets
-# Rodolpho added this (temp stuff):
+
+# other stuff
 TODO
+.TODO
