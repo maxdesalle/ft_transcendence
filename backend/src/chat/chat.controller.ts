@@ -249,6 +249,31 @@ export class ChatController {
     return this.addGroupUser(me, room_id, user_id);
   }
 
+  @Post('kick_group_user')
+  @ApiTags('chat - group admin')
+  async kick(
+    @Usr() me: User,
+    @Body('room_id', ParseIntPipe, ValidGroupRoomPipe) room_id: number,
+    @Body('user_id', ParseIntPipe, ValidateUserPipe) user_id: number,
+    @Body() _body: RoomAndUserDto,
+  ) {
+    await this.chatService.ban_group_user(me, room_id, user_id, 0);
+    const room = await this.chatService.roomInfo(room_id);
+    const users_id = room.users.map((user) => user.id);
+    this.wsService.sendMsgToUser(user_id, {
+      event: 'chat: youGotKicked',
+      data: {
+        room_name: room.room_name,
+      },
+    });
+    this.wsService.sendMsgToUsersList([...users_id], {
+      event: 'chat: kicked',
+      room,
+    });
+    return room;
+  }
+
+
   @Post('ban_group_user')
   @ApiTags('chat - group admin')
   async banUser(
