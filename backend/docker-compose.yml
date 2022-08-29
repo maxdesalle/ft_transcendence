@@ -1,6 +1,6 @@
 version: '3.5'
 services:
-  db:
+  db_back:
     container_name: db
     image: postgres
     ports: 
