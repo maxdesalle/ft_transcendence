@@ -22,7 +22,7 @@ import { SummaryModule } from './summary/summary.module';
 		UsersModule, 
 		DatabaseFilesModule, 
 		// HtmlModule,
-		ConfigModule.forRoot({isGlobal: true}),
+		ConfigModule.forRoot({isGlobal: true, envFilePath: '../.env'}),
 		TypeOrmModule.forRootAsync(typeormConfig),
 		ChatModule,
 		MockAuthModule,

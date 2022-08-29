@@ -4,13 +4,11 @@ import {
   OnGatewayInit,
   SubscribeMessage,
   WebSocketGateway,
-  WebSocketServer,
 } from '@nestjs/websockets';
 import { IncomingMessage } from 'http';
 import { WebSocket, WebSocketServer as WSS } from 'ws';
 import { computeValues, deleteGameSession } from './computeValues';
 import { default_values } from './defaultVals';
-import { parse } from 'cookie';
 import { JwtService } from '@nestjs/jwt';
 import { UsersService } from 'src/users/users.service';
 import { WsService } from 'src/ws/ws.service';
@@ -38,7 +36,7 @@ interface playerScoresInterface {
 export const sockets: gameSocketsInterface[] = []; // array that will contain session objects
 
 // keeps track of who is connected to /pong/ gateway (socket - user_id pairs)
-export const connected_users= new Map<WebSocket, number>();
+export const connected_users = new Map<WebSocket, number>();
 // pending invitations to play (inviting user_id - invited user_id pairs )
 const invitations = new Map<number, number>();
 // player waiting to be matched with the first to join
@@ -76,18 +74,11 @@ export class PongGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
   handleDisconnect(client: WebSocket) {
     const user_id = connected_users.get(client);
-    if (!user_id) // auth-fail
-      return;
-    const remaining_player = removeGameSession(client);
-    if (remaining_player) {
-      this.wsService.sendMsgToUser(remaining_player, {
-        event: 'pong: opponent_disconnected',
-      });
-    }
     connected_users.delete(client);
     playing.delete(user_id);
     clearInviteWait(user_id);
-    console.log(`User ${user_id} disconnected from pong wss`);
+    removeGameSession(client);
+    if (user_id) console.log(`User ${user_id} disconnected from pong wss`);
   }
 
   @SubscribeMessage('play')
@@ -286,22 +277,22 @@ export class PongViewerGateway implements OnGatewayInit {
 
 function removeGameSession(ws: WebSocket) {
   const i = sockets.findIndex((s) => s.p1Socket === ws || s.p2Socket === ws);
-  if (i === -1) // not part of a session
-    return;
-  const leaving_player = connected_users.get(ws);
-  let remaining_player: number;
+  if (i === -1) return; // Rodolpho added this line
   if (sockets[i].p1Socket === ws) {
+    sockets[i].p1Socket = undefined;
     console.log(`p1 of session ${sockets[i].id} left`);
-    remaining_player = connected_users.get(sockets[i].p2Socket);
-  }
-  else {
+    if (sockets[i].p2Socket) {
+      console.log(`closing connection with p2 of session ${sockets[i].id}...`);
+      sockets[i].p2Socket.close();
+    } else sockets.splice(i, 1); // deleting game session from array
+  } else {
+    sockets[i].p2Socket = undefined;
     console.log(`p2 of session ${sockets[i].id} left`);
-    remaining_player = connected_users.get(sockets[i].p1Socket);
+    if (sockets[i].p1Socket) {
+      console.log(`closing connection with p1 of session ${sockets[i].id}...`);
+      sockets[i].p1Socket.close();
+    } else sockets.splice(i, 1); // deleting game session from array
   }
-  // remove session
-  sockets.splice(i, 1); // deleting game session from array
-  // reuturn remaining_player id
-  return remaining_player;
 }
 
 //function to execute right after second player has been connected

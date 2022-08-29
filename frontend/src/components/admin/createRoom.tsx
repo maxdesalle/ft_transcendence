@@ -1,10 +1,10 @@
 import { Component, createSignal } from 'solid-js';
+import { mutate } from 'turbo-solid';
 import { chatApi } from '../../api/chat';
+import { routes } from '../../api/utils';
 import { notifySuccess } from '../../utils/helpers';
 
-const CreateRoom: Component<{ refetch: () => void; class?: string }> = (
-  props,
-) => {
+const CreateRoom: Component<{ class?: string }> = (props) => {
   const [roomName, setRoomName] = createSignal('');
   const [password, setPassword] = createSignal('');
   const [isPrivate, setIsPrivate] = createSignal(false);
@@ -17,8 +17,8 @@ const CreateRoom: Component<{ refetch: () => void; class?: string }> = (
         private: isPrivate(),
         password: password(),
       })
-      .then(() => {
-        props.refetch();
+      .then((res) => {
+        mutate(routes.getRooms, (e) => [...e, res.data]);
         notifySuccess(`${roomName()} created`);
         setRoomName('');
       });
@@ -50,7 +50,7 @@ const CreateRoom: Component<{ refetch: () => void; class?: string }> = (
         />
       </div>
       <div class="mt-2 flex items-center">
-        <label class="pr-2 pl-1">Private?</label>
+        <label class="pr-2 pl-1 text-white">Private?</label>
         <input
           autocomplete="off"
           onInput={(e) => setIsPrivate(e.currentTarget.checked)}

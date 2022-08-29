@@ -1,5 +1,3 @@
-import autoAnimate from '@formkit/auto-animate';
-import Scrollbars from 'solid-custom-scrollbars';
 import {
   Component,
   createEffect,
@@ -10,7 +8,9 @@ import {
 } from 'solid-js';
 import { createTurboResource } from 'turbo-solid';
 import { routes } from '../api/utils';
+import { useSockets } from '../Providers/SocketProvider';
 import { useStore } from '../store/all';
+import { WsNotificationEvent } from '../types/chat.interface';
 import { Friend, User } from '../types/user.interface';
 import AddFriend from './AddFriend';
 import FriendCard from './FriendCard';
@@ -22,13 +22,27 @@ const FriendList: Component = () => {
   const onLoadFriendMessages = (friend: Friend) => {
     setFriendId(friend.id);
   };
-  const [friends] = createTurboResource<Friend[]>(() => routes.friends);
+  const [sockets] = useSockets();
+  const [friends, { refetch }] = createTurboResource<Friend[]>(
+    () => routes.friends,
+  );
   const filteredFriends = () =>
     friends()?.filter((user) => {
       return user.display_name.toLowerCase().includes(keyword().toLowerCase());
     });
 
   let ref: any;
+  createEffect(() => {
+    if (sockets.notifWsState === WebSocket.OPEN) {
+      sockets.notificationWs!.addEventListener('message', (e) => {
+        let res: { event: WsNotificationEvent };
+        res = JSON.parse(e.data);
+        if (res.event === 'friends: request_accepted') {
+          refetch();
+        }
+      });
+    }
+  });
 
   return (
     <div ref={ref} class="h-full">

@@ -1,19 +1,20 @@
 import { AxiosError } from 'axios';
-import { useNavigate } from 'solid-app-router';
-import { Component, For, onMount, Show } from 'solid-js';
+import { Component, For, Show } from 'solid-js';
+import { mutate } from 'turbo-solid';
 import { acceptFriendReq, rejectFriendReq } from '../api/user';
-import { useSockets } from '../Providers/SocketProvider';
+import { routes } from '../api/utils';
 import { useStore } from '../store/all';
 import { notifyError, notifySuccess } from '../utils/helpers';
 
 const PendingFriendReqCard: Component = () => {
-  const [sockets] = useSockets();
-  const [state, { setPendigFriendReq, setFriendInvitation }] = useStore();
-  const navigate = useNavigate();
+  const [state, { setPendigFriendReq }] = useStore();
+
   const onAcceptFriendReq = (id: number) => {
     acceptFriendReq(id)
-      .then(() => {
+      .then((res) => {
         notifySuccess('success');
+        console.log('res: ', res.data);
+        mutate(routes.friends, [...res.data]);
         setPendigFriendReq(
           state.currentUser.pendingFriendReq.filter(
             (req) => req.req_user.id !== id,
@@ -38,21 +39,9 @@ const PendingFriendReqCard: Component = () => {
       );
   };
 
-  const onAcceptInvite = () => {
-    const data = {
-      event: 'accept',
-      data: state.pong.friendInvitation?.user_id,
-    };
-    sockets.pongWs!.send(JSON.stringify(data));
-    navigate('/pong');
-    setFriendInvitation(null);
-  };
-
   return (
     <Show
-      when={
-        state.currentUser.pendingFriendReq.length || state.pong.friendInvitation
-      }
+      when={state.currentUser.pendingFriendReq.length}
       fallback={
         <p class="bg-gray-700 p-3 border-1 text-white shadow-md border-red-600">
           No friend requests 🥲
@@ -83,9 +72,6 @@ const PendingFriendReqCard: Component = () => {
             </div>
           )}
         </For>
-        <button onClick={onAcceptInvite} class="btn-primary">
-          Accept
-        </button>
       </div>
     </Show>
   );

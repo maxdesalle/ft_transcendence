@@ -6,18 +6,25 @@
 - [x] 📃 make edit profile reactive
 - [x] 🎉 better login flow
 
+(#3) user profile:
 - [-] 📃 player stats on the profile page
+----
 
 
-- [ ] 🎉 block users on the profile page
 - [ ] 📃 watch friend game from chat interface
 - [ ] 📃 mini tutorial on how to play the game
 - [ ] 🎉 refetch data when a user is blocked or unblocked
 
 (#1) App:
 - [x] 🎉 Clear app state
+- [x] 🎉 use TurboRessource to keep the currentRoom updated (send back new RoomInfo with sockets refetch sucks)
+----
+
+(#4) chat:
+- [ ] 🎉 reset messages for the banned user
 ----
 
 (#2) pong:
 - [ ] 🎉 invite online player only
+- [ ] 🎉 Better matchmaking
 ----

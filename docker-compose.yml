@@ -1,0 +1,39 @@
+version: '3.5'
+services:
+  app:
+    container_name: app
+    build:
+      context: .
+      args:
+        - VITE_HOST=${APP_HOST}
+    depends_on:
+      - db
+    ports: 
+      - 3000:3000
+    env_file:
+      - .env
+    environment:
+      SERVE_STATIC: 'true'
+      FRONTEND_URL: ''
+      DB_HOST: 'db'
+    restart: always
+
+  db:
+    container_name: db
+    image: postgres
+    environment:
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    restart: always
+
+  # adminer:
+  #   image: adminer
+  #   restart: always
+  #   ports:
+  #     - 8080:8080
+
+volumes:
+  pgdata:
+    name: trans_pgdata
+    external: false

@@ -126,7 +126,17 @@ export class ChatController {
     @Body() _room: RoomAndPasswordDto,
   ) {
     await this.chatService.join_public_group(me, room_id, password);
-    return this.chatService.roomInfo(room_id);
+    const room = await this.chatService.roomInfo(room_id);
+    // notify all users in group
+    this.wsService.sendMsgToUsersList(
+      await this.chatService.listRoomParticipants(room_id),
+      {
+        event: 'chat_new_user_in_group',
+        room,
+        user_id: me.id,
+      },
+    );
+    return room;
   }
 
   @Post('leave_group')
@@ -137,6 +147,13 @@ export class ChatController {
     @Body() _room: RoomIdDto,
   ) {
     await this.chatService.leave_group(me, room_id);
+    this.wsService.sendMsgToUsersList(
+      await this.chatService.listRoomParticipants(room_id),
+      {
+        event: 'chat: userLeave',
+        room_id,
+      },
+    );
     return this.getConvs(me);
   }
 
@@ -209,15 +226,16 @@ export class ChatController {
       room_id,
     });
     // notify all users in group
+    const room = await this.chatService.roomInfo(room_id);
     this.wsService.sendMsgToUsersList(
       await this.chatService.listRoomParticipants(room_id),
       {
         event: 'chat_new_user_in_group',
-        room_id,
+        room,
         user_id,
       },
     );
-    return this.chatService.roomInfo(room_id);
+    return room;
   }
 
   @Post('add_group_user_by_name')
@@ -231,6 +249,31 @@ export class ChatController {
     return this.addGroupUser(me, room_id, user_id);
   }
 
+  @Post('kick_group_user')
+  @ApiTags('chat - group admin')
+  async kick(
+    @Usr() me: User,
+    @Body('room_id', ParseIntPipe, ValidGroupRoomPipe) room_id: number,
+    @Body('user_id', ParseIntPipe, ValidateUserPipe) user_id: number,
+    @Body() _body: RoomAndUserDto,
+  ) {
+    await this.chatService.ban_group_user(me, room_id, user_id, 0);
+    const room = await this.chatService.roomInfo(room_id);
+    const users_id = room.users.map((user) => user.id);
+    this.wsService.sendMsgToUser(user_id, {
+      event: 'chat: youGotKicked',
+      data: {
+        room_name: room.room_name,
+      },
+    });
+    this.wsService.sendMsgToUsersList([...users_id], {
+      event: 'chat: kicked',
+      room,
+    });
+    return room;
+  }
+
+
   @Post('ban_group_user')
   @ApiTags('chat - group admin')
   async banUser(
@@ -243,8 +286,15 @@ export class ChatController {
     await this.chatService.ban_group_user(me, room_id, user_id, ban_minutes);
     const room = await this.chatService.roomInfo(room_id);
     const users_id = room.users.map((user) => user.id);
-    this.wsService.sendMsgToUsersList([...users_id, user_id], {
+    this.wsService.sendMsgToUser(user_id, {
+      event: 'chat: youGotBanned',
+      data: {
+        room_name: room.room_name,
+      },
+    });
+    this.wsService.sendMsgToUsersList([...users_id], {
       event: 'chat: banned',
+      room,
     });
     return room;
   }
@@ -262,6 +312,7 @@ export class ChatController {
     const users_id = room.users.map((user) => user.id);
     this.wsService.sendMsgToUsersList([...users_id, user_id], {
       event: 'chat: unbanned',
+      room,
     });
     return room;
   }
@@ -280,6 +331,7 @@ export class ChatController {
     const users_id = room.users.map((user) => user.id);
     this.wsService.sendMsgToUsersList(users_id, {
       event: 'chat: muted',
+      room,
     });
     return room;
   }
@@ -297,6 +349,7 @@ export class ChatController {
     const users_id = room.users.map((user) => user.id);
     this.wsService.sendMsgToUsersList(users_id, {
       event: 'chat: unmuted',
+      room,
     });
     return room;
   }
@@ -315,6 +368,7 @@ export class ChatController {
     // send notification to all users in this room
     this.wsService.sendMsgToUsersList(users_id, {
       event: 'chat: promoted',
+      room,
     });
     return room;
   }
@@ -333,6 +387,7 @@ export class ChatController {
     // send notification to all users in this room
     this.wsService.sendMsgToUsersList(users_id, {
       event: 'chat: demoted',
+      room,
     });
     return room;
   }

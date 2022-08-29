@@ -1,7 +1,9 @@
 import {
   Component,
   createEffect,
+  createMemo,
   createResource,
+  createSignal,
   Match,
   Show,
   Switch,
@@ -18,37 +20,31 @@ import {
   RoomInfo,
   WsNotificationEvent,
 } from '../types/chat.interface';
-import { api } from '../utils/api';
 import { notifyError } from '../utils/helpers';
 import { AxiosError } from 'axios';
 import ChatHome from '../components/ChatHome';
 import { useSockets } from '../Providers/SocketProvider';
 import FriendSideBar from '../components/FriendSideBar';
 import { fetchUserById } from '../api/user';
+import Viewer from './Viewer';
+import { createTurboResource } from 'turbo-solid';
 
 const Chat: Component = () => {
   const [state] = useStore();
   const roomId = () => state.chat.roomId;
   const friendId = () => state.chat.friendId;
-  const [currentRoom] = createResource(roomId, async (id: number) => {
-    const res = await api.get<RoomInfo>(`${routes.chat}/room_info/${id}`);
-    return res.data;
-  });
+  const path = () =>
+    state.chat.roomId ? `${routes.chat}/room_info/${state.chat.roomId}` : null;
+  const [currentRoom] = createTurboResource<RoomInfo>(() =>
+    path(),
+  );
+
   const [sockets] = useSockets();
 
   const [friend] = createResource(() => state.chat.friendId, fetchUserById);
 
-  const [roomMessages, { refetch: refetchRoomMessages }] = createResource(
-    roomId,
-    async (id: number) => {
-      try {
-        return await chatApi.getMessagesByRoomId(id);
-      } catch (err) {
-        console.log(err);
-      }
-    },
-    { initialValue: [] },
-  );
+  const roomMsgPath = createMemo(() => state.chat.roomId ? `${routes.roomMessages}/${state.chat.roomId}` : null)
+  const [roomMessages, { forget, refetch: refetchRoomMessages }] = createTurboResource(() => roomMsgPath())
   const [friendMessages, { refetch: refetchFriendMessages }] = createResource(
     friendId,
     chatApi.getFriendMessages,
@@ -86,10 +82,14 @@ const Chat: Component = () => {
           refetchRoomMessages();
         } else if (res.event === 'chat_dm') {
           refetchFriendMessages();
+        } else if (res.event === 'chat: banned') {
+          forget();
         }
       });
     }
   });
+
+  const [isWatching, setIsWatching] = createSignal(false);
 
   return (
     <div class="grid grid-cols-6 h-95">
@@ -105,10 +105,12 @@ const Chat: Component = () => {
             />
           </Match>
           <Match when={state.chatUi.tab === TAB.FRIENDS}>
-            <ChatMessagesBox
-              messages={friendMessages()!}
-              onSendMessage={onSendMessageToFriend}
-            />
+            <Show when={!isWatching()} fallback={<Viewer />}>
+              <ChatMessagesBox
+                messages={friendMessages()!}
+                onSendMessage={onSendMessageToFriend}
+              />
+            </Show>
           </Match>
           <Match when={state.chatUi.tab === TAB.HOME}>
             <ChatHome />
@@ -122,7 +124,7 @@ const Chat: Component = () => {
           </Match>
           <Match when={state.chatUi.tab === TAB.FRIENDS}>
             <Show when={friend()}>
-              <FriendSideBar friend={friend()!} />
+              <FriendSideBar setIsWatching={setIsWatching} friend={friend()!} />
             </Show>
           </Match>
         </Switch>

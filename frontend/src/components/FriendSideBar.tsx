@@ -1,5 +1,5 @@
 import { Link } from 'solid-app-router';
-import { Component, createEffect, Show } from 'solid-js';
+import { Component, createEffect, createMemo, Setter, Show } from 'solid-js';
 import { createTurboResource } from 'turbo-solid';
 import { blockUser, chatApi } from '../api/chat';
 import { routes } from '../api/utils';
@@ -9,7 +9,10 @@ import { User } from '../types/user.interface';
 import { generateImageUrl, notifyError, notifySuccess } from '../utils/helpers';
 import Avatar from './Avatar';
 
-const FriendSideBar: Component<{ friend: User }> = (props) => {
+const FriendSideBar: Component<{
+  friend: User;
+  setIsWatching: Setter<boolean>;
+}> = (props) => {
   const [sockets] = useSockets();
   const [state] = useStore();
 
@@ -46,17 +49,23 @@ const FriendSideBar: Component<{ friend: User }> = (props) => {
     sockets.pongWs!.send(JSON.stringify(data));
   };
 
-  const isBlocked = () => blockedFriends()?.includes(props.friend.id as number);
+  const isBlocked = createMemo(() =>
+    blockedFriends()?.includes(props.friend.id as number),
+  );
+
+  const inGame = createMemo(() => state.inGameUsers.includes(props.friend.id));
+
   return (
     <div class="flex flex-col px-2">
       <Avatar
-        class="py-5 self-center"
+        class="pt-5 self-center"
         imgUrl={
           props.friend.avatarId
             ? generateImageUrl(props.friend.avatarId)
             : undefined
         }
       />
+      <p class="self-center text-white pb-3">{props.friend.display_name}</p>
       <button onClick={inviteFriend} type="button" class="btn-primary w-full">
         Invite to play
       </button>
@@ -80,6 +89,9 @@ const FriendSideBar: Component<{ friend: User }> = (props) => {
         >
           Unblock
         </button>
+      </Show>
+      <Show when={inGame()}>
+        <button class="btn-primary">Watch</button>
       </Show>
     </div>
   );

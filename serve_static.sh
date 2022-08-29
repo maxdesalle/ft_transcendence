@@ -12,8 +12,8 @@ cd frontend && npm run build && cd .. # comment out this line to skip build
 
 # restart DB with a fresh one
 cd backend
-docker-compose down
-docker-compose up -d
+docker-compose --env-file ../.env down
+docker-compose --env-file ../.env  up -d
 
 # set env vars
 export FRONTEND_URL="" # overwriting this variable 

@@ -1,24 +1,72 @@
+## How to make stuff happen
+
+### your new best friend:
+`./clear_docker_hell.sh`  
+When to use it? Follow your heart.
+
+### might be useful:
+`./reset_db.sh`
+
+There are now 3 (!) ways to bring up the whole thing, because we're masochists.
+
+1) docker-compose up
+2) ./launch.sh
+3) ./serve_static.sh
+
+Either way, you need an .env file at the **ROOT** of the repo.
+
+Last know working .env:
+```
+APP_HOST=127.0.0.1
+
+# auth
+FORTYTWO_CLIENT_ID=XXXXXXXXXX
+FORTYTWO_CLIENT_SECRET=XXXXXXXXXXXXXX
+FORTYTWO_CALLBACK_URL=http://127.0.0.1:3000/login/42/return
+JWT_TOKEN_SECRET="hello there"
+JWT_TOKEN_EXPIRY=99999999999999999999
+
+# database
+DB_PASSWORD=12345
+DB_PORT=5432
+DB_HOST=127.0.0.1
+
+# avatar photo
+FRONTEND_URL=http://127.0.0.1:8000
+AVATAR_DEFAULT_FILE=images/avatardefault.png
+AVATAR_MAX_SIZE=99999999999999999999999
+
+```
+
+More details:
+
+### dev-mode: 2 servers (front and backend)
+`./launch.sh` (have the **.env** file ready)
+
+Frontend app should be available at `http://127.0.01:8000`
+
+### production mode: 1 server only, frontend app served as static files
+* Have the **.env** file ready
+* setup the first line of the script serve_static.sh accordingly (if you're using localhost or 127.0.0.1)
+* `./serve_static.sh`   
+
+App should be available at `http://127.0.01:3000`
+
+### production mode fully Dockerized:
+* `docker-compose up [--build]`
+
+
+App should be available at `http://127.0.01:3000`
+
+## Obs: do not mix localhost and 127.0.0.1
+-----------------------
 ## TODO's before push
 - no more need to serve "client" dir (backend)
 - remove mock auth module
 - typeORM config: no 'synchronize' in production!
-- remove CORS enable (serve static = 1 server only)
+- remove CORS enable (if the setup allows so...)
+- HTTPS ?
 
-## How to make stuff happen
-
-* .env file inside the **backend** directory
-* cert.pem and key.pem inside a **secrets** directory (which should be located at the repo's root)
-
-For now, only working when serving frontend as static files.
-
-`./serve_static.sh` 
-
-
-App should be available at `httsp://127.0.01:3000` (mind the S in httpS !)
-
-
-## Obs: do not mix localhost and 127.0.0.1
------------------------
 
 ### How to access the database:
 **Adminer** is available at 127.0.0.1:8080
@@ -273,6 +321,15 @@ new group message
 }
 ```
 
+you got kicked
+```
+{
+    "event": "chat: youGotKicked",
+    "data": {
+        "room_name": "groupy"
+    }
+}
+```
 ### Friends
 Incoming Friendship request
 ```
@@ -391,10 +448,8 @@ a game session has just ended
 }
 ```
 
-opponent is disconnected from the pong wss (e.g. closed browser tab)
-```
-{event: 'pong: opponent_disconnected'}
-```
+~~opponent is disconnected from the pong wss (e.g. closed browser tab)~~  
+~~`{event: 'pong: opponent_disconnected'}`~~ (removed)
 
 ### Ladder change
 When a Pong match is over, points in the general ladder are changed

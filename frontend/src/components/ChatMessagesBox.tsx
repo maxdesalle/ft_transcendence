@@ -1,27 +1,16 @@
 import { compareAsc, parseISO } from 'date-fns';
-import {
-  Component,
-  createEffect,
-  createResource,
-  createSignal,
-  Show,
-} from 'solid-js';
+import { Component, createSignal, Show } from 'solid-js';
 import MessageList from './MessageList';
-import { useStore } from '../store/all';
 import ChatForm from './ChatForm';
-import { Message, RoomInfo } from '../types/chat.interface';
-import PendingFriendReqCard from './PendingFriendReqCard';
-import { createTurboResource } from 'turbo-solid';
-import { routes } from '../api/utils';
-import toast from 'solid-toast';
-import { api } from '../utils/api';
+import { Message } from '../types/chat.interface';
+import { useAuth } from '../Providers/AuthProvider';
 
 const ChatMessagesBox: Component<{
   onSendMessage: (message: string) => void;
   messages: Message[];
 }> = (props) => {
-  const [currentUser] = createTurboResource(() => routes.currentUser);
   const [message, setMessage] = createSignal('');
+  const [auth] = useAuth();
 
   return (
     <>
@@ -35,7 +24,7 @@ const ChatMessagesBox: Component<{
                 parseISO(a.timestamp.toString()),
               ),
             )}
-          id={currentUser()?.id}
+          id={auth.user.id}
         />
         <ChatForm
           message={message()}

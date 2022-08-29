@@ -1,53 +1,106 @@
 import {
   Component,
   createEffect,
-  createResource,
+  createMemo,
   createSignal,
   For,
   Match,
+  onCleanup,
   Show,
   Switch,
 } from 'solid-js';
 import { AiOutlinePlusCircle } from 'solid-icons/ai';
 import Modal from './Modal';
 import AddUserToRoom from './admin/AddUserToRoom';
-import { useStore } from '../store/all';
+import { TAB, useStore } from '../store/all';
 import Avatar from './Avatar';
 import ChatRoomUserCard from './ChatRoomUserCard';
 import { RoomUser, User } from '../types/user.interface';
-import { generateImageUrl } from '../utils/helpers';
+import { generateImageUrl, notifyError, notifySuccess } from '../utils/helpers';
 import { createTurboResource } from 'turbo-solid';
 import { routes } from '../api/utils';
-import { RoomInfo } from '../types/chat.interface';
-import { api } from '../utils/api';
+import { RoomInfo, WsNotificationEvent } from '../types/chat.interface';
 import RoomSettings from './RoomSettings';
 import Loader from './Loader';
 import { IoSettingsOutline } from 'solid-icons/io';
 import Scrollbars from 'solid-custom-scrollbars';
+import { useSockets } from '../Providers/SocketProvider';
+import { useAuth } from '../Providers/AuthProvider';
+import { chatApi } from '../api/chat';
+import { AxiosError } from 'axios';
 
 const ChatRightSideBar: Component<{}> = () => {
   const [isOpen, setIsOpen] = createSignal(false);
-  const [state] = useStore();
-  const [owner, setOwner] = createSignal<RoomUser>();
+  const [state, { setCurrentRoomId, changeTab }] = useStore();
+  const [auth] = useAuth();
   const roomId = () => state.chat.roomId;
-  const [currentUser] = createTurboResource<User>(() => routes.currentUser);
   let addRef: any;
-  const [currentRoom, { refetch }] = createResource(
-    roomId,
-    async (id: number) => {
-      const res = await api.get<RoomInfo>(`${routes.chat}/room_info/${id}`);
-      return res.data;
-    },
+  const [sockets] = useSockets();
+  const url = () => (roomId() ? `${routes.chat}/room_info/${roomId()}` : null);
+
+  const [currentRoom, { refetch, mutate }] = createTurboResource<RoomInfo>(() =>
+    url(),
   );
-  const currentUserRole = () =>
-    currentRoom()?.users.find((user) => user.id === currentUser()?.id)?.role;
+  const currentUserRole = createMemo(
+    () => currentRoom()?.users.find((user) => user.id === auth.user.id)?.role,
+  );
+
+  const owner = () =>
+    currentRoom()?.users.find((user) => user.role === 'owner');
+
+  const admins = createMemo(() =>
+    currentRoom()?.users.filter(
+      (user) =>
+        user.id !== owner()?.id &&
+        user.role === 'admin' &&
+        state.onlineUsers.includes(user.id),
+    ),
+  );
+
+  const onlineUsers = () =>
+    currentRoom()!.users.filter(
+      (user) =>
+        user.id !== owner()!.id &&
+        user.role === 'participant' &&
+        state.onlineUsers.includes(user.id),
+    );
 
   createEffect(() => {
-    setOwner(currentRoom()?.users.find((user) => user.role === 'owner'));
+    if (sockets.notificationWs) {
+      sockets.notificationWs.addEventListener('message', (e) => {
+        let res: { event: WsNotificationEvent; room?: RoomInfo };
+        res = JSON.parse(e.data);
+        if (res.event === 'chat_new_user_in_group') {
+          mutate({ ...res.room! });
+        } else if (res.event === 'chat: userLeave') {
+          refetch();
+        }
+      });
+    }
   });
 
   const [tab, setTab] = createSignal(0);
 
+  const onLeaveGroup = () => {
+    chatApi
+      .leaveGroup(currentRoom()!.room_id)
+      .then(() => {
+        notifySuccess(
+          `${auth.user.display_name} left ${currentRoom()!.room_name}`,
+        );
+        setCurrentRoomId(undefined);
+        changeTab(TAB.HOME);
+      })
+      .catch((err: AxiosError<{ message: string }>) => {
+        notifyError(err.response?.data.message as string);
+      });
+  };
+
+  onCleanup(() => {
+    if (sockets.notificationWs) {
+      sockets.notificationWs.removeEventListener('message', () => {});
+    }
+  });
   return (
     <Show when={state.chat.roomId}>
       <div class="text-white">
@@ -104,42 +157,17 @@ const ChatRightSideBar: Component<{}> = () => {
                 height: '70vh',
               }}
             >
-              <h1>Admin</h1>
-              <Show
-                when={currentRoom() && owner() && currentUser()}
-                fallback={<Loader />}
-              >
-                <For
-                  each={currentRoom()!.users.filter(
-                    (user) =>
-                      user.id !== owner()!.id &&
-                      user.role === 'admin' &&
-                      state.onlineUsers.includes(user.id),
-                  )}
-                >
+              <h1 class="p-2">Admin</h1>
+              <Show when={admins()} fallback={<Loader />}>
+                <For each={admins()}>
                   {(user) => (
-                    <ChatRoomUserCard
-                      refetch={refetch}
-                      user={user}
-                      ownerId={owner()!.id}
-                    />
+                    <ChatRoomUserCard user={user} ownerId={owner()!.id} />
                   )}
                 </For>
                 <h1 class="p-2">online</h1>
-                <For
-                  each={currentRoom()!.users.filter(
-                    (user) =>
-                      user.id !== owner()!.id &&
-                      user.role === 'participant' &&
-                      state.onlineUsers.includes(user.id),
-                  )}
-                >
+                <For each={onlineUsers()}>
                   {(user) => (
-                    <ChatRoomUserCard
-                      refetch={refetch}
-                      user={user}
-                      ownerId={owner()!.id}
-                    />
+                    <ChatRoomUserCard user={user} ownerId={owner()!.id} />
                   )}
                 </For>
                 <h1 class="p-2">offline</h1>
@@ -152,15 +180,16 @@ const ChatRightSideBar: Component<{}> = () => {
                   )}
                 >
                   {(user) => (
-                    <ChatRoomUserCard
-                      refetch={refetch}
-                      user={user}
-                      ownerId={owner()!.id}
-                    />
+                    <ChatRoomUserCard user={user} ownerId={owner()!.id} />
                   )}
                 </For>
               </Show>
             </Scrollbars>
+            <div class="w-full p-1">
+              <button onClick={onLeaveGroup} class="btn-secondary">
+                Leave channel
+              </button>
+            </div>
           </Match>
           <Match when={tab() == 1}>
             <RoomSettings refetch={refetch} />

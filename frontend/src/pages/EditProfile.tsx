@@ -1,5 +1,4 @@
-import { Link, useNavigate } from 'solid-app-router';
-import { Component, createSignal, Match, Switch } from 'solid-js';
+import { Component, createEffect, createSignal, Match, Switch } from 'solid-js';
 import {
   activate2fa,
   changeAvatar,
@@ -11,6 +10,11 @@ import QRCode from 'qrcode';
 import { notifyError, notifySuccess } from '../utils/helpers';
 import { useAuth } from '../Providers/AuthProvider';
 import { useStore } from '../store/all';
+import { useSockets } from '../Providers/SocketProvider';
+import { useNavigate } from 'solid-app-router';
+import Cookies from 'js-cookie';
+import { unwrap } from 'solid-js/store';
+import { forget } from 'turbo-solid';
 
 const EditProfile: Component = () => {
   const [newName, setNewName] = createSignal('');
@@ -19,6 +23,7 @@ const EditProfile: Component = () => {
   const [pathUrl, setPathUrl] = createSignal('');
   const [auth, { setUser, setUserAvatarId, setToken, setIsAuth }] = useAuth();
   const [_, { resetStore }] = useStore();
+  const [sockes, { disconnect }] = useSockets();
 
   const onChangeName = () => {
     if (newName()) {
@@ -33,6 +38,7 @@ const EditProfile: Component = () => {
         QRCode.toDataURL(res.otpauthUrl, (_, url) => {
           setPathUrl(url);
         });
+        setUser({ ...auth.user, isTwoFactorAuthenticationEnabled: true });
         notifySuccess('2fa activated please scan the qr code');
       })
       .catch((err) => {
@@ -41,9 +47,23 @@ const EditProfile: Component = () => {
     setIsOpen(true);
   };
 
+  const navigate = useNavigate();
+
+  const logout = () => {
+    setToken(undefined);
+    Cookies.remove('jwt_token', { sameSite: 'none', secure: true });
+    forget();
+    resetStore();
+    disconnect();
+    setIsAuth(false);
+    navigate('/login');
+  };
   const onDeactivate2fa = () => {
     deactivate2fa()
-      .then(() => notifySuccess('2fa deactivated'))
+      .then(() => {
+        logout();
+        navigate('/login');
+      })
       .catch((err) => notifyError(err.message));
   };
 
@@ -60,9 +80,7 @@ const EditProfile: Component = () => {
   };
 
   const onNavigate = () => {
-    resetStore();
-    setToken(undefined);
-    setIsAuth(false);
+    logout();
   };
 
   return (
@@ -96,10 +114,11 @@ const EditProfile: Component = () => {
             </button>
           </Match>
         </Switch>
-        <Modal isOpen={isOpen()} toggleModal={setIsOpen}>
-          <div class="flex flex-col">
+        <Modal class="bg-purple-300 opacity-30 z-30" isOpen={isOpen()}>
+          <div class="flex bg-skin-page gap-2 flex-col opacity-100 p-2 border border-header-menu">
+            <h1 class="text-xl p-2">Please scan the QR code</h1>
             <img src={pathUrl()} alt="qr code" />
-            <button class="btn-primary w-full" onClick={onNavigate}>
+            <button class="btn-primary w-full px-2 py-4" onClick={onNavigate}>
               Go back to login
             </button>
           </div>

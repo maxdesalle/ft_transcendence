@@ -21,7 +21,7 @@ const Protected: Component<{ children: JSXElement }> = (props) => {
       try {
         const res = await api.get<User>(routes.currentUser);
         setIsAuth(true);
-        setUser(res.data);
+        setUser({ ...res.data });
         setToken(Cookies.get('jwt_token'));
         return res.data;
       } catch (error) {

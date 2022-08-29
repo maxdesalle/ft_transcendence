@@ -18,7 +18,7 @@ const MessageList: Component<{ messages?: Message[]; id?: number }> = (
   createEffect(() => {
     props.messages;
     // ref.scrollTop = ref.scrollHeight;
-    ref.scrollIntoView();
+    // ref.scrollIntoView();
     //TODO: Srool bottom
   });
   let ref: any;
