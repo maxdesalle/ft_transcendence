@@ -1,5 +1,12 @@
 import { AxiosError } from 'axios';
-import { Component, createEffect, createSignal, For, Show } from 'solid-js';
+import {
+  Component,
+  createEffect,
+  createMemo,
+  createSignal,
+  For,
+  Show,
+} from 'solid-js';
 import { createTurboResource } from 'turbo-solid';
 import { chatApi } from '../api/chat';
 import { routes } from '../api/utils';
@@ -16,13 +23,11 @@ const RoomSettings: Component<{ refetch?: () => void }> = (props) => {
   const path = state.chat.roomId
     ? `${routes.chat}/room_info/${state.chat.roomId}`
     : null;
-  const [currentRoom, { refetch, mutate }] = createTurboResource<RoomInfo>(
-    () => path,
-  );
+  const [currentRoom, { mutate }] = createTurboResource<RoomInfo>(() => path);
   const bannedUserUrl = () =>
     state.chat.roomId ? `${routes.bannedUsers}/${state.chat.roomId}` : null;
 
-  const [bannedUsers, { refetch: refetchUnbaned }] = createTurboResource<
+  const [bannedUsers, { mutate: mutateBanned }] = createTurboResource<
     { id: number; login42: string; display_name: string; unban: Date }[]
   >(() => bannedUserUrl());
 
@@ -32,8 +37,8 @@ const RoomSettings: Component<{ refetch?: () => void }> = (props) => {
         room_id: currentRoom()!.room_id,
         private: true,
       })
-      .then(() => {
-        refetch();
+      .then((res) => {
+        mutate({ ...res.data });
         notifySuccess('Room set to private');
       })
       .catch((err: AxiosError<{ message: string }>) => {
@@ -47,10 +52,10 @@ const RoomSettings: Component<{ refetch?: () => void }> = (props) => {
         room_id: currentRoom()!.room_id,
         password: password(),
       })
-      .then(() => {
+      .then((res) => {
+        mutate({ ...res.data });
         notifySuccess('Password updated');
         setPassword('');
-        refetch();
       })
       .catch((err: AxiosError<{ message: string }>) => {
         setPassword('');
@@ -61,11 +66,11 @@ const RoomSettings: Component<{ refetch?: () => void }> = (props) => {
   const onSetOwner = (id: number) => {
     chatApi
       .setOwner({ room_id: currentRoom()!.room_id, user_id: id })
-      .then(() => {
-        if (props.refetch) props.refetch();
-        refetch();
+      .then((res) => {
+        mutate({ ...res.data });
         setUserId(0);
-        notifySuccess(`${id} is the new owner`);
+        const user = currentRoom()?.users.find((user) => user.id === userId());
+        notifySuccess(`${user?.display_name} is the new owner`);
       })
       .catch((err: AxiosError<{ message: string }>) => {
         notifyError(err.response?.data.message as string);
@@ -77,6 +82,7 @@ const RoomSettings: Component<{ refetch?: () => void }> = (props) => {
       .leaveGroup(currentRoom()!.room_id)
       .then(() => {
         notifySuccess(`${user.display_name} left ${currentRoom()!.room_name}`);
+        //TODO: reset the room messages (it stays in cache)
         setCurrentRoomId(undefined);
         changeTab(TAB.HOME);
       })
@@ -90,6 +96,7 @@ const RoomSettings: Component<{ refetch?: () => void }> = (props) => {
       .unbanUser({ user_id: user.id, room_id: currentRoom()!.room_id })
       .then((res) => {
         mutate({ ...res.data });
+        mutateBanned((s) => [...s!.filter((u) => u.id !== user.id)]);
         notifySuccess(`${user.display_name} got unbaned 😙`);
       })
       .catch((err: AxiosError<{ message: string }>) => {

@@ -4,6 +4,7 @@ import MessageList from './MessageList';
 import ChatForm from './ChatForm';
 import { Message } from '../types/chat.interface';
 import { useAuth } from '../Providers/AuthProvider';
+import { useStore } from '../store/all';
 
 const ChatMessagesBox: Component<{
   onSendMessage: (message: string) => void;
@@ -11,10 +12,11 @@ const ChatMessagesBox: Component<{
 }> = (props) => {
   const [message, setMessage] = createSignal('');
   const [auth] = useAuth();
+  const [state] = useStore();
 
   return (
     <>
-      <Show when={props.messages}>
+      <Show when={state.chat.roomId || state.chat.friendId}>
         <MessageList
           messages={props.messages
             .slice()

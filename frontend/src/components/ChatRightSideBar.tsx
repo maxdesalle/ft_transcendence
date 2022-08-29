@@ -15,7 +15,6 @@ import AddUserToRoom from './admin/AddUserToRoom';
 import { TAB, useStore } from '../store/all';
 import Avatar from './Avatar';
 import ChatRoomUserCard from './ChatRoomUserCard';
-import { RoomUser, User } from '../types/user.interface';
 import { generateImageUrl, notifyError, notifySuccess } from '../utils/helpers';
 import { createTurboResource } from 'turbo-solid';
 import { routes } from '../api/utils';
@@ -38,9 +37,8 @@ const ChatRightSideBar: Component<{}> = () => {
   const [sockets] = useSockets();
   const url = () => (roomId() ? `${routes.chat}/room_info/${roomId()}` : null);
 
-  const [currentRoom, { refetch, mutate }] = createTurboResource<RoomInfo>(() =>
-    url(),
-  );
+  const [currentRoom, { refetch, mutate, forget }] =
+    createTurboResource<RoomInfo>(() => url());
   const currentUserRole = createMemo(
     () => currentRoom()?.users.find((user) => user.id === auth.user.id)?.role,
   );
@@ -97,6 +95,7 @@ const ChatRightSideBar: Component<{}> = () => {
   };
 
   onCleanup(() => {
+    forget();
     if (sockets.notificationWs) {
       sockets.notificationWs.removeEventListener('message', () => {});
     }
@@ -106,21 +105,21 @@ const ChatRightSideBar: Component<{}> = () => {
       <div class="text-white">
         <h4 class="p-2 text-start">Owner</h4>
         <Show when={owner()}>
-          <div class="p-2 flex items-center">
-            <Avatar
-              color={
-                state.onlineUsers.includes(owner()!.id)
-                  ? 'bg-green-400'
-                  : 'bg-red-400'
-              }
-              imgUrl={
-                owner()?.avatarId
-                  ? `${generateImageUrl(owner()!.avatarId)}`
-                  : undefined
-              }
-            />
-            <h1 class="pl-4">{owner()!.display_name}</h1>
-          </div>
+          {(o) => (
+            <div class="p-2 flex items-center">
+              <Avatar
+                color={
+                  state.onlineUsers.includes(o.id)
+                    ? 'bg-green-400'
+                    : 'bg-red-400'
+                }
+                imgUrl={
+                  o.avatarId ? `${generateImageUrl(o.avatarId)}` : undefined
+                }
+              />
+              <h1 class="pl-4">{o.display_name}</h1>
+            </div>
+          )}
         </Show>
       </div>
       <div class="text-white">

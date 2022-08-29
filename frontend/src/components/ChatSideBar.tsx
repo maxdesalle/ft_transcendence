@@ -9,7 +9,6 @@ import {
   Show,
   Switch,
 } from 'solid-js';
-import { HiSolidUserGroup } from 'solid-icons/hi';
 import { TAB, useStore } from '../store/all';
 import FriendList from './FriendList';
 import Search from './Search';
@@ -24,11 +23,11 @@ import { useSockets } from '../Providers/SocketProvider';
 const ChatSideBar: Component = () => {
   const [keyword, setKeyword] = createSignal('');
   const [auth] = useAuth();
-  const [state, { changeTab }] = useStore();
+  const [state, { changeTab, setCurrentRoomId, setFriendId }] = useStore();
   const [sockets] = useSockets();
-  const [publicRooms, { refetch: refetchPublicRooms }] = createTurboResource<
-    RoomInfo[]
-  >(() => routes.publicRooms);
+  const [_, { refetch: refetchPublicRooms }] = createTurboResource<RoomInfo[]>(
+    () => routes.publicRooms,
+  );
   const [rooms, { refetch: refetchRooms }] = createTurboResource<RoomInfo[]>(
     () => routes.getRooms,
   );
@@ -63,19 +62,29 @@ const ChatSideBar: Component = () => {
     <>
       <ul class="text-white text-start flex-col">
         <li
-          onClick={() => changeTab(TAB.HOME)}
+          onClick={() => {
+            setCurrentRoomId(undefined);
+            setFriendId(undefined);
+            changeTab(TAB.HOME);
+          }}
           class="btn-primary text-start hover:text-gray-400 transition-all"
         >
           Pulbic Channels
         </li>
         <li
-          onClick={() => changeTab(TAB.ROOMS)}
+          onClick={() => {
+            setFriendId(undefined);
+            changeTab(TAB.ROOMS);
+          }}
           class="btn-primary text-start hover:text-gray-400 transition-all"
         >
           Rooms
         </li>
         <li
-          onClick={() => changeTab(TAB.FRIENDS)}
+          onClick={() => {
+            setCurrentRoomId(undefined);
+            changeTab(TAB.FRIENDS);
+          }}
           class="btn-primary text-start hover:text-gray-400 transition-all"
         >
           Friends
@@ -91,7 +100,7 @@ const ChatSideBar: Component = () => {
             >
               <CreateRoom />
             </Search>
-            <Show when={publicRooms()}>
+            <Show when={myRooms()}>
               <RoomList room={myRooms()!} keyword={keyword()} />
             </Show>
           </Match>

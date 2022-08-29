@@ -5,6 +5,7 @@ import {
   createResource,
   createSignal,
   Match,
+  onCleanup,
   Show,
   Switch,
 } from 'solid-js';
@@ -30,24 +31,27 @@ import Viewer from './Viewer';
 import { createTurboResource } from 'turbo-solid';
 
 const Chat: Component = () => {
-  const [state] = useStore();
-  const roomId = () => state.chat.roomId;
+  const [state, { changeTab, setCurrentRoomId, mutateNewMessages }] =
+    useStore();
   const friendId = () => state.chat.friendId;
   const path = () =>
     state.chat.roomId ? `${routes.chat}/room_info/${state.chat.roomId}` : null;
-  const [currentRoom] = createTurboResource<RoomInfo>(() =>
-    path(),
-  );
+  const [currentRoom] = createTurboResource<RoomInfo>(() => path());
 
   const [sockets] = useSockets();
 
   const [friend] = createResource(() => state.chat.friendId, fetchUserById);
 
-  const roomMsgPath = createMemo(() => state.chat.roomId ? `${routes.roomMessages}/${state.chat.roomId}` : null)
-  const [roomMessages, { forget, refetch: refetchRoomMessages }] = createTurboResource(() => roomMsgPath())
-  const [friendMessages, { refetch: refetchFriendMessages }] = createResource(
+  const [roomMessages, { mutate: mutateRoomMessages }] = createResource(
+    () => state.chat.roomId,
+    chatApi.getMessagesByRoomId,
+    { initialValue: [] },
+  );
+
+  const [friendMessages, { mutate: mutateFriendMessages }] = createResource(
     friendId,
     chatApi.getFriendMessages,
+    { initialValue: [] },
   );
 
   const onSendMessageToRoom = (message: string) => {
@@ -79,14 +83,31 @@ const Chat: Component = () => {
         let res: { event: WsNotificationEvent; message: Message };
         res = JSON.parse(e.data);
         if (res.event === 'chat_room_msg') {
-          refetchRoomMessages();
+          if (state.chat.roomId) {
+            mutateRoomMessages((e) => [
+              ...e!.filter((m) => m.id != res.message.id),
+              res.message,
+            ]);
+            mutateNewMessages(res.message.room_id!);
+          }
         } else if (res.event === 'chat_dm') {
-          refetchFriendMessages();
-        } else if (res.event === 'chat: banned') {
-          forget();
+          if (state.chat.friendId) {
+            mutateFriendMessages((e) => [
+              ...e!.filter((m) => m.id != res.message.id),
+              res.message,
+            ]);
+          }
+        } else if (res.event === 'chat: youGotBanned') {
+          mutateRoomMessages(() => []);
         }
       });
     }
+  });
+
+  onCleanup(() => {
+    changeTab(TAB.HOME);
+    setCurrentRoomId(undefined);
+    mutateRoomMessages(() => []);
   });
 
   const [isWatching, setIsWatching] = createSignal(false);
