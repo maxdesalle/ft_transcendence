@@ -60,14 +60,14 @@ const ChatSideBar: Component = () => {
 
   return (
     <>
-      <ul class="text-white text-start flex-col">
+      <ul class="text-white text-start flex flex-col gap-1">
         <li
           onClick={() => {
             setCurrentRoomId(undefined);
             setFriendId(undefined);
             changeTab(TAB.HOME);
           }}
-          class="btn-primary text-start hover:text-gray-400 transition-all"
+          class="btn-primary text-start rounded-none  hover:text-gray-400 transition-all"
         >
           Pulbic Channels
         </li>
@@ -76,7 +76,7 @@ const ChatSideBar: Component = () => {
             setFriendId(undefined);
             changeTab(TAB.ROOMS);
           }}
-          class="btn-primary text-start hover:text-gray-400 transition-all"
+          class="btn-primary rounded-none text-start hover:text-gray-400 transition-all"
         >
           Rooms
         </li>
@@ -85,7 +85,7 @@ const ChatSideBar: Component = () => {
             setCurrentRoomId(undefined);
             changeTab(TAB.FRIENDS);
           }}
-          class="btn-primary text-start hover:text-gray-400 transition-all"
+          class="btn-primary rounded-none text-start hover:text-gray-400 transition-all"
         >
           Friends
         </li>

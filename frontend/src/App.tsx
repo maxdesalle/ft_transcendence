@@ -57,7 +57,10 @@ const App: Component = () => {
   );
 
   createEffect(() => {
-    if (sockets.notifWsState === WebSocket.OPEN) {
+    if (
+      sockets.notificationWs &&
+      sockets.notificationWs.readyState === WebSocket.OPEN
+    ) {
       sockets.notificationWs!.addEventListener('message', (e) => {
         let res: {
           event: WsNotificationEvent;
@@ -137,7 +140,7 @@ const App: Component = () => {
   });
 
   createEffect(() => {
-    if (sockets.notifWsState === WebSocket.OPEN) {
+    if (sockets.notificationWs && sockets.notifWsState === WebSocket.OPEN) {
       sockets.notificationWs!.send(
         JSON.stringify({
           event: 'isOnline',
@@ -153,21 +156,6 @@ const App: Component = () => {
       );
     }
   });
-
-  //--- pong socket reconnection
-  let amount = 1;
-
-  createEffect(() => {
-    if (
-      sockets.pongWs &&
-      sockets.pongWsState === WebSocket.OPEN &&
-      amount === 1
-    ) {
-      sockets.pongWs.close();
-      amount--;
-    }
-  });
-  //---
 
   createEffect(() => {
     if (auth.isAuth) {

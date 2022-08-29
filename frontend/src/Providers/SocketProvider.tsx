@@ -85,11 +85,9 @@ export const SocketProvider = (props: any) => {
   createEffect(() => {
     if (state.pongWs) {
       state.pongWs.onopen = (e) => {
-        console.log('pong opened from provider');
         setState('pongWsState', WebSocket.OPEN);
       };
       state.pongWs.onclose = (e) => {
-        console.log('Pong Closed From provider');
         setState('pongWsState', WebSocket.CLOSED);
         if (reconnectAmount > 0) {
           console.log('reconnecting pong: ');

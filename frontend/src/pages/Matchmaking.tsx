@@ -8,6 +8,7 @@ import {
   onMount,
   Show,
 } from 'solid-js';
+import { unwrap } from 'solid-js/store';
 import { createTurboResource } from 'turbo-solid';
 import { routes, urls } from '../api/utils';
 import Avatar from '../components/Avatar';
@@ -43,12 +44,12 @@ const Matchmaking: Component = () => {
 
   const navigate = useNavigate();
 
-  createEffect(() => {
-    if (currentUser()) {
-      setUser(currentUser()!);
-      setIsAuth(true);
-    }
-  });
+  // createEffect(() => {
+  //   if (currentUser()) {
+  //     setUser(currentUser()!);
+  //     setIsAuth(true);
+  //   }
+  // });
 
   const onPlay = () => {
     const message = { event: 'play' };
@@ -98,8 +99,12 @@ const Matchmaking: Component = () => {
 
   onCleanup(() => {
     if (inQueue()) {
-      sockets.pongWs!.send(JSON.stringify({ event: 'cancel' }));
+      // sockets.pongWs!.send(JSON.stringify({ event: 'cancel' }));
     }
+  });
+
+  createEffect(() => {
+    console.log(unwrap(auth.user));
   });
 
   return (
@@ -107,7 +112,7 @@ const Matchmaking: Component = () => {
       <Modal
         bgColor="bg-black opacity-60"
         class="w-full h-full"
-        isOpen={isOpen()}
+        isOpen={auth.user.first_login === true}
       >
         <div class="text-white flex flex-col gap-2 p-3 bg-skin-header-background top-1/4 left-1/3  w-1/4 absolute">
           <h1>Welcome to 19 pong</h1>
