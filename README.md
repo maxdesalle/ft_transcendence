@@ -321,6 +321,15 @@ new group message
 }
 ```
 
+you got kicked
+```
+{
+    "event": "chat: youGotKicked",
+    "data": {
+        "room_name": "groupy"
+    }
+}
+```
 ### Friends
 Incoming Friendship request
 ```

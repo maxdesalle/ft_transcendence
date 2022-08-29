@@ -386,7 +386,7 @@ export class ChatService {
 		await this.pool.query(`DELETE FROM participants WHERE user_id=${user_id} AND room_id=${room_id}`);
 		await this.pool.query(`DELETE FROM banned WHERE banned_id=${user_id} AND room_id=${room_id} AND mute=true`);
 		await this.pool.query(`INSERT INTO banned (user_id, banned_id, room_id, unban, mute, role) VALUES(${me.id}, ${user_id}, ${room_id}, to_timestamp(${unban_date.getTime() / 1000}), false, ${role1})`);
-		this.set_unban_timer(room_id, user_id, ban_minutes);
+		// this.set_unban_timer(room_id, user_id, ban_minutes);
 	}
 
 	async unban_group_user(me: User, room_id: number, user_id: number) {
@@ -408,7 +408,7 @@ export class ChatService {
 			;`);
 		
 		// reinsert in group
-		await this.addGroupUserRoot(room_id, user_id);
+		// await this.addGroupUserRoot(room_id, user_id);
 	}
 
 	async mute_user(me: User, room_id: number, user_id: number, mute_minutes: number) {
