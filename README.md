@@ -13,30 +13,35 @@ There are now 3 (!) ways to bring up the whole thing, because we're masochists.
 2) ./launch.sh
 3) ./serve_static.sh
 
-Either way, you need an .env file at the **ROOT** of the repo.
+Either way, you need: 
+- .env file at the **ROOT** of the repo.
+- cert.pem and key.pem inside a secrets directory (which should be located at the repo's root)
+App should be available at `httsp://localhost:3000` (mind the S in httpS !), except when using option 2: `http://localhost:8000`
+
 
 Last know working .env:
 ```
-APP_HOST=127.0.0.1
+APP_HOST=localhost
+FRONTEND_URL=http://localhost:8000
 
 # auth
 FORTYTWO_CLIENT_ID=XXXXXXXXXX
 FORTYTWO_CLIENT_SECRET=XXXXXXXXXXXXXX
-FORTYTWO_CALLBACK_URL=http://127.0.0.1:3000/login/42/return
+FORTYTWO_CALLBACK_URL=https://localhost:3000/login/42/return
 JWT_TOKEN_SECRET="hello there"
 JWT_TOKEN_EXPIRY=99999999999999999999
 
 # database
-DB_PASSWORD=12345
+DB_PASSWORD=5om3th1ngApp@rently5tr0ng
 DB_PORT=5432
-DB_HOST=127.0.0.1
+DB_HOST=localhost
 
 # avatar photo
-FRONTEND_URL=http://127.0.0.1:8000
 AVATAR_DEFAULT_FILE=images/avatardefault.png
-AVATAR_MAX_SIZE=99999999999999999999999
+AVATAR_MAX_SIZE=5000000
 
 ```
+## recent update: LOCALHOST wins! just use localhost, and not 127.0.0.1...
 
 More details:
 
@@ -50,35 +55,26 @@ Frontend app should be available at `http://127.0.01:8000`
 * setup the first line of the script serve_static.sh accordingly (if you're using localhost or 127.0.0.1)
 * `./serve_static.sh`   
 
-App should be available at `http://127.0.01:3000`
+App should be available at `https://127.0.01:3000` (httpS !)
 
 ### production mode fully Dockerized:
 * `docker-compose up [--build]`
 
 
-App should be available at `http://127.0.01:3000`
+App should be available at `https://127.0.01:3000` (httpS !)
 
-## Obs: do not mix localhost and 127.0.0.1
+
 -----------------------
 ## TODO's before push
 - no more need to serve "client" dir (backend)
 - remove mock auth module
 - typeORM config: no 'synchronize' in production!
 - remove CORS enable (if the setup allows so...)
-- HTTPS ?
 
 
-### How to access the database:
-**Adminer** is available at 127.0.0.1:8080
-System: PostgreSQL  
-Server:db  
-Username: postgres	  
-Password: <the value of DB_PASSWORD in your .env file>  
-Database: postgres	  
 
-----------------------------
 
-### How to access the database with the psql client (if you really like the terminal):
+### How to access the database with the psql client :
 `docker exec -it db psql -U postgres`
 
 Useful commands:
