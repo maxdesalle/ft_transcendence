@@ -4,13 +4,11 @@ import {
   OnGatewayInit,
   SubscribeMessage,
   WebSocketGateway,
-  WebSocketServer,
 } from '@nestjs/websockets';
 import { IncomingMessage } from 'http';
 import { WebSocket, WebSocketServer as WSS } from 'ws';
 import { computeValues, deleteGameSession } from './computeValues';
 import { default_values } from './defaultVals';
-import { parse } from 'cookie';
 import { JwtService } from '@nestjs/jwt';
 import { UsersService } from 'src/users/users.service';
 import { WsService } from 'src/ws/ws.service';
@@ -290,7 +288,6 @@ function removeGameSession(ws: WebSocket) {
   if (i === -1)
     // not part of a session
     return;
-  const leaving_player = connected_users.get(ws);
   let remaining_player: number;
   if (sockets[i].p1Socket === ws) {
     console.log(`p1 of session ${sockets[i].id} left`);
@@ -300,8 +297,9 @@ function removeGameSession(ws: WebSocket) {
     remaining_player = connected_users.get(sockets[i].p1Socket);
   }
   // remove session
-  sockets.splice(i, 1); // deleting game session from array
-  // reuturn remaining_player id
+  const removed_session = sockets.splice(i, 1); // deleting game session from array
+  removed_session[0].p1Socket = null; // this will make the game loop break
+  // return remaining_player id
   return remaining_player;
 }
 
