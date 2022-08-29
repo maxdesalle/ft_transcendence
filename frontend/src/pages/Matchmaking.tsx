@@ -126,7 +126,7 @@ const Matchmaking: Component = () => {
         <button
           ref={setRef}
           onClick={onButtonClick}
-          class="h-72 w-72 rounded-full text-white bg-gradient-to-br from-purple-600 to-blue-500 hover:bg-gradient-to-bl focus:ring-4 focus:outline-none focus:ring-blue-300 dark:focus:ring-blue-800 font-medium text-sm px-5 py-2.5 text-center mr-2 mb-2"
+          class="h-72 w-72 rounded-full self-center text-white bg-gradient-to-br from-purple-600 to-blue-500 hover:bg-gradient-to-bl focus:ring-4 focus:outline-none focus:ring-blue-300 dark:focus:ring-blue-800 font-medium text-sm px-5 py-2.5 text-center mr-2 mb-2"
         >
           <h1 class="text-4xl text-center w-full">{buttonText()}</h1>
         </button>
@@ -169,7 +169,7 @@ const Matchmaking: Component = () => {
             </For>
           </Show>
         </div>
-        <div class="flex flex-col gap-2">
+        <div class="flex flex-col gap-2 self-center">
           <label for="friends" class="text-2xl mt-3">
             Invite a friend
           </label>

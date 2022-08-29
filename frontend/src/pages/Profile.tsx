@@ -76,7 +76,7 @@ const Profile: Component = () => {
               Winrate: {stats()?.wins_percent ? stats()?.wins_percent : 0}%
             </p>
           </div>
-          <ul class="flex flex-col self-start text-white">
+          <ul class="flex flex-col gap-2 self-start text-white">
             <Show when={auth.user && parseInt(params.id) !== auth.user.id}>
               <li>
                 <button onClick={onSendFriendReq} class="btn-primary w-full">

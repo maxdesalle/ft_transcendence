@@ -4,6 +4,7 @@ import {
   createResource,
   onCleanup,
   onMount,
+  untrack,
 } from 'solid-js';
 import { Route, Routes, useNavigate } from 'solid-app-router';
 import Chat from './pages/Chat';
@@ -152,6 +153,21 @@ const App: Component = () => {
       );
     }
   });
+
+  //--- pong socket reconnection
+  let amount = 1;
+
+  createEffect(() => {
+    if (
+      sockets.pongWs &&
+      sockets.pongWsState === WebSocket.OPEN &&
+      amount === 1
+    ) {
+      sockets.pongWs.close();
+      amount--;
+    }
+  });
+  //---
 
   createEffect(() => {
     if (auth.isAuth) {
