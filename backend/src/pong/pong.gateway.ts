@@ -59,7 +59,7 @@ export class PongGateway implements OnGatewayConnection, OnGatewayDisconnect {
   async handleConnection(ws: WebSocket, req: IncomingMessage) {
     let user: { id: number; login42: string };
     try {
-      user = await this.wsService.authenticateUser(req);
+			user = await this.wsService.authenticateUser(req);
     } catch (error) {
       ws.close(1008, 'Bad credentials');
       console.log('Authentication to Pong wss failed');
@@ -74,19 +74,11 @@ export class PongGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
   handleDisconnect(client: WebSocket) {
     const user_id = connected_users.get(client);
-    if (!user_id)
-      // auth-fail
-      return;
-    const remaining_player = removeGameSession(client);
-    if (remaining_player) {
-      this.wsService.sendMsgToUser(remaining_player, {
-        event: 'pong: opponent_disconnected',
-      });
-    }
     connected_users.delete(client);
     playing.delete(user_id);
     clearInviteWait(user_id);
-    console.log(`User ${user_id} disconnected from pong wss`);
+    removeGameSession(client);
+    if (user_id) console.log(`User ${user_id} disconnected from pong wss`);
   }
 
   @SubscribeMessage('play')
@@ -285,22 +277,22 @@ export class PongViewerGateway implements OnGatewayInit {
 
 function removeGameSession(ws: WebSocket) {
   const i = sockets.findIndex((s) => s.p1Socket === ws || s.p2Socket === ws);
-  if (i === -1)
-    // not part of a session
-    return;
-  let remaining_player: number;
+  if (i === -1) return; // Rodolpho added this line
   if (sockets[i].p1Socket === ws) {
+    sockets[i].p1Socket = undefined;
     console.log(`p1 of session ${sockets[i].id} left`);
-    remaining_player = connected_users.get(sockets[i].p2Socket);
+    if (sockets[i].p2Socket) {
+      console.log(`closing connection with p2 of session ${sockets[i].id}...`);
+      sockets[i].p2Socket.close();
+    } else sockets.splice(i, 1); // deleting game session from array
   } else {
+    sockets[i].p2Socket = undefined;
     console.log(`p2 of session ${sockets[i].id} left`);
-    remaining_player = connected_users.get(sockets[i].p1Socket);
+    if (sockets[i].p1Socket) {
+      console.log(`closing connection with p1 of session ${sockets[i].id}...`);
+      sockets[i].p1Socket.close();
+    } else sockets.splice(i, 1); // deleting game session from array
   }
-  // remove session
-  const removed_session = sockets.splice(i, 1); // deleting game session from array
-  removed_session[0].p1Socket = null; // this will make the game loop break
-  // return remaining_player id
-  return remaining_player;
 }
 
 //function to execute right after second player has been connected
@@ -363,8 +355,9 @@ async function startGame(id: number) {
   console.log(`deleting session ${id}`);
   deleteGameSession(gameSockets.id);
   ///// Rodolpho added these lines: remove session from sockets array
-  const session_idx = sockets.findIndex((val) => val.id === id);
-  if (session_idx >= 0) sockets.splice(session_idx, 1);
+  const session_idx = sockets.findIndex(val => val.id === id);
+  if (session_idx >= 0)
+    sockets.splice(session_idx, 1);
   //////
   viewerSockets.forEach((s) => {
     if (s.id === gameSockets.id) {
