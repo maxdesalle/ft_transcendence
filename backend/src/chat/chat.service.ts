@@ -1,7 +1,7 @@
 import { BadRequestException, ForbiddenException, Injectable } from '@nestjs/common';
 import { User } from 'src/users/entities/user.entity';
 import { UsersService } from 'src/users/users.service';
-import { Connection, EntityManager } from 'typeorm';
+import { DataSource, EntityManager } from 'typeorm';
 import { BannedUser, GroupConfigDto, MessageDTO, RoomInfo} from './DTO/chat.dto';
 import { Message } from './entities/message.entity';
 
@@ -28,16 +28,16 @@ export class ChatService {
 	pool: queryAdaptor;
 
 	constructor(
-		private connection: Connection,
+		private dataSource: DataSource,
 		private usersService: UsersService
 		) {
-		this.pool = new queryAdaptor(connection.manager);
+		this.pool = new queryAdaptor(dataSource.manager);
 	}
 
 	async send_msg_to_room(me: User, room_id: number, message: string) {
 		// in order to allow messages containing single quotes, I'm not using the
 		// raw query on this one.
-		const messageRepository = this.connection.getRepository(Message);
+		const messageRepository = this.dataSource.getRepository(Message);
 		const new_message = new Message();
 		new_message.room_id = room_id;
 		new_message.user_id = me.id;
@@ -347,28 +347,28 @@ export class ChatService {
 	}
 
 	// to be called when someone gets unbanned
-	async addGroupUserRoot(room_id: number, user_id: number) {
-		// check if group still exists
-		if (!(await this.listGroups()).includes(room_id))
-			return;
-		// check if user already in group
-		if (await this.is_room_participant(user_id, room_id))
-			return;
-		// check if user is still banned
-		if (await this.is_banned(user_id, room_id))
-			return;
+	// async addGroupUserRoot(room_id: number, user_id: number) {
+	// 	// check if group still exists
+	// 	if (!(await this.listGroups()).includes(room_id))
+	// 		return;
+	// 	// check if user already in group
+	// 	if (await this.is_room_participant(user_id, room_id))
+	// 		return;
+	// 	// check if user is still banned
+	// 	if (await this.is_banned(user_id, room_id))
+	// 		return;
 
-		// add user
-		await this.pool.query(`
-			INSERT INTO participants(user_id, room_id)
-			VALUES(${user_id}, ${room_id})`);
-	}
+	// 	// add user
+	// 	await this.pool.query(`
+	// 		INSERT INTO participants(user_id, room_id)
+	// 		VALUES(${user_id}, ${room_id})`);
+	// }
 	
-	set_unban_timer(room_id: number, user_id: number, time_minutes: number) {
-		setTimeout(() => {
-			this.addGroupUserRoot(room_id, user_id);
-		}, time_minutes * 60 * 1000);
-	}
+	// set_unban_timer(room_id: number, user_id: number, time_minutes: number) {
+	// 	setTimeout(() => {
+	// 		this.addGroupUserRoot(room_id, user_id);
+	// 	}, time_minutes * 60 * 1000);
+	// }
 
 	async ban_group_user(me: User, room_id: number, user_id: number, ban_minutes: number) {
 		// check if user in the group
