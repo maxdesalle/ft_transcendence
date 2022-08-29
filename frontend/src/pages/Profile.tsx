@@ -1,5 +1,5 @@
-import { Link, useParams } from 'solid-app-router';
-import { Component, createResource, For, Show } from 'solid-js';
+import { Link, useNavigate, useParams } from 'solid-app-router';
+import { Component, createResource, For, onMount, Show } from 'solid-js';
 import defaultAvatar from '../../../backend/images/avatardefault.png';
 import { generateImageUrl, notifyError, notifySuccess } from '../utils/helpers';
 import { createTurboResource } from 'turbo-solid';
@@ -11,19 +11,22 @@ import { AxiosError } from 'axios';
 import Scrollbars from 'solid-custom-scrollbars';
 import { useSockets } from '../Providers/SocketProvider';
 import { useAuth } from '../Providers/AuthProvider';
+import Loader from '../components/Loader';
 
 const Profile: Component = () => {
   const [sockets] = useSockets();
   const [auth] = useAuth();
   const params = useParams<{ id: string }>();
-  const [matches] = createTurboResource<MatchDTO[]>(
+  const [matches, { refetch }] = createTurboResource<MatchDTO[]>(
     () => `${routes.matches}/${parseInt(params.id)}`,
   );
   const userByIdUrl = () => (params.id ? `${routes.users}/${params.id}` : null);
   const userStatsUrl = () =>
     params.id ? `${routes.playerStats}/${params.id}` : null;
   const [user] = createTurboResource(() => userByIdUrl());
-  const [stats] = createTurboResource<PlayerStatsDto>(() => userStatsUrl());
+  const [stats, { refetch: refetchStats }] =
+    createTurboResource<PlayerStatsDto>(() => userStatsUrl());
+  const navigate = useNavigate();
 
   const onSendFriendReq = () => {
     if (user()) {
@@ -37,6 +40,11 @@ const Profile: Component = () => {
     }
   };
 
+  onMount(() => {
+    refetch();
+    refetchStats();
+  });
+
   const onInviteUser = () => {
     if (!user()) return;
     const data = { event: 'invite', data: user()!.id };
@@ -47,7 +55,7 @@ const Profile: Component = () => {
     <Show when={user()}>
       <div class="flex justify-evenly">
         <div class="mt-7 border-r border-gray-600 shadow-md flex flex-col gap-2 items-center">
-          <div class="text-white flex flex-col items-center">
+          <div class="text-white gap-1 flex flex-col items-center">
             <img
               class="w-40 h-44 mt-5"
               src={
@@ -56,14 +64,19 @@ const Profile: Component = () => {
                   : defaultAvatar
               }
             />
-            <h1 class="text-xl text-start w-full">{user()!.display_name}</h1>
-            <p class="text-center w-full">Rank: {stats()?.ladder_rank}</p>
-            <div class="flex w-full gap-2 justify-between pr-4">
-              <p>win: {stats()?.wins}</p>
-              <p>loss: {stats()?.losses}</p>
+            <h1 class="text-xl capitalize font-semibold py-1 text-start w-full">
+              {user()!.display_name}
+            </h1>
+            <p class="w-full">Rank: {stats()?.ladder_rank}</p>
+            <div class="flex w-full py-1 justify-between pr-4">
+              <p class="text-green-500">Wins: {stats()?.wins}</p>
+              <p class="text-red-500">losses: {stats()?.losses}</p>
             </div>
+            <p class="w-full">
+              Winrate: {stats()?.wins_percent ? stats()?.wins_percent : 0}%
+            </p>
           </div>
-          <ul class="flex flex-col gap-2 text-white">
+          <ul class="flex flex-col gap-2 self-start text-white">
             <Show when={auth.user && parseInt(params.id) !== auth.user.id}>
               <li>
                 <button onClick={onSendFriendReq} class="btn-primary w-full">
@@ -79,22 +92,23 @@ const Profile: Component = () => {
                 <button class="btn-secondary w-full">Block</button>
               </li>
             </Show>
-            <Show when={auth.user && auth.user.id === parseInt(params.id)}>
+            <Show when={auth.user && auth.user.id === +params.id}>
               <li>
-                <Link class="btn-primary" href="/edit_profile">
+                <button
+                  onClick={() => navigate('/edit_profile')}
+                  class="btn-primary w-full"
+                >
                   Edit profile
-                </Link>
+                </button>
               </li>
               <li>
-                <button class="btn-secondary">Sign out</button>
+                <button class="btn-secondary w-full">Sign out</button>
               </li>
             </Show>
           </ul>
         </div>
         <div class="flex flex-col w-4/5">
-          <h1 class="text-center font-bold text-2xl py-2 text-blue-600">
-            Match History
-          </h1>
+          <h1 class="text-center font-bold text-2xl py-2">Match History</h1>
           <Scrollbars
             style={{
               height: '89vh',
@@ -105,7 +119,7 @@ const Profile: Component = () => {
               width: '100%',
             }}
           >
-            <Show when={matches()}>
+            <Show when={matches()} fallback={<Loader />}>
               <For each={matches()}>
                 {(match) => <MatchHistoryCard match={match} />}
               </For>

@@ -81,7 +81,7 @@ export function initSocket(): WebSocket {
   ws.addEventListener('close', (e: any) => {
     isDisconnected = true;
     playerNumber = 0;
-    console.log('disconneted');
+    console.log('pong closed from pong.ts');
   });
   ws.addEventListener('error', (e: any) => {
     socketErrObject = e;
@@ -123,7 +123,7 @@ export const sketch = (
   myP5: typeof p5,
   navigate?: (path: string) => void,
 ): P5Type => {
-  const [state, { toggleMatchMaking, reconectPong }] = useStore();
+  const [state, { toggleMatchMaking }] = useStore();
   let sliders = [
     new Slider(
       myP5,

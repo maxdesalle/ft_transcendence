@@ -1,10 +1,8 @@
 import Cookies from 'js-cookie';
 import { createContext, Resource, useContext } from 'solid-js';
-import { Message, WsNotificationEvent } from '../types/chat.interface';
+import { WsNotificationEvent } from '../types/chat.interface';
 import { User } from '../types/user.interface';
 import { createStore, produce } from 'solid-js/store';
-import { urls } from '../api/utils';
-import { initSocket } from '../game/pong';
 
 const StoreContext = createContext<any>();
 
@@ -24,13 +22,12 @@ export interface ActionsType {
   setFriendId: (id: number | undefined) => void;
   setPendigFriendReq: (req: { status: number; req_user: User }[]) => void;
   setFriendReqCount: (val: number) => void;
-  reconectPong: () => void;
-  reconectNotification: () => void;
   addOnlineUser: (user_id: number) => void;
   removeDisconnectedUser: (user_id: number) => void;
   setOnlineUsers: (ids: number[]) => void;
   setInGameUsers: (ids: number[]) => void;
   resetStore: () => void;
+  mutateNewMessages: (room_id: number) => void;
 }
 
 export type Status = 'idle' | 'loading' | 'success' | 'failed';
@@ -45,21 +42,16 @@ export interface StoreState {
   token: string | undefined;
   onlineUsers: number[];
   inGameUsers: number[];
-  error?: any;
-  ws?: WebSocket;
   chat: {
     status: Status;
-    error?: any;
     roomId: number | undefined;
     friendId: number | undefined;
-    readonly roomMsgs: Message[] | undefined;
-    readonly friendMsgs: Message[] | undefined;
+    newMessages: { room_id: number; nbMgs: number }[];
   };
   currentUser: {
     status: Status;
     readonly pendingFriendReq: { req_user: User; status: number }[];
     friendReqCount: number;
-    error?: any;
     twoFaQrCode: string;
     twoFaConfirmed: boolean;
   };
@@ -70,16 +62,11 @@ export interface StoreState {
   };
   pong: {
     inMatchMaking: boolean;
-    ws?: WebSocket;
     friendInvitation: { event: WsNotificationEvent; user_id?: number } | null;
   };
 }
 
 export function StoreProvider(props: any) {
-  let users: Resource<User[] | undefined>,
-    roomMsg: Resource<Message[] | undefined>,
-    friendMsg: Resource<Message[] | undefined>;
-
   const initialState: StoreState = {
     token: Cookies.get('jwt_token'),
     onlineUsers: [],
@@ -90,14 +77,9 @@ export function StoreProvider(props: any) {
     },
     chat: {
       status: 'idle',
-      get roomMsgs() {
-        return roomMsg();
-      },
-      get friendMsgs() {
-        return friendMsg();
-      },
       roomId: undefined,
       friendId: undefined,
+      newMessages: [],
     },
     chatUi: {
       tab: TAB.HOME,
@@ -153,12 +135,6 @@ export function StoreProvider(props: any) {
     setFriendReqCount(val) {
       setState('currentUser', 'friendReqCount', val);
     },
-    reconectPong() {
-      setState('pong', 'ws', initSocket());
-    },
-    reconectNotification() {
-      setState('ws', new WebSocket(urls.wsUrl));
-    },
     addOnlineUser(user_id: number) {
       setState('onlineUsers', (e) => [...e, user_id]);
     },
@@ -178,6 +154,21 @@ export function StoreProvider(props: any) {
           e.chat.friendId = undefined;
         }),
       );
+    },
+    mutateNewMessages(room_id) {
+      setState(
+        produce((s) => {
+          let m = s.chat.newMessages.find((m) => m.room_id === room_id);
+          if (!m) {
+            s.chat.newMessages.push({ room_id, nbMgs: 1 });
+            return;
+          }
+          const idx = s.chat.newMessages.findIndex(
+            (m) => m.room_id === room_id,
+          );
+        }),
+      );
+      console.log(state.chat.newMessages);
     },
   };
   const store: [StoreState, ActionsType] = [state, actions];

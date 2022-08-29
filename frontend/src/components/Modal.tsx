@@ -3,6 +3,7 @@ import { Portal } from 'solid-js/web';
 
 const Modal: Component<{
   children?: JSXElement;
+  bgColor?: string;
   class?: string;
   isOpen: boolean;
   toggleModal?: Setter<boolean>;
@@ -17,10 +18,10 @@ const Modal: Component<{
         <Portal>
           <div
             onClick={onClose}
-            class={`fixed z-10 top-0 right-0 left-0 bottom-0 ${props.class}`}
+            class={`fixed z-10 top-0 w-full h-full right-0 left-0 bottom-0 ${props.bgColor}`}
           />
         </Portal>
-        <div class="z-50 fixed">{props.children}</div>
+        <div class={`z-50 fixed ${props.class}`}>{props.children}</div>
       </Show>
     </>
   );

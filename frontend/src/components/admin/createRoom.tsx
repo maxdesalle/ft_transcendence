@@ -21,6 +21,7 @@ const CreateRoom: Component<{ class?: string }> = (props) => {
         mutate(routes.getRooms, (e) => [...e, res.data]);
         notifySuccess(`${roomName()} created`);
         setRoomName('');
+        setPassword('');
       });
   };
 
@@ -32,7 +33,7 @@ const CreateRoom: Component<{ class?: string }> = (props) => {
           onInput={(e) => setRoomName(e.currentTarget.value)}
           autocomplete="off"
           type="text"
-          class="bg-white px-2 w-full py-1 rounded border-b focus:outline-none border-b-blue-800 focus:text-blue-600"
+          class="bg-white px-2 w-full py-1 rounded border-b focus:outline-none"
           name="room_name"
           id="room_name"
           placeholder="Enter name"
@@ -40,10 +41,11 @@ const CreateRoom: Component<{ class?: string }> = (props) => {
       </div>
       <div class="mt-2">
         <input
+          value={password()}
           onInput={(e) => setPassword(e.currentTarget.value)}
           autocomplete="off"
-          type="text"
-          class="bg-white px-2 py-1 w-full rounded border-b focus:outline-none border-b-blue-800 focus:text-blue-600"
+          type="password"
+          class="bg-white px-2 py-1 w-full rounded border-b focus:outline-none"
           name="room_password"
           id="room_password"
           placeholder="Enter password"

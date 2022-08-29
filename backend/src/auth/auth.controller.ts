@@ -75,11 +75,7 @@ export class AuthController {
   async deactivateTwoFactorAuthentication(@Usr() user, @Res() res: Response) {
     await this.usersService.turnOffTwoFactorAuthentication(user.id);
     const me = await this.usersService.findById(user.id);
-
     return res.send({ user: me });
-    // return res.redirect(
-    //   `${this.configService.get<string>('FRONTEND_URL')}/login`,
-    // );
   }
 
   @Post('/login/two-factor-authentication/')

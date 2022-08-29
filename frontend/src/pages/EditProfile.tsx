@@ -114,7 +114,7 @@ const EditProfile: Component = () => {
             </button>
           </Match>
         </Switch>
-        <Modal class="bg-purple-300 opacity-30 z-30" isOpen={isOpen()}>
+        <Modal bgColor="bg-purple-300 opacity-30 z-30" isOpen={isOpen()}>
           <div class="flex bg-skin-page gap-2 flex-col opacity-100 p-2 border border-header-menu">
             <h1 class="text-xl p-2">Please scan the QR code</h1>
             <img src={pathUrl()} alt="qr code" />

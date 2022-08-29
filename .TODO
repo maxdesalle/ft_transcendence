@@ -13,18 +13,23 @@
 
 - [ ] 📃 watch friend game from chat interface
 - [ ] 📃 mini tutorial on how to play the game
-- [ ] 🎉 refetch data when a user is blocked or unblocked
+- [x] 🎉 refetch data when a user is blocked or unblocked
 
 (#1) App:
 - [x] 🎉 Clear app state
 - [x] 🎉 use TurboRessource to keep the currentRoom updated (send back new RoomInfo with sockets refetch sucks)
+- [x] 👀 better online users management
 ----
 
 (#4) chat:
-- [ ] 🎉 reset messages for the banned user
+- [x] 🎉 reset messages for the banned user
 ----
 
 (#2) pong:
 - [ ] 🎉 invite online player only
 - [ ] 🎉 Better matchmaking
+----
+
+(#5) BUGS:
+changing avatar and coming back to chat create an http error (when is owner??) 
 ----

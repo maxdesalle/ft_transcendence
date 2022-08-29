@@ -14,7 +14,7 @@ import { TAB, useStore } from '../store/all';
 import { Link } from 'solid-app-router';
 import Avatar from './Avatar';
 import { blockUser, chatApi } from '../api/chat';
-import { createTurboResource } from 'turbo-solid';
+import { createTurboResource, forget } from 'turbo-solid';
 import { routes } from '../api/utils';
 import toast from 'solid-toast';
 import { RoomInfo, WsNotificationEvent } from '../types/chat.interface';
@@ -222,11 +222,8 @@ const ChatRoomUserCard: Component<{
             mutateCurrentRoom({ ...res.room! });
             break;
           case 'chat: youGotBanned':
-            notifySuccess(
-              `${auth.user.display_name} got banned from ${res.data.room_name}`,
-            );
-            setCurrentRoomId(undefined);
             changeTab(TAB.HOME);
+            setCurrentRoomId(undefined);
             break;
           default:
             break;
@@ -348,12 +345,6 @@ const ChatRoomUserCard: Component<{
               class="text-start hover:bg-blue-600 px-3 rounded-sm transition-all"
             >
               Ban
-            </button>
-            <button
-              onClick={onUnbanUser}
-              class="text-start hover:bg-blue-600 px-3 rounded-sm transition-all"
-            >
-              Unban
             </button>
             <button
               onClick={onPromoteUser}

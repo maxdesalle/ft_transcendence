@@ -2,6 +2,7 @@ import {
   Component,
   createContext,
   createEffect,
+  createSignal,
   JSXElement,
   onCleanup,
   useContext,
@@ -35,12 +36,16 @@ export const SocketProvider = (props: any) => {
     notifWsState: WebSocket.CLOSED,
   });
 
+  let reconnectAmount: number = 5;
+  const [id, setId] = createSignal<any>();
+
   const actions: ActionsType = {
     connectNotificationWs() {
       setState('notificationWs', new WebSocket(urls.wsUrl));
       setState('notifWsState', WebSocket.CONNECTING);
     },
     connectPongWs() {
+      cancelReconnect();
       setState('pongWs', initSocket());
       setState('pongWsState', WebSocket.CONNECTING);
     },
@@ -53,6 +58,8 @@ export const SocketProvider = (props: any) => {
     disconnect() {
       state.notificationWs?.close();
       state.pongWs?.close();
+      setState('notificationWs', undefined);
+      setState('pongWs', undefined);
       setState('notifWsState', WebSocket.CLOSED);
       setState('pongWsState', WebSocket.CLOSED);
     },
@@ -69,6 +76,12 @@ export const SocketProvider = (props: any) => {
     }
   });
 
+  const cancelReconnect = () => {
+    if (id()) {
+      clearTimeout(id());
+    }
+  };
+
   createEffect(() => {
     if (state.pongWs) {
       state.pongWs.onopen = (e) => {
@@ -76,18 +89,18 @@ export const SocketProvider = (props: any) => {
       };
       state.pongWs.onclose = (e) => {
         setState('pongWsState', WebSocket.CLOSED);
+        if (reconnectAmount > 0) {
+          console.log('reconnecting pong: ');
+          setId(setTimeout(actions.connectPongWs, 3000));
+          reconnectAmount--;
+        }
       };
     }
   });
 
-  // onCleanup(() => {
-  //   state.notificationWs?.close();
-  //   state.pongWs?.close();
-  //   setState('notificationWs', undefined);
-  //   setState('pongWs', undefined);
-  //   setState('pongWsState', WebSocket.CLOSED);
-  //   setState('notifWsState', WebSocket.CLOSED);
-  // });
+  onCleanup(() => {
+    actions.disconnect();
+  });
 
   const store = [state, actions];
 

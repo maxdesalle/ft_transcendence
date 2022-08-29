@@ -22,8 +22,8 @@ const ResultsCard: Component<{
         />
       </Show>
       <div class="flex flex-col">
-        <h1 class="capitalize">{props.name}</h1>
-        <p class="text-center">{props.score}</p>
+        <h1 class="capitalize font-semibold">{props.name}</h1>
+        <p class="text-center">Score: {props.score}</p>
       </div>
       <Show when={props.position === 'after'}>
         <img

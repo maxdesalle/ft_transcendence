@@ -4,6 +4,7 @@ import {
   createResource,
   onCleanup,
   onMount,
+  untrack,
 } from 'solid-js';
 import { Route, Routes, useNavigate } from 'solid-app-router';
 import Chat from './pages/Chat';
@@ -56,7 +57,10 @@ const App: Component = () => {
   );
 
   createEffect(() => {
-    if (sockets.notifWsState === WebSocket.OPEN) {
+    if (
+      sockets.notificationWs &&
+      sockets.notificationWs.readyState === WebSocket.OPEN
+    ) {
       sockets.notificationWs!.addEventListener('message', (e) => {
         let res: {
           event: WsNotificationEvent;
@@ -136,7 +140,7 @@ const App: Component = () => {
   });
 
   createEffect(() => {
-    if (sockets.notifWsState === WebSocket.OPEN) {
+    if (sockets.notificationWs && sockets.notifWsState === WebSocket.OPEN) {
       sockets.notificationWs!.send(
         JSON.stringify({
           event: 'isOnline',
