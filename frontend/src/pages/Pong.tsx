@@ -17,7 +17,7 @@ const Pong: Component = () => {
     game = sketch(p5, navigate);
     game.setRef(ref);
     game.setup();
-    id = setInterval(() => game.draw(), 0);
+    id = setInterval(() => game.draw(), 10);
     if (sockets.notifWsState === WebSocket.OPEN) {
       sockets.notificationWs!.addEventListener('message', (e) => {
         let res: { event: WsNotificationEvent };
