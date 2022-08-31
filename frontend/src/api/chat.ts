@@ -1,6 +1,6 @@
 import { Message, RoomInfo } from '../types/chat.interface';
 import { api } from '../utils/api';
-import { routes } from './utils';
+import { routes, urls } from './utils';
 
 export type CreateRoomType = {
   name: string;
@@ -116,6 +116,10 @@ const leaveGroup = async (id: number) => {
   return await api.post<RoomInfo[]>(routes.leaveGroup, { room_id: id });
 };
 
+const kickUser = async (data: { room_id: number; user_id: number }) => {
+  return await api.post<RoomInfo>(routes.kickUser, data);
+};
+
 export const chatApi = {
   createRoom,
   getRooms,
@@ -136,4 +140,5 @@ export const chatApi = {
   setPrivate,
   setOwner,
   leaveGroup,
+  kickUser,
 };

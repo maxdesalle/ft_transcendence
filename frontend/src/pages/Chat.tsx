@@ -29,6 +29,7 @@ import FriendSideBar from '../components/FriendSideBar';
 import { fetchUserById } from '../api/user';
 import Viewer from './Viewer';
 import { createTurboResource } from 'turbo-solid';
+import { useAuth } from '../Providers/AuthProvider';
 
 const Chat: Component = () => {
   const [state, { changeTab, setCurrentRoomId, mutateNewMessages }] =
@@ -47,7 +48,7 @@ const Chat: Component = () => {
     chatApi.getMessagesByRoomId,
     { initialValue: [] },
   );
-
+  const [auth] = useAuth();
   const [friendMessages, { mutate: mutateFriendMessages }] = createResource(
     friendId,
     chatApi.getFriendMessages,
@@ -110,11 +111,32 @@ const Chat: Component = () => {
     mutateRoomMessages(() => []);
   });
 
+  createEffect(() => {
+    if (
+      sockets.notificationWs &&
+      sockets.notificationWs.readyState === WebSocket.OPEN
+    ) {
+      sockets.notificationWs!.send(
+        JSON.stringify({
+          event: 'isOnline',
+          data: { sender: auth.user.id },
+        }),
+      );
+
+      sockets.notificationWs!.send(
+        JSON.stringify({
+          event: 'isInGame',
+          data: { sender: auth.user.id },
+        }),
+      );
+    }
+  });
+
   const [isWatching, setIsWatching] = createSignal(false);
 
   return (
     <div class="grid grid-cols-6 h-95">
-      <div class="flex row-span-4 flex-col col-span-1 border-x-header-menu border-x">
+      <div class="flex row-span-4 flex-col col-span-1 border-x border-x-base-300 shadow-sm">
         <ChatSideBar />
       </div>
       <div class="col-span-4 w-full flex flex-col h-95 pl-1 pr-1">
@@ -138,7 +160,7 @@ const Chat: Component = () => {
           </Match>
         </Switch>
       </div>
-      <div class="flex relative row-span-4 flex-col border-x shadow-md border-x-header-menu col-span-1">
+      <div class="flex relative row-span-4 flex-col border-x border-x-base-300 shadow-sm col-span-1">
         <Switch>
           <Match when={state.chatUi.tab === TAB.ROOMS}>
             <ChatRightSideBar />

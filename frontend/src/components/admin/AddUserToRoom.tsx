@@ -35,7 +35,7 @@ const AddUserToRoom: Component<{
   };
 
   return (
-    <div class="flex flex-col">
+    <div class="flex flex-col gap-2">
       <input
         onInput={(e) => setUsername(e.currentTarget.value)}
         type="text"
@@ -43,13 +43,10 @@ const AddUserToRoom: Component<{
         name="username"
         id="username"
         value={username()}
-        class="focus:outline-none border-b-2 text-gray-900 border-blue-500 rounded-md p-1"
+        class="input input-sm"
         placeholder="Enter username"
       />
-      <button
-        onClick={onAddUser}
-        class="px-6 py-2 mt-3 text-sm text-blue-100 transition-colors duration-300 bg-blue-600 rounded-full hover:bg-blue-900 shadow-blue-400/30"
-      >
+      <button onClick={onAddUser} class="btn btn-success btn-sm">
         Add user
       </button>
     </div>

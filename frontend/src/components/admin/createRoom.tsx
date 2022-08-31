@@ -33,7 +33,7 @@ const CreateRoom: Component<{ class?: string }> = (props) => {
           onInput={(e) => setRoomName(e.currentTarget.value)}
           autocomplete="off"
           type="text"
-          class="bg-white px-2 w-full py-1 rounded border-b focus:outline-none"
+          class="input w-full input-bordered"
           name="room_name"
           id="room_name"
           placeholder="Enter name"
@@ -45,25 +45,25 @@ const CreateRoom: Component<{ class?: string }> = (props) => {
           onInput={(e) => setPassword(e.currentTarget.value)}
           autocomplete="off"
           type="password"
-          class="bg-white px-2 py-1 w-full rounded border-b focus:outline-none"
+          class="input w-full input-bordered"
           name="room_password"
           id="room_password"
           placeholder="Enter password"
         />
       </div>
       <div class="mt-2 flex items-center">
-        <label class="pr-2 pl-1 text-white">Private?</label>
+        <label class="pr-3 pl-1">Private?</label>
         <input
           autocomplete="off"
           onInput={(e) => setIsPrivate(e.currentTarget.checked)}
           type="checkbox"
-          class="bg-white px-4 py-2 rounded border-b focus:outline-none border-b-blue-800 focus:text-blue-600"
+          class="checkbox"
           name="is_private"
           id="is_private"
         />
       </div>
       <div class="mt-2">
-        <button onClick={onCreateRoom} class="btn-primary">
+        <button onClick={onCreateRoom} class="btn-primary btn">
           Create Room
         </button>
       </div>

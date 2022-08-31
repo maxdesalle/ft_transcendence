@@ -11,7 +11,7 @@ import { routes } from '../api/utils';
 import { useSockets } from '../Providers/SocketProvider';
 import { useStore } from '../store/all';
 import { WsNotificationEvent } from '../types/chat.interface';
-import { Friend, User } from '../types/user.interface';
+import { Friend } from '../types/user.interface';
 import AddFriend from './AddFriend';
 import FriendCard from './FriendCard';
 import Search from './Search';
@@ -45,7 +45,7 @@ const FriendList: Component = () => {
   });
 
   return (
-    <div ref={ref} class="h-full">
+    <div ref={ref} class="flex flex-col gap-2 h-full">
       <Search
         setKeyword={setKeyword}
         popperMsg="Add friend"
@@ -54,16 +54,24 @@ const FriendList: Component = () => {
         <AddFriend />
       </Search>
       <Show when={filteredFriends()}>
-        <For each={filteredFriends()}>
-          {(friend) => (
-            <div class="flex p-1 px-2 transition-all hover:scale-105 border shadow-md border-slate-800">
-              <FriendCard
-                onClick={() => onLoadFriendMessages(friend)}
-                friend={friend}
-              />
-            </div>
-          )}
-        </For>
+        <ul class="menu bg-base-100">
+          <For each={filteredFriends()}>
+            {(friend) => (
+              <li>
+                <a
+                  classList={{
+                    active: state.chat.friendId === friend.id,
+                  }}
+                >
+                  <FriendCard
+                    onClick={() => onLoadFriendMessages(friend)}
+                    friend={friend}
+                  />
+                </a>
+              </li>
+            )}
+          </For>
+        </ul>
       </Show>
     </div>
   );

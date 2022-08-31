@@ -12,6 +12,8 @@ import Scrollbars from 'solid-custom-scrollbars';
 import { useSockets } from '../Providers/SocketProvider';
 import { useAuth } from '../Providers/AuthProvider';
 import Loader from '../components/Loader';
+import { useStore } from '../store/all';
+import { User } from '../types/user.interface';
 
 const Profile: Component = () => {
   const [sockets] = useSockets();
@@ -23,10 +25,11 @@ const Profile: Component = () => {
   const userByIdUrl = () => (params.id ? `${routes.users}/${params.id}` : null);
   const userStatsUrl = () =>
     params.id ? `${routes.playerStats}/${params.id}` : null;
-  const [user] = createTurboResource(() => userByIdUrl());
+  const [user] = createTurboResource<User>(() => userByIdUrl());
   const [stats, { refetch: refetchStats }] =
     createTurboResource<PlayerStatsDto>(() => userStatsUrl());
   const navigate = useNavigate();
+  const [state] = useStore();
 
   const onSendFriendReq = () => {
     if (user()) {
@@ -47,6 +50,10 @@ const Profile: Component = () => {
 
   const onInviteUser = () => {
     if (!user()) return;
+    if (!state.onlineUsers.includes(user()!.id)) {
+      notifyError(`${user()!.display_name} is not online`);
+      return;
+    }
     const data = { event: 'invite', data: user()!.id };
     sockets.pongWs!.send(JSON.stringify(data));
   };
@@ -54,10 +61,10 @@ const Profile: Component = () => {
   return (
     <Show when={user()}>
       <div class="flex justify-evenly">
-        <div class="mt-7 border-r border-gray-600 shadow-md flex flex-col gap-2 items-center">
-          <div class="text-white gap-1 flex flex-col items-center">
+        <div class="mt-7 pr-2 border-r border-gray-600 shadow-md flex flex-col gap-2 items-center">
+          <div class=" gap-1 flex flex-col items-center">
             <img
-              class="w-40 h-44 mt-5"
+              class="w-40 h-44 mt-5 mask mask-decagon"
               src={
                 user()!.avatarId
                   ? generateImageUrl(user()!.avatarId)
@@ -69,40 +76,48 @@ const Profile: Component = () => {
             </h1>
             <p class="w-full">Rank: {stats()?.ladder_rank}</p>
             <div class="flex w-full py-1 justify-between pr-4">
-              <p class="text-green-500">Wins: {stats()?.wins}</p>
-              <p class="text-red-500">losses: {stats()?.losses}</p>
+              <p class="text-success">Wins: {stats()?.wins}</p>
+              <p class="text-error">losses: {stats()?.losses}</p>
             </div>
             <p class="w-full">
               Winrate: {stats()?.wins_percent ? stats()?.wins_percent : 0}%
             </p>
           </div>
-          <ul class="flex flex-col gap-2 self-start text-white">
+          <ul class="flex flex-col gap-2">
             <Show when={auth.user && parseInt(params.id) !== auth.user.id}>
               <li>
-                <button onClick={onSendFriendReq} class="btn-primary w-full">
+                <button
+                  onClick={onSendFriendReq}
+                  class="btn-primary btn btn-sm w-full"
+                >
                   Send friend request
                 </button>
               </li>
               <li>
-                <button onClick={onInviteUser} class="btn-primary w-full">
+                <button
+                  onClick={onInviteUser}
+                  class="btn-primary btn btn-sm w-full"
+                >
                   Invite to play
                 </button>
               </li>
               <li>
-                <button class="btn-secondary w-full">Block</button>
+                <button class="btn-error w-full btn btn-sm">Block</button>
               </li>
             </Show>
             <Show when={auth.user && auth.user.id === +params.id}>
               <li>
                 <button
                   onClick={() => navigate('/edit_profile')}
-                  class="btn-primary w-full"
+                  class="btn-primary w-full btn btn-sm"
                 >
                   Edit profile
                 </button>
               </li>
               <li>
-                <button class="btn-secondary w-full">Sign out</button>
+                <button class="btn-secondary btn btn-sm w-full">
+                  Sign out
+                </button>
               </li>
             </Show>
           </ul>

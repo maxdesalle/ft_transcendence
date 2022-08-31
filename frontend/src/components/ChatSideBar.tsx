@@ -2,10 +2,8 @@ import {
   Component,
   createEffect,
   createSignal,
-  For,
   Match,
   onCleanup,
-  onMount,
   Show,
   Switch,
 } from 'solid-js';
@@ -59,38 +57,59 @@ const ChatSideBar: Component = () => {
   });
 
   return (
-    <>
-      <ul class="text-white text-start flex flex-col gap-1">
+    <div class="flex flex-col gap-2">
+      <ul class="menu bg-base-100 min-w-fit gap-1 py-1 border-b border-b-base-300 shadow-md">
         <li
           onClick={() => {
             setCurrentRoomId(undefined);
             setFriendId(undefined);
             changeTab(TAB.HOME);
           }}
-          class="btn-primary text-start rounded-none  hover:text-gray-400 transition-all"
         >
-          Pulbic Channels
+          <a
+            style={{ width: '95%' }}
+            class="border rounded-md border-base-300 mx-auto"
+            classList={{
+              active: state.chatUi.tab === TAB.HOME,
+            }}
+          >
+            Pulbic
+          </a>
         </li>
         <li
           onClick={() => {
             setFriendId(undefined);
             changeTab(TAB.ROOMS);
           }}
-          class="btn-primary rounded-none text-start hover:text-gray-400 transition-all"
         >
-          Rooms
+          <a
+            class="border rounded-md border-base-300 mx-auto"
+            style={{ width: '95%' }}
+            classList={{
+              active: state.chatUi.tab === TAB.ROOMS,
+            }}
+          >
+            Rooms
+          </a>
         </li>
         <li
           onClick={() => {
             setCurrentRoomId(undefined);
             changeTab(TAB.FRIENDS);
           }}
-          class="btn-primary rounded-none text-start hover:text-gray-400 transition-all"
         >
-          Friends
+          <a
+            style={{ width: '95%' }}
+            class="border rounded-md border-base-300 mx-auto"
+            classList={{
+              active: state.chatUi.tab === TAB.FRIENDS,
+            }}
+          >
+            Friends
+          </a>
         </li>
       </ul>
-      <div id="room_users" class="h-full">
+      <div class="h-full flex flex-col gap-2">
         <Switch>
           <Match when={state.chatUi.tab === TAB.ROOMS}>
             <Search
@@ -108,12 +127,12 @@ const ChatSideBar: Component = () => {
             <FriendList />
           </Match>
           <Match when={state.chatUi.tab === TAB.HOME}>
-            <p class="text-white p-2">Create room</p>
+            <p class=" p-2">Create room</p>
             <CreateRoom class="px-2" />
           </Match>
         </Switch>
       </div>
-    </>
+    </div>
   );
 };
 

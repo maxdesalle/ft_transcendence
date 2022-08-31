@@ -1,6 +1,5 @@
 import Scrollbars from 'solid-custom-scrollbars';
-import { Component, createEffect, createResource, For, Show } from 'solid-js';
-import { createTurboResource } from 'turbo-solid';
+import { Component, createResource, For, Show } from 'solid-js';
 import { routes } from '../api/utils';
 import { LadderDto } from '../types/stats.interface';
 import { api } from '../utils/api';
@@ -14,40 +13,35 @@ const LeaderBoard: Component = () => {
 
   return (
     <div class="flex flex-col">
-      <h1 class="text-2xl text-center py-5 text-white">Leaderboard</h1>
-      <div class="border-gray-200 p-3 relative bg-slate-600 text-white">
-        <div class="flex justify-between sticky">
-          <p>Rank</p>
-          <p>Player</p>
-          <p>Points</p>
-        </div>
-      </div>
+      <h1 class="text-2xl text-center py-5 ">Leaderboard</h1>
       <Show when={ladder()}>
-        <Scrollbars
-          style={{
-            height: '80vh',
-          }}
-        >
-          <table class="w-full">
-            <tbody class="text-white bg-skin-header-background">
+        <table class="w-full table overflow-x-hidden">
+          <thead>
+            <tr>
+              <th>Rank</th>
+              <th>Player</th>
+              <th>Points</th>
+            </tr>
+          </thead>
+          <Scrollbars
+            style={{
+              height: '80vh',
+              width: '100%',
+            }}
+          >
+            <tbody class="border border-base-300 w-full shadow-md">
               <For each={ladder()}>
                 {(player) => (
-                  <tr>
-                    <td class="p-2 border border-gray-600 text-center">
-                      {player.rank}
-                    </td>
-                    <td class="p-2 flex items-center border border-gray-600 text-start">
-                      <p class="pl-3">{player.display_name}</p>
-                    </td>
-                    <td class="p-2 border border-gray-600 text-center">
-                      {player.points}
-                    </td>
+                  <tr class="w-full">
+                    <td class="p-2 text-center">{player.rank}</td>
+                    <td class="p-2 text-start">{player.display_name}</td>
+                    <td class="p-2 text-center">{player.points}</td>
                   </tr>
                 )}
               </For>
             </tbody>
-          </table>
-        </Scrollbars>
+          </Scrollbars>
+        </table>
       </Show>
     </div>
   );

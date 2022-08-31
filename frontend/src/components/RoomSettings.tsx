@@ -13,9 +13,10 @@ import { routes } from '../api/utils';
 import { useAuth } from '../Providers/AuthProvider';
 import { TAB, useStore } from '../store/all';
 import { RoomInfo } from '../types/chat.interface';
+import { User } from '../types/user.interface';
 import { notifyError, notifySuccess } from '../utils/helpers';
 
-const RoomSettings: Component<{ refetch?: () => void }> = (props) => {
+const RoomSettings: Component<{ owner: User }> = (props) => {
   const [state, { setCurrentRoomId, changeTab }] = useStore();
   const [userId, setUserId] = createSignal(0);
   const [password, setPassword] = createSignal('');
@@ -105,7 +106,7 @@ const RoomSettings: Component<{ refetch?: () => void }> = (props) => {
   };
 
   return (
-    <div class="p-2 flex flex-col text-white">
+    <div class="p-2 flex flex-col ">
       <form
         class="flex flex-col gap-3"
         onSubmit={(e) => {
@@ -113,64 +114,71 @@ const RoomSettings: Component<{ refetch?: () => void }> = (props) => {
           onChangePassword();
         }}
       >
-        <label for="update_pw">Change password</label>
+        <label class="text-lg font-semibold" for="update_pw">
+          Change password
+        </label>
         <input
           value={password()}
           onInput={(e) => setPassword(e.currentTarget.value)}
-          class="p-1 rounded-sm outline-none bg-skin-header-background"
+          class="input input-sm"
           type="password"
           placeholder="Enter new password"
           name="update_pw"
           id="update_pw"
         />
-        <button
-          class="text-white w-full bg-gradient-to-r from-blue-500 via-blue-600 to-blue-700 hover:bg-gradient-to-br focus:ring-4 focus:outline-none focus:ring-blue-300 dark:focus:ring-blue-800 font-medium rounded-sm text-sm px-2 py-1 text-center mr-2 mb-2"
-          type="submit"
-        >
+        <button class="btn btn-primary btn-sm" type="submit">
           Submit
         </button>
       </form>
       <form
-        class="flex flex-col gap-3"
+        class="flex flex-col gap-3 py-2"
         onSubmit={(e) => {
           e.preventDefault();
           onSetOwner(userId());
         }}
       >
-        <label for="update_pw">Change owner</label>
+        <label for="update_pw" class="text-lg font-semibold">
+          Change owner
+        </label>
         <select
           onInput={(e) => setUserId(parseInt(e.currentTarget.value))}
-          class="bg-skin-header-background"
+          class="select select-bordered"
         >
           <option class="" disabled selected value="">
             Select new owner
           </option>
-          <For each={currentRoom()?.users}>
+          <For
+            each={currentRoom()?.users.filter(
+              (user) => user.id !== props.owner.id,
+            )}
+          >
             {(user) => <option value={user.id}>{user.display_name}</option>}
           </For>
         </select>
-        <button
-          class="text-white w-full bg-gradient-to-r from-blue-500 via-blue-600 to-blue-700 hover:bg-gradient-to-br focus:ring-4 focus:outline-none focus:ring-blue-300 dark:focus:ring-blue-800 font-medium rounded-sm text-sm px-2 py-1 text-center mr-2 mb-2"
-          type="submit"
-        >
+        <button class="btn btn-primary btn-sm" type="submit">
           Submit
         </button>
       </form>
-      <Show when={currentRoom() && !currentRoom()!.private}>
-        <button onClick={onSetPrivate} class="btn-primary w-full">
-          Set private
+      <div class="flex flex-col gap-2">
+        <Show when={currentRoom() && !currentRoom()!.private}>
+          <button onClick={onSetPrivate} class="btn-primary btn btn-sm w-full">
+            Set private
+          </button>
+        </Show>
+        <button onClick={onLeaveGroup} class="btn-secondary btn btn-sm w-full">
+          Leave
         </button>
-      </Show>
-      <button onClick={onLeaveGroup} class="btn-secondary w-full">
-        Leave
-      </button>
+      </div>
       <div>
-        <p>Benned users</p>
+        <p class="text-lg font-semibold py-2">Benned users</p>
         <For each={bannedUsers()}>
           {(user) => (
-            <div class="flex justify-between border px-1 pt-1 border-header-menu">
+            <div class="flex justify-between p-1 items-center">
               <h1 class="capitalize">{user.display_name}</h1>
-              <button onClick={() => onUnban(user)} class="btn-primary">
+              <button
+                onClick={() => onUnban(user)}
+                class="btn-success btn btn-sm"
+              >
                 unban
               </button>
             </div>

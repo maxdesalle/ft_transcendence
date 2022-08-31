@@ -302,10 +302,10 @@ export const viewerSketch = (p5: MyP5) => {
       isNaN(idText) ||
       !sessionIdsArray.includes(parseInt(idText))
     ) {
-      console.log(`${idText} is an invalid id`);
       (document.getElementById('user_id') as HTMLInputElement)!.placeholder =
         'Invalid id';
       (document.getElementById('user_id') as HTMLInputElement)!.value = '';
+
       return;
     }
     ws.send(JSON.stringify({ id: Number(idText) }));
@@ -467,8 +467,8 @@ export const viewerSketch = (p5: MyP5) => {
     button.position(input.x + input.width, input.y);
     button.mousePressed(handleSubmit);
     button.size(input.width / 1.5, input.height);
-    button.style('color', 'white');
-    button.style('background-color', '#555555');
+    // button.style('color', 'white');
+    // button.style('background-color', '#555555');
     // sliders
     p5.fill(255, 255, 255, 255);
     sliders.forEach((s) => s.p5Slider.show());

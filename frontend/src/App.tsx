@@ -4,7 +4,6 @@ import {
   createResource,
   onCleanup,
   onMount,
-  untrack,
 } from 'solid-js';
 import { Route, Routes, useNavigate } from 'solid-app-router';
 import Chat from './pages/Chat';
@@ -27,10 +26,11 @@ import { WsNotificationEvent } from './types/chat.interface';
 import { api } from './utils/api';
 import { User } from './types/user.interface';
 import { routes } from './api/utils';
+import { themeChange } from 'theme-change';
 
 const App: Component = () => {
   const [
-    state,
+    ,
     {
       setOnlineUsers,
       setFriendInvitation,
@@ -57,10 +57,8 @@ const App: Component = () => {
   );
 
   createEffect(() => {
-    if (
-      sockets.notificationWs &&
-      sockets.notificationWs.readyState === WebSocket.OPEN
-    ) {
+    if (sockets.notificationWs && sockets.notifWsState === WebSocket.OPEN) {
+      console.log('adding event listenner');
       sockets.notificationWs!.addEventListener('message', (e) => {
         let res: {
           event: WsNotificationEvent;
@@ -73,7 +71,6 @@ const App: Component = () => {
         res = JSON.parse(e.data);
         switch (res.event) {
           case 'pong: invitation':
-            console.log(res);
             setFriendInvitation(res);
             break;
           case 'pong: invitation_accepted':
@@ -135,12 +132,12 @@ const App: Component = () => {
     }
   });
 
-  onMount(() => {
-    // console.log = () => {};
-  });
-
   createEffect(() => {
-    if (sockets.notificationWs && sockets.notifWsState === WebSocket.OPEN) {
+    console.log('sending event');
+    if (
+      sockets.notificationWs &&
+      sockets.notificationWs.readyState === WebSocket.OPEN
+    ) {
       sockets.notificationWs!.send(
         JSON.stringify({
           event: 'isOnline',
@@ -168,7 +165,7 @@ const App: Component = () => {
 
   return (
     <>
-      <div class="bg-skin-page w-full overflow-hidden">
+      <div class="w-full overflow-hidden">
         <Routes>
           <Route
             path=""

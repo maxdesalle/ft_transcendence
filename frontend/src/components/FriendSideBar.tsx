@@ -56,7 +56,7 @@ const FriendSideBar: Component<{
   const inGame = createMemo(() => state.inGameUsers.includes(props.friend.id));
 
   return (
-    <div class="flex flex-col px-2">
+    <div class="flex flex-col px-2 gap-1">
       <Avatar
         class="pt-5 self-center"
         imgUrl={
@@ -65,18 +65,27 @@ const FriendSideBar: Component<{
             : undefined
         }
       />
-      <p class="self-center text-white pb-3">{props.friend.display_name}</p>
-      <button onClick={inviteFriend} type="button" class="btn-primary w-full">
+      <p class="self-center text-lg font-semibold pb-3">
+        {props.friend.display_name}
+      </p>
+      <button
+        onClick={inviteFriend}
+        type="button"
+        class="btn-primary w-full btn btn-sm"
+      >
         Invite to play
       </button>
-      <Link class="btn-primary w-full" href={`/profile/${props.friend.id}`}>
+      <Link
+        class="btn-primary w-full btn btn-sm"
+        href={`/profile/${props.friend.id}`}
+      >
         Profile
       </Link>
       <Show when={isBlocked() === false}>
         <button
           onClick={onBlockFriend}
           type="button"
-          class="btn-secondary w-full"
+          class="btn-error w-full btn btn-sm"
         >
           Block
         </button>
@@ -85,7 +94,7 @@ const FriendSideBar: Component<{
         <button
           onClick={onUnblockFriend}
           type="button"
-          class="btn-purple-pink w-full"
+          class="btn btn-accent w-full"
         >
           Unblock
         </button>

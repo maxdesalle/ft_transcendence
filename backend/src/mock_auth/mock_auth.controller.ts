@@ -5,15 +5,12 @@ import {
   Get,
   Post,
   Res,
-  UseGuards,
   UseInterceptors,
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
 import { ApiTags } from '@nestjs/swagger';
 import { Response } from 'express';
-import { JwtGuard } from 'src/auth/guards/jwt.guard';
-import { Usr } from 'src/users/decorators/user.decorator';
 import { User } from 'src/users/entities/user.entity';
 import { UsersService } from 'src/users/users.service';
 import { LoginDTO } from './DTO/login.dto';
@@ -45,18 +42,15 @@ export class MockAuthController {
       login42: user.login42,
     });
     if (this.configService.get('SERVE_STATIC'))
-      res.cookie('jwt_token', jwtToken, { sameSite: 'strict'});
-    else
-      res.cookie('jwt_token', jwtToken, { sameSite: 'none', secure: true });
+      res.cookie('jwt_token', jwtToken, { sameSite: 'strict' });
+    else res.cookie('jwt_token', jwtToken, { sameSite: 'none', secure: true });
     return user;
   }
 
   @Get('logout')
   logout(@Res({ passthrough: true }) res: Response) {
-    if (this.configService.get('SERVE_STATIC'))
-      res.clearCookie('jwt_token');
-    else
-      res.clearCookie('jwt_token', { sameSite: 'none', secure: true });
+    if (this.configService.get('SERVE_STATIC')) res.clearCookie('jwt_token');
+    else res.clearCookie('jwt_token', { sameSite: 'none', secure: true });
     return `Logged out`;
   }
 

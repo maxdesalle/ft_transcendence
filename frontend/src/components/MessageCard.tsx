@@ -12,15 +12,15 @@ const MessageCard: Component<{
 
   return (
     <Show when={user()}>
-      <div class="flex items-center pl-3 pb-1 hover:bg-slate-800 transition-all">
+      <div class="flex items-center pl-3 pb-1 hover:bg-base-200 transition-all">
         <Avatar
           imgUrl={
             user()!.avatarId ? generateImageUrl(user()!.avatarId) : undefined
           }
         />
-        <div class={`opacity-90 text-right pl-3 text-white max-w-xs w-full`}>
+        <div class={`opacity-90 text-right pl-3 max-w-xs w-full`}>
           <div class="flex items-center">
-            <p class="text-base">{message.display_name}</p>
+            <p class="text-base font-semibold">{message.display_name}</p>
             <p class="p-1 text-xs text-gray-500">
               {format(parseISO(message.timestamp.toString()), 'pp')}
             </p>

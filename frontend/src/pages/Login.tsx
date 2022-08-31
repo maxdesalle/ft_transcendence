@@ -47,7 +47,7 @@ const Login: Component = () => {
     <Show when={!loading()} fallback={<Loader />}>
       <div class="flex flex-col items-center h-screen">
         <div class="max-w-md">
-          <div class="flex flex-col border-2 p-2 mt-16 h-full">
+          <div class="flex flex-col border-2 gap-2 p-2 mt-32 h-fit rounded border-base-300">
             <label class="text-center" for="username">
               Username
             </label>
@@ -56,20 +56,17 @@ const Login: Component = () => {
               onInput={(e) => setUsername(e.currentTarget.value)}
               name="username"
               placeholder="username"
-              class="p-1 border-b border-blue-600 focus:border-blue-800 focus:outline-none"
+              class="input input-bordered"
               value={username()}
               type="text"
               id="username"
             />
-            <button
-              onClick={onLogin}
-              class="bg-red-600 border text-white p-1 mt-1 rounded-md"
-            >
+            <button onClick={onLogin} class="btn btn-error">
               Login using Mock api
             </button>
             <button
               onClick={() => (window.location.href = routes.login42)}
-              class="bg-blue-600 border text-white p-1 mt-1 rounded-md"
+              class="btn-primary btn"
             >
               Login using 42
             </button>

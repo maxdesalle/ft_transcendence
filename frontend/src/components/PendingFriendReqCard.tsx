@@ -43,28 +43,26 @@ const PendingFriendReqCard: Component = () => {
     <Show
       when={state.currentUser.pendingFriendReq.length}
       fallback={
-        <p class="bg-gray-700 p-3 border-1 text-white shadow-md border-red-600">
+        <p class="bg-gray-700 p-3 border-1  shadow-md border-red-600">
           No friend requests 🥲
         </p>
       }
     >
-      <div class="border border-header-menu p-2 pt-4 shadow-md rounded-md bg-skin-menu-background">
+      <div class="border pt-4 shadow-md pb-2 border-base-300 rounded-md px-2 bg-base-200">
         <For each={state.currentUser.pendingFriendReq}>
           {(user) => (
-            <div class="grid grid-cols-2">
-              <h1 class="text-white pr-2 text-lg">
-                {user.req_user.display_name}
-              </h1>
-              <div>
+            <div class="flex flex-col gap-2">
+              <h1 class="text-base">{user.req_user.display_name}</h1>
+              <div class="flex gap-2">
                 <button
                   onClick={() => onAcceptFriendReq(user.req_user.id)}
-                  class="text-white bg-gradient-to-r from-blue-500 via-blue-600 to-blue-700 hover:bg-gradient-to-br focus:ring-4 focus:outline-none focus:ring-blue-300 dark:focus:ring-blue-800 font-medium rounded-sm text-sm px-2 py-1 text-center mr-2 mb-2"
+                  class="btn btn-primary btn-xs"
                 >
                   Accept
                 </button>
                 <button
                   onClick={() => onRejectFriendReq(user.req_user.id)}
-                  class="text-white bg-gradient-to-r from-red-400 via-red-500 to-red-600 hover:bg-gradient-to-br focus:ring-4 focus:outline-none focus:ring-red-300 dark:focus:ring-red-800 font-medium rounded-sm text-sm px-2 py-1 text-center mr-2 mb-2"
+                  class="btn btn-error btn-xs"
                 >
                   Reject
                 </button>

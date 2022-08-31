@@ -12,57 +12,24 @@ const Search: Component<{
   children: JSXElement;
   placeHolder?: string;
 }> = (props) => {
-  const [isOpen, setIsOpen] = createSignal(false);
-  const [anchor, setAnchor] = createSignal<any>();
-  const [popper, setPopper] = createSignal<any>();
-  let ref: any;
-  const popperInstance = usePopper(anchor, popper, {
-    placement: 'right',
-    modifiers: [
-      {
-        name: 'offset',
-        options: {
-          offset: [0, 10],
-        },
-      },
-    ],
-  });
-  const showEvents = ['mouseenter', 'focus'];
-  const hideEvents = ['mouseleave', 'blur'];
-  const show = () => {
-    popper().classList.toggle('hidden');
-    popperInstance()?.update();
-  };
-
-  const hide = () => {
-    popper().classList.toggle('hidden');
-  };
-
-  onMount(() => {
-    autoAnimate(anchor());
-    // showEvents.forEach((event) => {
-    //   ref.addEventListener(event, show);
-    // });
-
-    // hideEvents.forEach((event) => {
-    //   ref.addEventListener(event, hide);
-    // });
-  });
-
   return (
-    <div class="flex items-center pl-2 pb-2">
-      <div class="hidden lg:flex w-2/3 rounded-md p-1 border border-header-menu">
-        <BiSearch size={24} />
-        <input
-          onInput={(e) => props.setKeyword(e.currentTarget.value)}
-          class="focus:outline-none text-sm w-full bg-skin-page"
-          type="text"
-          placeholder={props.placeHolder ? `${props.placeHolder}` : ''}
-          name="search"
-          autocomplete="off"
-        />
+    <div class="flex items-center">
+      <div class="form-control">
+        <label class="input-group">
+          <span>
+            <BiSearch size={24} />
+          </span>
+          <input
+            onInput={(e) => props.setKeyword(e.currentTarget.value)}
+            class="input w-full input-bordered focus:outline-none"
+            type="text"
+            placeholder={props.placeHolder ? `${props.placeHolder}` : ''}
+            name="search"
+            autocomplete="off"
+          />
+        </label>
       </div>
-      <div ref={setAnchor} class="ml-5 lg:self-start">
+      {/* <div ref={setAnchor} class="ml-5 lg:self-start">
         <button onclick={() => setIsOpen(!isOpen())}>
           <AiOutlinePlusCircle ref={ref} size={26} />
         </button>
@@ -77,7 +44,7 @@ const Search: Component<{
             {props.children}
           </div>
         </Modal>
-      </div>
+      </div> */}
     </div>
   );
 };

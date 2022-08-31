@@ -25,6 +25,7 @@
     "@types/p5": "^1.4.2",
     "@types/qrcode": "^1.4.2",
     "axios": "^0.27.2",
+    "daisyui": "^2.24.0",
     "date-fns": "^2.28.0",
     "js-cookie": "^3.0.1",
     "qrcode": "^1.5.1",
@@ -36,6 +37,7 @@
     "solid-js-form": "^0.1.5",
     "solid-popper": "^0.2.1",
     "solid-toast": "^0.3.4",
+    "theme-change": "^2.2.0",
     "turbo-solid": "^1.1.0"
   }
 }

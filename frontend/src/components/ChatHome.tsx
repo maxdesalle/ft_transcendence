@@ -23,9 +23,7 @@ const ChatHome: Component = () => {
     });
   return (
     <Show when={joinableRooms()}>
-      <h1 class="text-white text-center text-3xl py-2">
-        Public room you can join
-      </h1>
+      <h1 class=" text-center text-2xl font-semibold py-2">Public Rooms</h1>
       <JoinableRoomList
         keyword=""
         refetch={() => {

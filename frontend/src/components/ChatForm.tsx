@@ -14,23 +14,25 @@ const ChatForm: Component<{
           props.onSendMessage(props.message);
         }
       }}
-      class="p-1 z-10 flex items-center border shadow-md border-header-menu rounded-md mt-2"
+      class="form-control mb-1 "
     >
-      <input
-        type="text"
-        autocomplete="off"
-        id="message"
-        value={props.message}
-        onInput={(e) => props.setMessage(e.currentTarget.value)}
-        class="w-full z-10 text-white  pl-4 py-1 focus:outline-none bg-skin-menu-background"
-        placeholder="Enter a message"
-      />
-      <button
-        onClick={() => props.onSendMessage(props.message)}
-        class="text-skin-gray pl-2"
-      >
-        <IoSend size={22} />
-      </button>
+      <label class="input-group">
+        <input
+          type="text"
+          autocomplete="off"
+          id="message"
+          value={props.message}
+          onInput={(e) => props.setMessage(e.currentTarget.value)}
+          class="input w-full input-md input-bordered focus:outline-none"
+          placeholder="Enter a message"
+        />
+        <span
+          onClick={() => props.onSendMessage(props.message)}
+          class="text-skin-gray pl-2"
+        >
+          <IoSend size={22} />
+        </span>
+      </label>
     </form>
   );
 };

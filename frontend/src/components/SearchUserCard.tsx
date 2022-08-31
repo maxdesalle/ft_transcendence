@@ -12,7 +12,7 @@ const SearchUserCard: Component<{ user: User; onClick?: () => void }> = (
 ) => {
   const navigate = useNavigate();
   return (
-    <div class="flex items-center bg-skin-menu-background justify-between w-full p-2 rounded-sm text-white">
+    <div class="flex items-centers justify-between w-full p-2 rounded-sm ">
       <div class="flex items-center">
         <Avatar
           imgUrl={
@@ -23,16 +23,13 @@ const SearchUserCard: Component<{ user: User; onClick?: () => void }> = (
         />
         <h1 class="pl-2">{props.user.display_name}</h1>
       </div>
-      <div class="flex">
-        <button
-          onClick={props.onClick}
-          class="border border-blue-600 rounded-full"
-        >
-          <AiOutlineUserAdd size={15} class="rounded-full bg-blue-600" />
+      <div class="flex gap-1">
+        <button onClick={props.onClick} class="bg-base-300 rounded-full">
+          <AiOutlineUserAdd size={20} class="rounded-full bg-blue-600" />
         </button>
         <button
           onClick={() => navigate(`/profile/${props.user.id}`)}
-          class="bg-blue-600 rounded-full"
+          class="bg-base-300 rounded-full"
         >
           <CgProfile size={20} class="bg-blue-600 rounded-full" />
         </button>

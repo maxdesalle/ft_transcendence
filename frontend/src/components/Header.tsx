@@ -1,13 +1,16 @@
 import { Link } from 'solid-app-router';
-import { Component, createSignal, For, onMount, Show } from 'solid-js';
+import {
+  Component,
+  createEffect,
+  createSignal,
+  For,
+  onMount,
+  Show,
+} from 'solid-js';
 import logo from '../assets/logo.png';
 import { BiSearchAlt2 } from 'solid-icons/bi';
 import HeaderProfileMenu from './HeaderProfileMenu';
-import Modal from './Modal';
-import Avatar from './Avatar';
-import { useStore } from '../store/all';
 import SearchUserCard from './SearchUserCard';
-import { generateImageUrl } from '../utils/helpers';
 import { createTurboResource } from 'turbo-solid';
 import { routes } from '../api/utils';
 import { User } from '../types/user.interface';
@@ -20,18 +23,28 @@ import { IoChatbubblesSharp } from 'solid-icons/io';
 import GameInviteNotif from './GameInviteNotif';
 import FriendRequests from './FriendRequest';
 const LINKS = ['chat', 'leaderboard'];
+import { RiDesignPaintFill } from 'solid-icons/ri';
+import { themeChange } from 'theme-change';
 
 const Header: Component = () => {
   const [keyword, setKeyword] = createSignal<string>('');
-  const [state] = useStore();
   const [users] = createTurboResource<User[]>(() => routes.users);
-  const [currentUser] = createTurboResource<User>(() => routes.currentUser);
   const [auth] = useAuth();
   const notifySuccess = (msg: string) => toast.success(msg);
   const notifyError = (msg: string) => toast.error(msg);
-  const [isOpen, setIsOpen] = createSignal(false);
-  const [isNotifOpen, setIsNotifOpen] = createSignal(false);
+  const [selectedTheme, setSelectedTheme] = createSignal('dark');
   let ref: any;
+  const themes = [
+    'night',
+    'dark',
+    'retro',
+    'coffee',
+    'dracula',
+    'valentine',
+    'halloween',
+    'business',
+    'synthwave',
+  ];
 
   const onSendFriendReq = (userId: number, userName: string) => {
     api
@@ -48,66 +61,89 @@ const Header: Component = () => {
     autoAnimate(ref);
   });
 
+  createEffect(() => {
+    selectedTheme();
+    themeChange(false);
+  });
+
   return (
     <>
-      <header class="flex px-3 h-hh items-center relative z-20 w-full bg-skin-header-background justify-between">
-        <div class="flex sm:w-full lg:w-fit md:w-fit items-center gap-5">
+      <header class="navbar bg-base-300">
+        <div class="flex-1">
           <Link href="/">
             <img class="w-9 rounded-xl mr-2 h-8" src={logo} alt="logo" />
           </Link>
-          <span class="flex items-center  rounded-md bg-inherit text-slate-300 h-8 border shadow-md p-1 border-header-menu">
-            <BiSearchAlt2 size={22} />
-            <input
-              value={keyword()}
-              onInput={(e) => setKeyword(e.currentTarget.value)}
-              placeholder="search user"
-              class="p-1 bg-inherit focus:outline-none"
-              autocomplete="off"
-            />
-          </span>
+          <div class="form-control">
+            <label class="input-group">
+              <span>
+                <BiSearchAlt2 size={22} />
+              </span>
+              <input
+                value={keyword()}
+                onInput={(e) => setKeyword(e.currentTarget.value)}
+                placeholder="search user"
+                class="input input-bordered input-sm"
+                autocomplete="off"
+              />
+            </label>
+          </div>
           <FriendRequests />
           <GameInviteNotif />
         </div>
-        <div class="flex">
-          <ul class="p-1 lg:flex md:flex hidden w-64 items-center gap-5">
-            <For each={LINKS}>
-              {(link) => (
-                <li class="text-white first-letter:capitalize">
-                  <Link href={`/${link}`}>{link}</Link>
-                </li>
-              )}
-            </For>
-          </ul>
-          <Link
-            href="/chat"
-            class="lg:hidden my-auto bg-transparent md:hidden block xl:hidden"
-          >
-            <IoChatbubblesSharp
-              class="shadow-md bg-transparent"
-              size={20}
-              color="#001a4d"
-            />
-          </Link>
-          <div ref={ref} class="relative">
-            <button onClick={() => setIsOpen(!isOpen())}>
-              <Avatar
-                color="bg-green-400"
-                imgUrl={
-                  auth.user.avatarId
-                    ? `${generateImageUrl(auth.user.avatarId)}`
-                    : undefined
-                }
+        <ul class="flex gap-2">
+          <For each={LINKS}>
+            {(link) => (
+              <li class="first-letter:capitalize font-semibold">
+                <Link href={`/${link}`}>{link}</Link>
+              </li>
+            )}
+          </For>
+          <li>
+            <Link
+              href="/chat"
+              class="lg:hidden my-auto bg-transparent md:hidden block xl:hidden"
+            >
+              <IoChatbubblesSharp
+                class="shadow-md bg-transparent"
+                size={20}
+                color="#001a4d"
               />
-            </button>
-            <Modal isOpen={isOpen()} toggleModal={setIsOpen}>
-              <div class="bg-skin-menu-background rounded-md w-60 absolute border-header-menu -right-4 border shadow-sm p-2 -top-1">
-                <HeaderProfileMenu user={auth.user} />
-              </div>
-            </Modal>
-          </div>
-        </div>
+            </Link>
+          </li>
+          <li>
+            <div ref={ref} class="dropdown dropdown-end">
+              <label class="flex items-center" tabindex="0">
+                <RiDesignPaintFill />
+                Theme
+              </label>
+              <ul
+                tabindex="0"
+                class="dropdown-content menu-compact menu p-2 shadow bg-base-100 rounded w-fit"
+              >
+                <For each={themes}>
+                  {(t) => (
+                    <li
+                      onClick={() => {
+                        setSelectedTheme(t);
+                      }}
+                    >
+                      <a>
+                        <button class="capitalize" data-set-theme={t}>
+                          {t}
+                        </button>
+                      </a>
+                    </li>
+                  )}
+                </For>
+              </ul>
+            </div>
+          </li>
+          <li>
+            <HeaderProfileMenu user={auth.user} />
+          </li>
+        </ul>
         <Show when={keyword()}>
-          <div class="absolute top-10 z-10 ml-16">
+          <div class="absolute flex bg-base-300 flex-col rounded top-10 z-30 ml-16">
             <For
               each={users()
                 ?.slice(0)

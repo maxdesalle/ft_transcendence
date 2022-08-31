@@ -97,6 +97,8 @@ export class WsGateway implements OnGatewayConnection, OnGatewayDisconnect {
   @SubscribeMessage('isOnline')
   isOnline(client: WebSocket, data: { user_id: number; sender: number }) {
     const connectedUsers = this.wsService.getConnectedUsersIDs();
+    const a = this.wsService.getConnectedUsersIDs();
+    console.log(a);
     console.log('connected users: ', connectedUsers);
     this.wsService.sendMsgToUser(data.sender, {
       event: 'isOnline',

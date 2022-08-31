@@ -25,7 +25,7 @@ class buttonClass {
   private opacity: number = 1;
   private backgroundColor: string = '#ffffff';
   private eventHandler: () => void = () => {};
-  private display: string = 'block'
+  private display: string = 'block';
 
   // to call each time one of the used-in-style values are changed
   private update(): void {
@@ -67,7 +67,7 @@ opacity: ${this.opacity};`,
       case 'background-color':
         this.backgroundColor = value;
         break;
-        case 'opacity':
+      case 'opacity':
         this.opacity = Number(value);
         break;
       default:
@@ -92,7 +92,7 @@ class sliderClass {
   private w: number = 100;
   private h: number = 100;
   private opacity: number = 1;
-  private display: string = 'block'
+  private display: string = 'block';
 
   constructor(sliderElement: HTMLInputElement) {
     this.sliderElement = sliderElement;
@@ -141,7 +141,7 @@ left: ${this.x}px; top: ${this.y}px;`,
     this.update();
   }
   remove(): void {
-    elementList = elementList.filter(item => !(item === this.sliderElement));
+    elementList = elementList.filter((item) => !(item === this.sliderElement));
     this.sliderElement.parentNode?.removeChild(this.sliderElement);
   }
 }
@@ -153,7 +153,7 @@ class inputClass {
   width: number = 100;
   height: number = 100;
   private opacity: number = 1;
-  private display: string = 'block'
+  private display: string = 'block';
 
   constructor(inputElement: HTMLInputElement) {
     this.inputElement = inputElement;
@@ -182,7 +182,7 @@ left: ${this.x}px; top: ${this.y}px;`,
     this.height = h;
     this.update();
   }
- hide() {
+  hide() {
     this.display = 'none';
     this.update();
   }
@@ -201,11 +201,11 @@ left: ${this.x}px; top: ${this.y}px;`,
     this.update();
   }
   remove(): void {
-    elementList = elementList.filter(item => !(item === this.inputElement));
+    elementList = elementList.filter((item) => !(item === this.inputElement));
     this.inputElement.parentNode?.removeChild(this.inputElement);
   }
   id(s: string): void {
-    this.inputElement.setAttribute("id", s);
+    this.inputElement.setAttribute('id', s);
   }
 }
 /* === */
@@ -221,21 +221,24 @@ window.addEventListener('keyup', (e: any) => {
 });
 
 //watching mouse events
-window.addEventListener('mousemove', (evt) => {
-  if (canvasElement === undefined)
-    return;
-  const rect = canvasElement.getBoundingClientRect();
-  p5.mouseX = evt.clientX - rect.left;
-  p5.mouseY = evt.clientY - rect.top;
-}, false);
+window.addEventListener(
+  'mousemove',
+  (evt) => {
+    if (canvasElement === undefined) return;
+    const rect = canvasElement.getBoundingClientRect();
+    p5.mouseX = evt.clientX - rect.left;
+    p5.mouseY = evt.clientY - rect.top;
+  },
+  false,
+);
 
 export const p5: {
   keyIsPressed: boolean;
   UP_ARROW: number;
   DOWN_ARROW: number;
   ENTER: number;
-  mouseX: number,
-  mouseY: number,
+  mouseX: number;
+  mouseY: number;
   createSlider: (
     min: number,
     mac: number,
@@ -286,6 +289,8 @@ export const p5: {
     elementList.push(slider);
     //specifying slider category
     slider.type = 'range';
+    slider.classList.add('range');
+    slider.classList.add('range-primary');
 
     slider.min = String(min);
     slider.max = String(max);
@@ -297,6 +302,9 @@ export const p5: {
   createInput() {
     const input = document.createElement('input');
     elementList.push(input);
+    input.classList.add('input');
+    input.classList.add('input-sm');
+    input.classList.add('input-bordered');
     //specifying slider category
     input.type = 'text';
 
@@ -317,6 +325,9 @@ export const p5: {
     const button = document.createElement('button');
     elementList.push(button);
     button.innerText = s;
+    button.classList.add('btn-primary');
+    button.classList.add('btn');
+    button.classList.add('btn-sm');
     document.body.appendChild(button);
     return new buttonClass(button);
   },
@@ -396,5 +407,5 @@ export const p5: {
     canvasElement.parentNode.removeChild(canvasElement);
     canvasElement = undefined;
     ctx = undefined;
-  }
+  },
 };

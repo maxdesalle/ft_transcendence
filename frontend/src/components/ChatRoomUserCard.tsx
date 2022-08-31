@@ -2,7 +2,6 @@ import {
   Component,
   createEffect,
   createMemo,
-  createResource,
   createSignal,
   onCleanup,
   onMount,
@@ -14,7 +13,7 @@ import { TAB, useStore } from '../store/all';
 import { Link } from 'solid-app-router';
 import Avatar from './Avatar';
 import { blockUser, chatApi } from '../api/chat';
-import { createTurboResource, forget } from 'turbo-solid';
+import { createTurboResource } from 'turbo-solid';
 import { routes } from '../api/utils';
 import toast from 'solid-toast';
 import { RoomInfo, WsNotificationEvent } from '../types/chat.interface';
@@ -24,12 +23,14 @@ import autoAnimate from '@formkit/auto-animate';
 import { sendFriendReq } from '../api/user';
 import { useSockets } from '../Providers/SocketProvider';
 import { useAuth } from '../Providers/AuthProvider';
+import Custom from './Custom';
 
 const ChatRoomUserCard: Component<{
   user: RoomUser;
   ownerId: number;
 }> = (props) => {
   const [isOpen, setIsOpen] = createSignal(false);
+  const [banTime, setBanTime] = createSignal(0);
   const [state, { changeTab, setFriendId, setCurrentRoomId }] = useStore();
   let ref: any;
   const [sockets] = useSockets();
@@ -44,6 +45,13 @@ const ChatRoomUserCard: Component<{
   const [blockedUsers, { mutate }] = createTurboResource<number[]>(
     () => routes.blocked,
   );
+  const bannedUserUrl = () =>
+    state.chat.roomId ? `${routes.bannedUsers}/${state.chat.roomId}` : null;
+
+  const [, { refetch }] = createTurboResource<
+    { id: number; login42: string; display_name: string; unban: Date }[]
+  >(() => bannedUserUrl());
+
   const notify = (msg: string) => toast.success(msg);
   const inviteUser = () => {
     const data = { event: 'invite', data: props.user.id };
@@ -126,31 +134,13 @@ const ChatRoomUserCard: Component<{
       .banUser({
         room_id: currentRoom()!.room_id,
         user_id: props.user.id,
-        time_minutes: 5,
+        time_minutes: banTime(),
       })
       .then((res) => {
         notifySuccess(
           `${props.user.display_name} banned from ${currentRoom()!.room_name}`,
         );
-        mutateCurrentRoom({ ...res.data });
-      })
-      .catch((e: AxiosError<{ message: string }>) => {
-        notifyError(e.response?.data.message as string);
-      });
-  };
-
-  const onUnbanUser = () => {
-    chatApi
-      .unbanUser({
-        room_id: currentRoom()!.room_id,
-        user_id: props.user.id,
-      })
-      .then((res) => {
-        notifySuccess(
-          `${props.user.display_name} unbanned from ${
-            currentRoom()!.room_name
-          }`,
-        );
+        refetch();
         mutateCurrentRoom({ ...res.data });
       })
       .catch((e: AxiosError<{ message: string }>) => {
@@ -194,6 +184,24 @@ const ChatRoomUserCard: Component<{
       .catch((e: AxiosError<{ message: string }>) => {
         notifyError(e.response?.data.message as string);
       });
+  };
+
+  const onKickUser = () => {
+    if (currentRoom()) {
+      chatApi
+        .kickUser({ user_id: props.user.id, room_id: currentRoom()!.room_id })
+        .then((res) => {
+          mutateCurrentRoom({ ...res.data });
+          notifySuccess(
+            `${props.user.display_name} got kicked from ${
+              currentRoom()!.room_name
+            }`,
+          );
+        })
+        .catch((err: AxiosError<{ message: string }>) => {
+          notifyError(err.response?.data.message as string);
+        });
+    }
   };
 
   onMount(() => {
@@ -244,9 +252,9 @@ const ChatRoomUserCard: Component<{
   const isFriend = () => friends()?.includes(props.user.id);
 
   return (
-    <div ref={ref} class="w-full rounded-lg shadow-md">
+    <div ref={ref} class="w-full rounded-lg shadow-md relative">
       <div
-        class={`flex items-center hover:bg-gray-900 justify-between transition-all px-1 py-2`}
+        class={`flex items-center hover:bg-base-300 justify-between transition-all px-1 py-2`}
       >
         <div
           classList={{ 'animate-pulse': isInGame() }}
@@ -262,7 +270,9 @@ const ChatRoomUserCard: Component<{
             }
           />
           <div class="flex pl-3 flex-col w-full">
-            <h1 class="hidden md:block">{props.user.display_name}</h1>
+            <h1 class="hidden md:block font-medium">
+              {props.user.display_name}
+            </h1>
             <Show when={state.inGameUsers.length}>
               <p class="text-sm text-cyan-700">{isInGame() ? 'In Game' : ''}</p>
             </Show>
@@ -270,57 +280,43 @@ const ChatRoomUserCard: Component<{
         </div>
       </div>
       <Modal isOpen={isOpen()} toggleModal={setIsOpen}>
-        <div class="flex flex-col p-3 w-40 border absolute shadow-md rounded-md bg-skin-page border-header-menu -top-6 right-1">
-          <Link
-            class="text-start hover:bg-blue-600 px-3 rounded-sm transition-all"
-            href={`/profile/${props.user.id}`}
-          >
-            Profile
-          </Link>
-          <button
-            onClick={inviteUser}
-            class="text-start hover:bg-blue-600 px-3 rounded-sm transition-all"
-          >
-            Send invite
-          </button>
+        <div class="menu menu-compact border border-base-300 bg-base-300 right-1 -top-10 absolute w-32">
+          <li>
+            <Link href={`/profile/${props.user.id}`}>Profile</Link>
+          </li>
+          <li>
+            <button onClick={inviteUser}>Send invite</button>
+          </li>
           <Show
             when={isBlocked()}
             fallback={
-              <button
-                onClick={onBlockUser}
-                class="text-start hover:bg-red-700 px-3 rounded-sm transition-all"
-              >
-                Block
-              </button>
+              <li>
+                <button onClick={onBlockUser}>Block</button>
+              </li>
             }
           >
-            <button
-              onClick={onUnblockUser}
-              class="text-start hover:bg-red-700 px-3 rounded-sm transition-all"
-            >
-              Unblock
-            </button>
+            <li>
+              <button onClick={onUnblockUser}>Unblock</button>
+            </li>
           </Show>
           <Show
             when={isFriend()}
             fallback={
-              <button
-                onClick={onSendFriendReq}
-                class="text-start hover:bg-blue-600 px-3 rounded-sm transition-all"
-              >
-                Add friend
-              </button>
+              <li>
+                <button onClick={onSendFriendReq}>Add friend</button>
+              </li>
             }
           >
-            <button
-              onClick={() => {
-                changeTab(TAB.FRIENDS);
-                setFriendId(props.user.id);
-              }}
-              class="text-start hover:bg-blue-600 px-3 rounded-sm transition-all"
-            >
-              Send message
-            </button>
+            <li>
+              <button
+                onClick={() => {
+                  changeTab(TAB.FRIENDS);
+                  setFriendId(props.user.id);
+                }}
+              >
+                Send message
+              </button>
+            </li>
           </Show>
 
           <Show
@@ -328,36 +324,24 @@ const ChatRoomUserCard: Component<{
               currentUserRole() === 'admin' || currentUserRole() === 'owner'
             }
           >
-            <button
-              onClick={onMuteUser}
-              class="text-start hover:bg-blue-600 px-3 rounded-sm transition-all"
-            >
-              Mute
-            </button>
-            <button
-              onClick={onUnmuteUser}
-              class="text-start hover:bg-blue-600 px-3 rounded-sm transition-all"
-            >
-              Unmute
-            </button>
-            <button
-              onClick={onBanUser}
-              class="text-start hover:bg-blue-600 px-3 rounded-sm transition-all"
-            >
-              Ban
-            </button>
-            <button
-              onClick={onPromoteUser}
-              class="text-start hover:bg-blue-600 px-3 rounded-sm transition-all"
-            >
-              Promote
-            </button>
-            <button
-              onClick={onDemoteUser}
-              class="text-start hover:bg-blue-600 px-3 rounded-sm transition-all"
-            >
-              Demote
-            </button>
+            <li>
+              <button onClick={onMuteUser}>Mute</button>
+            </li>
+            <li>
+              <button onClick={onUnmuteUser}>Unmute</button>
+            </li>
+            <li>
+              <Custom setBanTime={setBanTime} onClick={onBanUser} />
+            </li>
+            <li>
+              <button onClick={onKickUser}>Kick</button>
+            </li>
+            <li>
+              <button onClick={onPromoteUser}>Promote</button>
+            </li>
+            <li>
+              <button onClick={onDemoteUser}>Demote</button>
+            </li>
           </Show>
         </div>
       </Modal>

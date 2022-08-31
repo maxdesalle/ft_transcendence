@@ -41,7 +41,7 @@ const MessageList: Component<{ messages?: Message[]; id?: number }> = (
   return (
     <div
       ref={ref}
-      class="flex flex-col-reverse gap-3 bg-skin-menu-background w-full first:mt-auto overflow-y-scroll scrollbar scrollbar-thumb-gray-700 scrollbar-track-gray-500 h-full"
+      class="flex flex-col-reverse gap-3 bg-base-100 w-full first:mt-auto overflow-y-scroll scrollbar scrollbar-thumb-gray-700 scrollbar-track-gray-500 h-full"
     >
       <For each={props.messages}>
         {(msg) => (

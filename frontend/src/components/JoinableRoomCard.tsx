@@ -23,29 +23,32 @@ const JoinableRoomCard: Component<{ room: RoomInfo; refetch: () => void }> = (
       });
   };
   return (
-    <div class="flex p-2 items-center">
-      <HiSolidUserGroup color="#2564eb" size={24} />
-      <div class="pl-2 justify-between items-center flex w-full text-white hover:text-slate-400 transition-all">
+    <div class="flex p-2 items-center transition-all hover:bg-base-300">
+      <HiSolidUserGroup class="text-primary-300" size={24} />
+      <div class="pl-2 justify-between items-center flex w-full transition-all">
         <p class="font-bold first-letter:capitalize">{props.room.room_name}</p>
         <div>
-          <button onClick={() => setIsOpen(true)} class="btn-primary">
+          <button onClick={() => setIsOpen(true)} class="btn-primary btn">
             Join
           </button>
           <Modal isOpen={isOpen()} toggleModal={setIsOpen}>
-            <div class="flex flex-col bg-skin-header-background absolute p-2 rounded-md">
-              <label for="password">Enter password</label>
+            <div class="flex flex-col bg-base-300 absolute p-2 rounded-md">
               <input
                 onInput={(e) => setPassword(e.currentTarget.value)}
-                class="bg-skin-menu-background"
+                class="input"
+                placeholder="Enter room password"
                 type="password"
                 name="password"
                 id="password"
               />
               <div class="flex items-center mt-3 justify-between w-full">
-                <button class="btn-secondary" onClick={() => setIsOpen(false)}>
+                <button
+                  class="btn-secondary btn"
+                  onClick={() => setIsOpen(false)}
+                >
                   Close
                 </button>
-                <button onClick={onSubmitPassword} class="btn-primary">
+                <button onClick={onSubmitPassword} class="btn-primary btn">
                   Submit
                 </button>
               </div>

@@ -15,7 +15,7 @@ module.exports = {
         hh: '5vh',
         mh: '8vh',
         92: '92vh',
-        95: '95vh',
+        95: '92vh',
       },
       textColor: {
         skin: {
@@ -40,5 +40,5 @@ module.exports = {
       center: true,
     },
   },
-  plugins: [require('tailwind-scrollbar')],
+  plugins: [require('tailwind-scrollbar'), require('daisyui')],
 };

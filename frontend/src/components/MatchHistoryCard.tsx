@@ -30,8 +30,8 @@ const MatchHistoryCard: Component<{ match: MatchDTO }> = (props) => {
     <Show when={player1() && player2()}>
       <div
         classList={{
-          'bg-green-500': currentUserWon(),
-          'bg-red-500': !currentUserWon(),
+          'bg-success': currentUserWon(),
+          'bg-error': !currentUserWon(),
         }}
         class="grid border-b-2 border-b-gray-600 grid-cols-3 justify-between"
       >

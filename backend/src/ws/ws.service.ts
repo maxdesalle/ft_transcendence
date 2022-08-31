@@ -5,7 +5,6 @@ import { parse } from 'cookie';
 import { WebSocket } from 'ws';
 import { FriendsService } from 'src/friends/friends.service';
 import { UsersService } from 'src/users/users.service';
-import { ChatService } from 'src/chat/chat.service';
 
 @Injectable()
 export class WsService {
@@ -37,7 +36,7 @@ export class WsService {
   }
 
   getUserFromSocket(socket: WebSocket) {
-    for (let [key, value] of WsService.connected_users.entries()) {
+    for (const [key, value] of WsService.connected_users.entries()) {
       if (value === socket) return key;
     }
   }

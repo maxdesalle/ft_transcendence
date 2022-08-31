@@ -1,13 +1,12 @@
+import Cookies from 'js-cookie';
 import {
-  Component,
   createContext,
   createEffect,
   createSignal,
-  JSXElement,
   onCleanup,
   useContext,
 } from 'solid-js';
-import { createStore, Store } from 'solid-js/store';
+import { createStore } from 'solid-js/store';
 import { urls } from '../api/utils';
 import { initSocket } from '../game/pong';
 
@@ -87,9 +86,10 @@ export const SocketProvider = (props: any) => {
       state.pongWs.onopen = (e) => {
         setState('pongWsState', WebSocket.OPEN);
       };
+      const token = Cookies.get('jwt_token');
       state.pongWs.onclose = (e) => {
         setState('pongWsState', WebSocket.CLOSED);
-        if (reconnectAmount > 0) {
+        if (reconnectAmount > 0 && token) {
           console.log('reconnecting pong: ');
           setId(setTimeout(actions.connectPongWs, 3000));
           reconnectAmount--;

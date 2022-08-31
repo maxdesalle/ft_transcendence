@@ -2,8 +2,8 @@ const host_ip = import.meta.env.VITE_HOST;
 
 export const urls = {
   // frontendUrl: 'http://localhost:8000', // not in use anywhere
-  backendUrl: `https://${ host_ip ? host_ip : 'localhost' }:3000`,
-  wsUrl: `wss://${ host_ip ? host_ip : 'localhost' }:3000`,
+  backendUrl: `https://${host_ip ? host_ip : 'localhost'}:3000`,
+  wsUrl: `wss://${host_ip ? host_ip : 'localhost'}:3000`,
 };
 
 //TODO: add endpoints
@@ -47,4 +47,5 @@ export const routes = {
   leaveGroup: `${urls.backendUrl}/chat/leave_group`,
   playerStats: `${urls.backendUrl}/stats/summary`,
   bannedUsers: `${urls.backendUrl}/chat/banned`,
+  kickUser: `${urls.backendUrl}/chat/kick_group_user`,
 };

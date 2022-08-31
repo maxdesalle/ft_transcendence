@@ -16,7 +16,7 @@ const FriendRequests: Component = () => {
 
   return (
     <div
-      class="items-center justify-center px-2 py-1 text-xs leading-none text-red-100 bg-skin-header-background rounded-full"
+      class="items-center justify-center px-2 py-1 text-xs leading-none text-red-100 rounded-full"
       ref={ref}
     >
       <button

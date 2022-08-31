@@ -1,16 +1,11 @@
-import autoAnimate from '@formkit/auto-animate';
-import { HiSolidUserGroup } from 'solid-icons/hi';
-import { Component, For, onMount, Show } from 'solid-js';
+import { Component, For } from 'solid-js';
 import { useStore } from '../store/all';
 import { RoomInfo } from '../types/chat.interface';
+import { TiGroup } from 'solid-icons/ti';
 
 const RoomList: Component<{ room: RoomInfo[]; keyword: string }> = (props) => {
   const [state, { setCurrentRoomId }] = useStore();
   let ref: any;
-
-  onMount(() => {
-    autoAnimate(ref);
-  });
 
   return (
     <div ref={ref}>
@@ -24,21 +19,21 @@ const RoomList: Component<{ room: RoomInfo[]; keyword: string }> = (props) => {
         )}
       >
         {(room) => (
-          <div
+          <ul
             onClick={() => {
               setCurrentRoomId(room.room_id);
             }}
-            class="flex p-2 items-center"
-            classList={{
-              'border-y-2': state.chat.roomId === room.room_id,
-              'border-gray-700': state.chat.roomId === room.room_id,
-            }}
+            class="menu bg-base-100"
           >
-            <HiSolidUserGroup color="#2564eb" size={24} />
-            <div class="pl-2 text-white hover:text-slate-400 transition-all">
-              <p class="font-bold first-letter:capitalize">{room.room_name}</p>
-            </div>
-          </div>
+            <li>
+              <a classList={{ active: state.chat.roomId === room.room_id }}>
+                <TiGroup size={24} />
+                <p class="font-bold first-letter:capitalize">
+                  {room.room_name}
+                </p>
+              </a>
+            </li>
+          </ul>
         )}
       </For>
     </div>

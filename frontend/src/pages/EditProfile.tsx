@@ -1,4 +1,4 @@
-import { Component, createEffect, createSignal, Match, Switch } from 'solid-js';
+import { Component, createSignal, Match, Switch } from 'solid-js';
 import {
   activate2fa,
   changeAvatar,
@@ -7,14 +7,14 @@ import {
 } from '../api/user';
 import Modal from '../components/Modal';
 import QRCode from 'qrcode';
-import { notifyError, notifySuccess } from '../utils/helpers';
+import { generateImageUrl, notifyError, notifySuccess } from '../utils/helpers';
 import { useAuth } from '../Providers/AuthProvider';
 import { useStore } from '../store/all';
 import { useSockets } from '../Providers/SocketProvider';
 import { useNavigate } from 'solid-app-router';
 import Cookies from 'js-cookie';
-import { unwrap } from 'solid-js/store';
 import { forget } from 'turbo-solid';
+import defaultAvatar from '../../../backend/images/avatardefault.png';
 
 const EditProfile: Component = () => {
   const [newName, setNewName] = createSignal('');
@@ -27,7 +27,10 @@ const EditProfile: Component = () => {
 
   const onChangeName = () => {
     if (newName()) {
-      changeDisplayName(newName()).then((res) => setUser(res.data));
+      changeDisplayName(newName()).then((res) => {
+        setUser(res.data);
+        notifySuccess(`Name changed to ${res.data.display_name}`);
+      });
       setNewName('');
     }
   };
@@ -84,34 +87,37 @@ const EditProfile: Component = () => {
   };
 
   return (
-    <div class="pt-5 text-white flex">
+    <div class="pt-5 flex">
       <div class="p-2">
-        <h1>Change name</h1>
+        <h1 class="text-xl pb-1 font-semibold">Change name</h1>
         <div class="flex flex-col w-80">
           <input
             onInput={(e) => setNewName(e.currentTarget.value)}
             type="text"
             value={newName()}
-            class="p-1 focus:outline-none bg-skin-menu-background rounded-sm"
+            class="input focus:outline-none input-bordered"
             placeholder="Enter new name"
           />
-          <button onClick={onChangeName} class="btn-primary w-fit mt-5">
+          <button onClick={onChangeName} class="btn-primary btn w-fit mt-5">
             Change name
           </button>
         </div>
       </div>
       <div class="p-2">
-        <h1 class="text-center">2 fa</h1>
         <Switch>
           <Match when={!auth.user.isTwoFactorAuthenticationEnabled}>
-            <button onClick={onActivate2fa} class="btn-primary">
-              Activate 2fa
+            <h1 class="text-xl font-semibold">Activate 2fa</h1>
+            <button onClick={onActivate2fa} class="btn-primary btn">
+              Activate
             </button>
           </Match>
           <Match when={auth.user.isTwoFactorAuthenticationEnabled}>
-            <button class="btn-primary" onClick={onDeactivate2fa}>
-              Deactivate 2fa
-            </button>
+            <div class="flex flex-col gap-2">
+              <h1 class="text-xl font-semibold">deactivate 2fa</h1>
+              <button class="btn-primary btn" onClick={onDeactivate2fa}>
+                Deactivate
+              </button>
+            </div>
           </Match>
         </Switch>
         <Modal bgColor="bg-purple-300 opacity-30 z-30" isOpen={isOpen()}>
@@ -124,8 +130,20 @@ const EditProfile: Component = () => {
           </div>
         </Modal>
       </div>
-      <div class="flex flex-col w-fit p-2">
-        <label for="avatar">Change Avatar</label>
+      <div class="flex flex-col w-fit p-2 gap-2">
+        <p class="text-xl font-semibold">Change Avatar</p>
+        <div class="avatar">
+          <div class="w-24 rounded">
+            <img
+              src={
+                auth.user.avatarId
+                  ? generateImageUrl(auth.user.avatarId)
+                  : defaultAvatar
+              }
+              alt="avatar"
+            />
+          </div>
+        </div>
         <input
           onChange={(e) => {
             if (e.currentTarget.files) {
@@ -136,7 +154,7 @@ const EditProfile: Component = () => {
           accept="image/*"
           id="avatar"
         />
-        <button onClick={onImageUpload} class="btn-primary w-fit mt-5">
+        <button onClick={onImageUpload} class="btn-primary btn w-fit">
           Change Avatar
         </button>
       </div>

@@ -102,11 +102,11 @@ const ChatRightSideBar: Component<{}> = () => {
   });
   return (
     <Show when={state.chat.roomId}>
-      <div class="text-white">
+      <div class="">
         <h4 class="p-2 text-start">Owner</h4>
         <Show when={owner()}>
           {(o) => (
-            <div class="p-2 flex items-center">
+            <div class="p-2 flex items-center border border-base-200 shadow-md">
               <Avatar
                 color={
                   state.onlineUsers.includes(o.id)
@@ -117,14 +117,21 @@ const ChatRightSideBar: Component<{}> = () => {
                   o.avatarId ? `${generateImageUrl(o.avatarId)}` : undefined
                 }
               />
-              <h1 class="pl-4">{o.display_name}</h1>
+              <div class="pl-3">
+                <h1 class="font-semibold text-neutral-focus">
+                  {o.display_name}
+                </h1>
+                <Show when={state.inGameUsers.includes(o.id)}>
+                  <p class="text-info">in Game</p>
+                </Show>
+              </div>
             </div>
           )}
         </Show>
       </div>
-      <div class="text-white">
-        <ul class="flex">
-          <li onClick={() => setTab(0)} class="text-start p-2">
+      <div class="">
+        <ul class="flex items-center justify-between">
+          <li onClick={() => setTab(0)} class="text-start p-2 btn btn-ghost">
             Members
           </li>
           <Show when={currentUserRole() !== 'participant'}>
@@ -156,26 +163,23 @@ const ChatRightSideBar: Component<{}> = () => {
                 height: '70vh',
               }}
             >
-              <h1 class="p-2">Admin</h1>
+              <h1 class="p-2 font-semibold">Admin</h1>
               <Show when={admins()} fallback={<Loader />}>
                 <For each={admins()}>
                   {(user) => (
                     <ChatRoomUserCard user={user} ownerId={owner()!.id} />
                   )}
                 </For>
-                <h1 class="p-2">online</h1>
+                <h1 class="p-2 font-semibold">Online</h1>
                 <For each={onlineUsers()}>
                   {(user) => (
                     <ChatRoomUserCard user={user} ownerId={owner()!.id} />
                   )}
                 </For>
-                <h1 class="p-2">offline</h1>
+                <h1 class="p-2 font-semibold">Offline</h1>
                 <For
                   each={currentRoom()!.users.filter(
-                    (user) =>
-                      user.id !== owner()!.id &&
-                      user.role === 'participant' &&
-                      !state.onlineUsers.includes(user.id),
+                    (user) => !state.onlineUsers.includes(user.id),
                   )}
                 >
                   {(user) => (
@@ -184,14 +188,12 @@ const ChatRightSideBar: Component<{}> = () => {
                 </For>
               </Show>
             </Scrollbars>
-            <div class="w-full p-1">
-              <button onClick={onLeaveGroup} class="btn-secondary">
-                Leave channel
-              </button>
-            </div>
+            <button onClick={onLeaveGroup} class="btn-error btn btn-sm">
+              Leave channel
+            </button>
           </Match>
           <Match when={tab() == 1}>
-            <RoomSettings refetch={refetch} />
+            <Show when={owner()}>{(o) => <RoomSettings owner={o} />}</Show>
           </Match>
         </Switch>
       </div>

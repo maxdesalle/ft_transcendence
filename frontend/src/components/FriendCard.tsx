@@ -15,7 +15,7 @@ export const FriendCard: Component<{ friend: Friend; onClick?: () => void }> = (
   return (
     <div
       onClick={props.onClick}
-      class="flex text-white justify-between items-center w-full"
+      class="flex  justify-between items-center w-full"
     >
       <div class="flex sm:m-auto md:m-0">
         <Avatar

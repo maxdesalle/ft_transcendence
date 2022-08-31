@@ -32,7 +32,7 @@ const GameInviteNotif: Component = () => {
 
   function NoInvitation() {
     return (
-      <div class="p-2 bg-skin-menu-background">
+      <div class="p-2 bg-base-300">
         <p>No Game Invitation</p>
       </div>
     );
@@ -66,7 +66,7 @@ const GameInviteNotif: Component = () => {
 
   return (
     <div
-      class="items-center rounded-md justify-center px-2 py-1 leading-none text-red-100 bg-skin-header-background"
+      class="items-center rounded-md justify-center px-2 py-1 leading-none"
       ref={ref}
     >
       <button
@@ -81,13 +81,19 @@ const GameInviteNotif: Component = () => {
           when={user() && state.pong.friendInvitation}
           fallback={<NoInvitation />}
         >
-          <div class="flex flex-col gap-2 bg-skin-menu-background px-2 pt-2">
+          <div class="flex flex-col bg-base-300 border  gap-2 w-fit px-2 pt-2">
             <p>{user()!.display_name} invited you to play</p>
             <div class="flex justify-between w-full">
-              <button onClick={onAcceptInvite} class="btn-primary w-full">
+              <button
+                onClick={onAcceptInvite}
+                class="btn-primary btn btn-xs w-fit"
+              >
                 Accept
               </button>
-              <button onClick={onRejectInvite} class="btn-secondary w-full">
+              <button
+                onClick={onRejectInvite}
+                class="btn-secondary btn btn-xs w-fit"
+              >
                 Reject
               </button>
             </div>
