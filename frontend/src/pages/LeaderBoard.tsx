@@ -23,24 +23,17 @@ const LeaderBoard: Component = () => {
               <th>Points</th>
             </tr>
           </thead>
-          <Scrollbars
-            style={{
-              height: '80vh',
-              width: '100%',
-            }}
-          >
-            <tbody class="border border-base-300 w-full shadow-md">
-              <For each={ladder()}>
-                {(player) => (
-                  <tr class="w-full">
-                    <td class="p-2 text-center">{player.rank}</td>
-                    <td class="p-2 text-start">{player.display_name}</td>
-                    <td class="p-2 text-center">{player.points}</td>
-                  </tr>
-                )}
-              </For>
-            </tbody>
-          </Scrollbars>
+          <tbody class="border overflow-scroll border-base-300 w-full shadow-md">
+            <For each={ladder()}>
+              {(player) => (
+                <tr class="w-full">
+                  <td class="p-2 text-center">{player.rank}</td>
+                  <td class="p-2 text-start">{player.display_name}</td>
+                  <td class="p-2 text-center">{player.points}</td>
+                </tr>
+              )}
+            </For>
+          </tbody>
         </table>
       </Show>
     </div>
