@@ -2,7 +2,7 @@ import { Link, useNavigate, useParams } from 'solid-app-router';
 import { Component, createResource, For, onMount, Show } from 'solid-js';
 import defaultAvatar from '../../../backend/images/avatardefault.png';
 import { generateImageUrl, notifyError, notifySuccess } from '../utils/helpers';
-import { createTurboResource } from 'turbo-solid';
+import { createTurboResource, forget } from 'turbo-solid';
 import { routes } from '../api/utils';
 import { MatchDTO, PlayerStatsDto } from '../types/stats.interface';
 import MatchHistoryCard from '../components/MatchHistoryCard';
@@ -14,10 +14,11 @@ import { useAuth } from '../Providers/AuthProvider';
 import Loader from '../components/Loader';
 import { useStore } from '../store/all';
 import { User } from '../types/user.interface';
+import Cookies from 'js-cookie';
 
 const Profile: Component = () => {
-  const [sockets] = useSockets();
-  const [auth] = useAuth();
+  const [sockets, { disconnect }] = useSockets();
+  const [auth, { setToken, setIsAuth }] = useAuth();
   const params = useParams<{ id: string }>();
   const [matches, { refetch }] = createTurboResource<MatchDTO[]>(
     () => `${routes.matches}/${parseInt(params.id)}`,
@@ -29,7 +30,7 @@ const Profile: Component = () => {
   const [stats, { refetch: refetchStats }] =
     createTurboResource<PlayerStatsDto>(() => userStatsUrl());
   const navigate = useNavigate();
-  const [state] = useStore();
+  const [state, { resetStore }] = useStore();
 
   const onSendFriendReq = () => {
     if (user()) {
@@ -41,6 +42,15 @@ const Profile: Component = () => {
           notifyError(err.response?.data.message as string);
         });
     }
+  };
+
+  const onLogout = () => {
+    setToken(undefined);
+    Cookies.remove('jwt_token', { sameSite: 'none', secure: true });
+    forget();
+    resetStore();
+    setIsAuth(false);
+    navigate('/login');
   };
 
   onMount(() => {
@@ -101,9 +111,6 @@ const Profile: Component = () => {
                   Invite to play
                 </button>
               </li>
-              <li>
-                <button class="btn-error w-full btn btn-sm">Block</button>
-              </li>
             </Show>
             <Show when={auth.user && auth.user.id === +params.id}>
               <li>
@@ -115,7 +122,10 @@ const Profile: Component = () => {
                 </button>
               </li>
               <li>
-                <button class="btn-secondary btn btn-sm w-full">
+                <button
+                  onClick={onLogout}
+                  class="btn-secondary btn btn-sm w-full"
+                >
                   Sign out
                 </button>
               </li>

@@ -7,12 +7,11 @@
 - [x] 🎉 better login flow
 
 (#3) user profile:
-- [-] 📃 player stats on the profile page
+- [x] 📃 player stats on the profile page
 ----
 
-
 - [ ] 📃 watch friend game from chat interface
-- [ ] 📃 mini tutorial on how to play the game
+- [x] 📃 mini tutorial on how to play the game
 - [x] 🎉 refetch data when a user is blocked or unblocked
 
 (#1) App:
@@ -26,10 +25,6 @@
 ----
 
 (#2) pong:
-- [ ] 🎉 invite online player only
-- [ ] 🎉 Better matchmaking
-----
-
-(#5) BUGS:
-changing avatar and coming back to chat create an http error (when is owner??) 
+- [x] 🎉 invite online player only
+- [x] 🎉 Better matchmaking
 ----

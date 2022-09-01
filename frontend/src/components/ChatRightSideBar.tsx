@@ -129,74 +129,72 @@ const ChatRightSideBar: Component<{}> = () => {
           )}
         </Show>
       </div>
-      <div class="">
-        <ul class="flex items-center justify-between">
-          <li onClick={() => setTab(0)} class="text-start p-2 btn btn-ghost">
-            Members
+      <ul class="flex items-center justify-between">
+        <li onClick={() => setTab(0)} class="text-start p-2 btn btn-ghost">
+          Members
+        </li>
+        <Show when={currentUserRole() !== 'participant'}>
+          <li onClick={() => setTab(1)} class="text-start p-2">
+            <IoSettingsOutline size={24} color="#000000" />
           </li>
-          <Show when={currentUserRole() !== 'participant'}>
-            <li onClick={() => setTab(1)} class="text-start p-2">
-              <IoSettingsOutline size={24} color="#000000" />
-            </li>
-          </Show>
-        </ul>
-        <Switch>
-          <Match when={tab() == 0}>
-            <div ref={addRef} class="flex items-center py-2 pl-5">
-              <Show when={currentUserRole() === 'owner'}>
-                <button onClick={() => setIsOpen(!isOpen())}>
-                  <AiOutlinePlusCircle class="block" size={26} />
-                </button>
-                <h4 class="pl-2">Add member</h4>
-                <Modal isOpen={isOpen()} toggleModal={setIsOpen}>
-                  <div class="p-2 bg-skin-header-background absolute right-7 border border-header-menu rounded-md shadow-md">
-                    <AddUserToRoom
-                      currentRoom={currentRoom()!}
-                      refetch={refetch}
-                    />
-                  </div>
-                </Modal>
-              </Show>
-            </div>
-            <Scrollbars
-              style={{
-                height: '70vh',
-              }}
-            >
-              <h1 class="p-2 font-semibold">Admin</h1>
-              <Show when={admins()} fallback={<Loader />}>
-                <For each={admins()}>
-                  {(user) => (
-                    <ChatRoomUserCard user={user} ownerId={owner()!.id} />
-                  )}
-                </For>
-                <h1 class="p-2 font-semibold">Online</h1>
-                <For each={onlineUsers()}>
-                  {(user) => (
-                    <ChatRoomUserCard user={user} ownerId={owner()!.id} />
-                  )}
-                </For>
-                <h1 class="p-2 font-semibold">Offline</h1>
-                <For
-                  each={currentRoom()!.users.filter(
-                    (user) => !state.onlineUsers.includes(user.id),
-                  )}
-                >
-                  {(user) => (
-                    <ChatRoomUserCard user={user} ownerId={owner()!.id} />
-                  )}
-                </For>
-              </Show>
-            </Scrollbars>
-            <button onClick={onLeaveGroup} class="btn-error btn btn-sm">
-              Leave channel
-            </button>
-          </Match>
-          <Match when={tab() == 1}>
-            <Show when={owner()}>{(o) => <RoomSettings owner={o} />}</Show>
-          </Match>
-        </Switch>
-      </div>
+        </Show>
+      </ul>
+      <Switch>
+        <Match when={tab() == 0}>
+          <div ref={addRef} class="flex items-center py-2 pl-5">
+            <Show when={currentUserRole() === 'owner'}>
+              <button onClick={() => setIsOpen(!isOpen())}>
+                <AiOutlinePlusCircle class="block" size={26} />
+              </button>
+              <h4 class="pl-2">Add member</h4>
+              <Modal isOpen={isOpen()} toggleModal={setIsOpen}>
+                <div class="p-2 bg-skin-header-background absolute right-7 border border-header-menu rounded-md shadow-md">
+                  <AddUserToRoom
+                    currentRoom={currentRoom()!}
+                    refetch={refetch}
+                  />
+                </div>
+              </Modal>
+            </Show>
+          </div>
+          <Scrollbars
+            style={{
+              height: '100%',
+            }}
+          >
+            <h1 class="p-2 font-semibold">Admin</h1>
+            <Show when={admins()} fallback={<Loader />}>
+              <For each={admins()}>
+                {(user) => (
+                  <ChatRoomUserCard user={user} ownerId={owner()!.id} />
+                )}
+              </For>
+              <h1 class="p-2 font-semibold">Online</h1>
+              <For each={onlineUsers()}>
+                {(user) => (
+                  <ChatRoomUserCard user={user} ownerId={owner()!.id} />
+                )}
+              </For>
+              <h1 class="p-2 font-semibold">Offline</h1>
+              <For
+                each={currentRoom()!.users.filter(
+                  (user) => !state.onlineUsers.includes(user.id),
+                )}
+              >
+                {(user) => (
+                  <ChatRoomUserCard user={user} ownerId={owner()!.id} />
+                )}
+              </For>
+            </Show>
+          </Scrollbars>
+          <button onClick={onLeaveGroup} class="btn-error btn btn-sm w-fit">
+            Leave channel
+          </button>
+        </Match>
+        <Match when={tab() == 1}>
+          <Show when={owner()}>{(o) => <RoomSettings owner={o} />}</Show>
+        </Match>
+      </Switch>
     </Show>
   );
 };

@@ -33,8 +33,8 @@ const FriendList: Component = () => {
 
   let ref: any;
   createEffect(() => {
-    if (sockets.notifWsState === WebSocket.OPEN) {
-      sockets.notificationWs!.addEventListener('message', (e) => {
+    if (sockets.notificationWs && sockets.notifWsState === WebSocket.OPEN) {
+      sockets.notificationWs.addEventListener('message', (e) => {
         let res: { event: WsNotificationEvent };
         res = JSON.parse(e.data);
         if (res.event === 'friends: request_accepted') {

@@ -1,4 +1,4 @@
-export VITE_HOST=127.0.0.1
+# export VITE_HOST=127.0.0.1
 
 # display warning
 printf "\033[31;1m"
@@ -27,4 +27,3 @@ node dist/main.js
 
 # dev server: comment-out last 2 commands, uncomment the one below
 # npm run start:dev
-

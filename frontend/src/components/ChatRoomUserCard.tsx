@@ -1,6 +1,5 @@
 import {
   Component,
-  createEffect,
   createMemo,
   createSignal,
   onCleanup,
@@ -54,6 +53,10 @@ const ChatRoomUserCard: Component<{
 
   const notify = (msg: string) => toast.success(msg);
   const inviteUser = () => {
+    if (!state.onlineUsers.includes(props.user.id)) {
+      notifyError(`${props.user.display_name} is offline`);
+      return;
+    }
     const data = { event: 'invite', data: props.user.id };
     sockets.pongWs!.send(JSON.stringify(data));
     notify(`invitation sent to ${props.user.display_name}`);

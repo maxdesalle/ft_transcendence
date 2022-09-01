@@ -74,7 +74,7 @@ const GameInviteNotif: Component = () => {
         class="flex items-center text-black"
         onClick={() => setIsNotifOpen(!isNotifOpen())}
       >
-        <TbDeviceGamepad size={22} color="#001a4d" />
+        <TbDeviceGamepad size={22} class="text-info" />
       </button>
       <Modal isOpen={isNotifOpen()} toggleModal={setIsNotifOpen}>
         <Show

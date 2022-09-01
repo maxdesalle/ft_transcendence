@@ -44,6 +44,11 @@ export class MockAuthController {
     if (this.configService.get('SERVE_STATIC'))
       res.cookie('jwt_token', jwtToken, { sameSite: 'strict' });
     else res.cookie('jwt_token', jwtToken, { sameSite: 'none', secure: true });
+    if (Object.prototype.hasOwnProperty.call(user, 'first_login')) {
+      if (this.configService.get('SERVE_STATIC'))
+        res.cookie('first_login', true, { sameSite: 'strict' });
+      else res.cookie('first_login', true, { sameSite: 'none', secure: true });
+    }
     return user;
   }
 

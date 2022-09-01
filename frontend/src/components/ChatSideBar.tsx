@@ -73,7 +73,7 @@ const ChatSideBar: Component = () => {
               active: state.chatUi.tab === TAB.HOME,
             }}
           >
-            Pulbic
+            Home
           </a>
         </li>
         <li

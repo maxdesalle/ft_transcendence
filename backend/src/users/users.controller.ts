@@ -25,8 +25,6 @@ import { ConfigService } from '@nestjs/config';
 import { ApiBody, ApiConsumes, ApiTags } from '@nestjs/swagger';
 import { fileUploadDto } from './dto/fileUpload.dto';
 import { changeNameDto } from './dto/changeName.dto';
-import { WsService } from 'src/ws/ws.service';
-import { User } from './entities/user.entity';
 
 @Controller('users')
 @ApiTags('users')

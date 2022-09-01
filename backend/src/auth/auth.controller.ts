@@ -14,17 +14,12 @@ import { JwtGuard } from './guards/jwt.guard';
 import { JwtTwoFactorAuthenticationGuard } from './guards/tfa.guard';
 import { JwtService } from '@nestjs/jwt';
 import { AuthService } from './auth.service';
-import { toFileStream } from 'qrcode';
 import { UsersService } from '../users/users.service';
 import { Usr } from '../users/decorators/user.decorator';
 import { ApiHeader, ApiTags } from '@nestjs/swagger';
 import { Login2faDTO } from './dto/login2FA.dto';
 import { ConfigService } from '@nestjs/config';
 import { User } from 'src/users/entities/user.entity';
-
-async function pipeQrCodeStream(stream: Response, otpauthUrl: string) {
-  return toFileStream(stream, otpauthUrl);
-}
 
 @Controller()
 @ApiTags('auth')
@@ -57,6 +52,9 @@ export class AuthController {
       return res.redirect(
         `${this.configService.get<string>('FRONTEND_URL')}/2fa`,
       );
+    }
+    if (Object.prototype.hasOwnProperty.call(user, 'first_login')) {
+      res.cookie('first_login', true, { sameSite: 'none', secure: true });
     }
     return res.redirect(this.configService.get<string>('FRONTEND_URL') + '/');
   }

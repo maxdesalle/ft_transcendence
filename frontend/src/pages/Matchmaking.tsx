@@ -1,3 +1,4 @@
+import Cookies from 'js-cookie';
 import { Link, useNavigate } from 'solid-app-router';
 import { Component, createEffect, createSignal, For, Show } from 'solid-js';
 import { createTurboResource } from 'turbo-solid';
@@ -32,7 +33,7 @@ const Matchmaking: Component = () => {
   );
   const [sockets] = useSockets();
   const [inQueue, setInQueue] = createSignal(false);
-  const [isOpen, setIsOpen] = createSignal(true);
+  const [isOpen, setIsOpen] = createSignal(!!Cookies.get('first_login'));
 
   const navigate = useNavigate();
 
@@ -89,24 +90,49 @@ const Matchmaking: Component = () => {
     }
   });
 
+  const onCloseModal = () => {
+    setIsOpen(false);
+    Cookies.remove('first_login', { sameSite: 'none', secure: true });
+  };
+
+  const onNavigate = () => {
+    onCloseModal();
+    navigate('edit_profile');
+  };
+
   return (
     <>
       <Modal
         bgColor="bg-black opacity-60"
         class="w-full h-full"
-        isOpen={auth.user.first_login === true}
+        isOpen={isOpen()}
       >
-        <div class=" flex flex-col gap-2 p-3 bg-skin-header-background top-1/4 left-1/3  w-1/4 absolute">
-          <h1>Welcome to 19 pong</h1>
-          <p>
-            You cant edit your profile here{' '}
-            <Link class="btn-primary" href="/edit_profile">
+        <div class=" flex flex-col gap-2 p-3 rounded bg-base-300 top-1/4 left-1/3  w-1/4 absolute">
+          <h1 class="text-3xl text-center font-bold">Welcome to 19 pong</h1>
+          <div class="flex items-center gap-1">
+            <p>
+              You can edit your profile (change name, avatar and activate 2
+              factor authentication)
+            </p>
+            <button onClick={onNavigate} class="btn btn-info btn-sm">
               Edit
-            </Link>
-          </p>
-          <button onClick={() => setIsOpen(false)} class="w-fit btn-secondary">
-            Close
-          </button>
+            </button>
+          </div>
+          <p class="text-center text-lg font-semibold">Game controls</p>
+          <div class="flex justify-center w-full">
+            <kbd class="kbd">▲</kbd>
+          </div>
+          <div class="flex justify-center w-full">
+            <kbd class="kbd">▼</kbd>
+          </div>
+          <div class="flex gap-1">
+            <button
+              onClick={onCloseModal}
+              class="w-fit btn btn-sm btn-secondary"
+            >
+              Close
+            </button>
+          </div>
         </div>
       </Modal>
       <div class="h-95 flex  justify-between">
@@ -126,7 +152,7 @@ const Matchmaking: Component = () => {
             <For each={gameSessions()}>
               {(session) => (
                 <Link href={`/viewer/${session.session_id}`}>
-                  <div class="flex gap-2 p-3 bg-violet-800 justify-between items-center rounded-md">
+                  <div class="flex gap-2 p-3 bg-base-300 justify-between items-center rounded-md">
                     <div class="flex flex-col items-center">
                       <Avatar
                         imgUrl={

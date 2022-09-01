@@ -44,7 +44,10 @@ const FriendSideBar: Component<{
   };
 
   const inviteFriend = () => {
-    if (!state.onlineUsers.includes(props.friend.id)) return;
+    if (!state.onlineUsers.includes(props.friend.id)) {
+      notifyError(`${props.friend.display_name} is offline`);
+      return;
+    }
     const data = { event: 'invite', data: props.friend.id };
     sockets.pongWs!.send(JSON.stringify(data));
   };

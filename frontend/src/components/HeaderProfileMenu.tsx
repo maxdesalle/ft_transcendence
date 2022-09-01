@@ -18,8 +18,8 @@ import defaultAvatar from '../../../backend/images/avatardefault.png';
 const HeaderProfileMenu: Component<{ user: User }> = (props) => {
   const navigate = useNavigate();
   const [auth, { setToken, setIsAuth }] = useAuth();
-  const [__, { disconnect }] = useSockets();
-  const [___, { resetStore }] = useStore();
+  const [, { disconnect }] = useSockets();
+  const [, { resetStore }] = useStore();
   const onLogout = () => {
     setToken(undefined);
     Cookies.remove('jwt_token', { sameSite: 'none', secure: true });
