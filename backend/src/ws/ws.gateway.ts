@@ -6,7 +6,7 @@ import {
 } from '@nestjs/websockets';
 import { IncomingMessage } from 'http';
 import { ChatService } from 'src/chat/chat.service';
-import { playing } from 'src/pong/pong.gateway';
+import { connected_users, playing, sockets } from 'src/pong/pong.gateway';
 import { User } from 'src/users/entities/user.entity';
 import { UsersService } from 'src/users/users.service';
 import { WebSocket } from 'ws';
@@ -97,8 +97,6 @@ export class WsGateway implements OnGatewayConnection, OnGatewayDisconnect {
   @SubscribeMessage('isOnline')
   isOnline(client: WebSocket, data: { user_id: number; sender: number }) {
     const connectedUsers = this.wsService.getConnectedUsersIDs();
-    const a = this.wsService.getConnectedUsersIDs();
-    console.log(a);
     console.log('connected users: ', connectedUsers);
     this.wsService.sendMsgToUser(data.sender, {
       event: 'isOnline',
@@ -107,11 +105,21 @@ export class WsGateway implements OnGatewayConnection, OnGatewayDisconnect {
   }
 
   @SubscribeMessage('isInGame')
-  isInGame(client: WebSocket, data: { user_id: number; sender: number }) {
+  async isInGame(client: WebSocket, data: { user_id: number; sender: number }) {
     const inGame = Array.from(playing);
+    const ids = sockets
+      .map((s) => {
+        const p1_id = connected_users.get(s.p1Socket);
+        const p2_id = connected_users.get(s.p2Socket);
+        return [
+          { id: p1_id, sessionId: s.id },
+          { id: p2_id, sessionId: s.id },
+        ];
+      })
+      .reduce((prev, next) => prev.concat(next), []);
     this.wsService.sendMsgToUser(data.sender, {
       event: 'isInGame',
-      data: { inGame: inGame },
+      data: { inGame: inGame, usersSessionIds: ids },
     });
   }
 }

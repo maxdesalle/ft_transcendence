@@ -43,7 +43,7 @@ const PendingFriendReqCard: Component = () => {
     <Show
       when={state.currentUser.pendingFriendReq.length}
       fallback={
-        <p class="bg-gray-700 p-3 border-1  shadow-md border-red-600">
+        <p class="bg-base-300 p-3 border-1  shadow-md border-red-600">
           No friend requests 🥲
         </p>
       }

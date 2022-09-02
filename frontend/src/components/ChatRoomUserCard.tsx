@@ -255,7 +255,7 @@ const ChatRoomUserCard: Component<{
   const isFriend = () => friends()?.includes(props.user.id);
 
   return (
-    <div ref={ref} class="w-full rounded-lg shadow-md relative">
+    <div ref={ref} class="w-full shadow-md relative">
       <div
         class={`flex items-center hover:bg-base-300 justify-between transition-all px-1 py-2`}
       >
@@ -283,7 +283,7 @@ const ChatRoomUserCard: Component<{
         </div>
       </div>
       <Modal isOpen={isOpen()} toggleModal={setIsOpen}>
-        <div class="menu menu-compact border border-base-300 bg-base-300 right-1 -top-10 absolute w-32">
+        <div class="menu menu-compact border rounded border-base-300 bg-base-300 right-1 -top-10 absolute w-32">
           <li>
             <Link href={`/profile/${props.user.id}`}>Profile</Link>
           </li>

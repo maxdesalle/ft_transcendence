@@ -1,11 +1,4 @@
-import {
-  Component,
-  createEffect,
-  createSignal,
-  For,
-  onMount,
-  Show,
-} from 'solid-js';
+import { Component, createEffect, createSignal, For, Show } from 'solid-js';
 import { createTurboResource } from 'turbo-solid';
 import { routes } from '../api/utils';
 import { useSockets } from '../Providers/SocketProvider';
@@ -35,7 +28,7 @@ const FriendList: Component = () => {
   createEffect(() => {
     if (sockets.notificationWs && sockets.notifWsState === WebSocket.OPEN) {
       sockets.notificationWs.addEventListener('message', (e) => {
-        let res: { event: WsNotificationEvent };
+        let res: { event: WsNotificationEvent; data: any };
         res = JSON.parse(e.data);
         if (res.event === 'friends: request_accepted') {
           refetch();

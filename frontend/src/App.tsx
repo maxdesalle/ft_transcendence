@@ -26,15 +26,16 @@ import { WsNotificationEvent } from './types/chat.interface';
 import { api } from './utils/api';
 import { User } from './types/user.interface';
 import { routes } from './api/utils';
-import { themeChange } from 'theme-change';
+import { unwrap } from 'solid-js/store';
 
 const App: Component = () => {
   const [
-    ,
+    state,
     {
       setOnlineUsers,
       setFriendInvitation,
       setInGameUsers,
+      setUsersGameSessionIds,
       addOnlineUser,
       removeDisconnectedUser,
       addPendingFriendReq,
@@ -43,8 +44,10 @@ const App: Component = () => {
   ] = useStore();
   const navigate = useNavigate();
   const [auth] = useAuth();
-  const [sockets, { connectPongWs, connectNotificationWs, disconnect }] =
-    useSockets();
+  const [
+    sockets,
+    { connectPongWs, connectViewerWs, connectNotificationWs, disconnect, send },
+  ] = useSockets();
 
   const [pendingFriendReq] = createResource(
     () => auth.isAuth,
@@ -57,8 +60,11 @@ const App: Component = () => {
   );
 
   createEffect(() => {
+    console.log('sessionids: ', unwrap(state.usersSessionIds));
+  });
+
+  createEffect(() => {
     if (sockets.notificationWs && sockets.notifWsState === WebSocket.OPEN) {
-      console.log('adding event listenner');
       sockets.notificationWs!.addEventListener('message', (e) => {
         let res: {
           event: WsNotificationEvent;
@@ -80,22 +86,25 @@ const App: Component = () => {
             setOnlineUsers(res.data);
             break;
           case 'isInGame':
+            setUsersGameSessionIds(res.data.usersSessionIds);
             setInGameUsers(res.data.inGame);
             break;
           case 'pong: session_over':
-            sockets.notificationWs!.send(
-              JSON.stringify({
+            send(
+              {
                 event: 'isInGame',
                 data: { sender: auth.user.id },
-              }),
+              },
+              'notif',
             );
             break;
           case 'pong: new_session':
-            sockets.notificationWs!.send(
-              JSON.stringify({
+            send(
+              {
                 event: 'isInGame',
                 data: { sender: auth.user.id },
-              }),
+              },
+              'notif',
             );
             break;
           case 'users: new_user':
@@ -133,25 +142,20 @@ const App: Component = () => {
   });
 
   createEffect(() => {
-    console.log('sending event');
-    if (
-      sockets.notificationWs &&
-      sockets.notificationWs.readyState === WebSocket.OPEN
-    ) {
-      sockets.notificationWs!.send(
-        JSON.stringify({
-          event: 'isOnline',
-          data: { sender: auth.user.id },
-        }),
-      );
-
-      sockets.notificationWs!.send(
-        JSON.stringify({
-          event: 'isInGame',
-          data: { sender: auth.user.id },
-        }),
-      );
-    }
+    send(
+      {
+        event: 'isOnline',
+        data: { sender: auth.user.id },
+      },
+      'notif',
+    );
+    send(
+      {
+        event: 'isInGame',
+        data: { sender: auth.user.id },
+      },
+      'notif',
+    );
   });
 
   createEffect(() => {
@@ -182,7 +186,12 @@ const App: Component = () => {
               <Route path="/viewer/:id" element={<Viewer />} />
               <Route path="/profile/:id" element={<Profile />} />
               <Route path="/edit_profile" element={<EditProfile />} />
-              <Route path="/leaderboard" element={<LeaderBoard />} />
+              <Route
+                path="/leaderboard"
+                element={
+                  <LeaderBoard style={{ height: '75vh' }} title="Leaderboard" />
+                }
+              />
             </Route>
           </Route>
           <Route path="/2fa" element={<TwoFactorAuth />} />

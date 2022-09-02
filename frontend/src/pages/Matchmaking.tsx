@@ -9,22 +9,16 @@ import { useAuth } from '../Providers/AuthProvider';
 import { useSockets } from '../Providers/SocketProvider';
 import { useStore } from '../store/all';
 import { WsNotificationEvent } from '../types/chat.interface';
+import { GameSession } from '../types/Game.interface';
 import { User } from '../types/user.interface';
 import { generateImageUrl, notifyError } from '../utils/helpers';
 import LeaderBoard from './LeaderBoard';
-
-interface GameSession {
-  session_id: number;
-  avatarId: number;
-  p1: Partial<User>;
-  p2: Partial<User>;
-}
 
 const Matchmaking: Component = () => {
   const [state, { toggleMatchMaking }] = useStore();
   const [ref, setRef] = createSignal<any>();
   const [id, setId] = createSignal(0);
-  const [auth, { setUser, setIsAuth }] = useAuth();
+  const [, { setUser, setIsAuth }] = useAuth();
   const [buttonText, setButtonText] = createSignal('Play');
   const [currentUser] = createTurboResource<User>(() => routes.currentUser);
   const [friends] = createTurboResource<User[]>(() => routes.friends);
@@ -135,52 +129,9 @@ const Matchmaking: Component = () => {
           </div>
         </div>
       </Modal>
-      <div class="h-95 flex  justify-between">
-        <button
-          ref={setRef}
-          onClick={onButtonClick}
-          class="btn btn-accent w-72 h-72 rounded-full self-center bg-gradient-to-br from-purple-600 to-blue-500 hover:bg-gradient-to-bl focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium text-sm px-5 py-2.5 text-center"
-        >
-          <h1 class="text-4xl text-center w-full">{buttonText()}</h1>
-        </button>
-        <div class="flex flex-col gap-2 h-full mt-10 w-2/3">
-          <Show
-            when={gameSessions() && gameSessions()!.length > 0}
-            fallback={<LeaderBoard />}
-          >
-            <h1 class="text-xl ">Current matches</h1>
-            <For each={gameSessions()}>
-              {(session) => (
-                <Link href={`/viewer/${session.session_id}`}>
-                  <div class="flex gap-2 p-3 bg-base-300 justify-between items-center rounded-md">
-                    <div class="flex flex-col items-center">
-                      <Avatar
-                        imgUrl={
-                          session.p1.avatarId
-                            ? generateImageUrl(session.p1.avatarId)
-                            : undefined
-                        }
-                      />
-                      <p>{session.p1.display_name}</p>
-                    </div>
-                    <p class="text-xl">vs</p>
-                    <div class="flex flex-col items-center">
-                      <Avatar
-                        imgUrl={
-                          session.p2.avatarId
-                            ? generateImageUrl(session.p2.avatarId)
-                            : undefined
-                        }
-                      />
-                      <p>{session.p2.display_name}</p>
-                    </div>
-                  </div>
-                </Link>
-              )}
-            </For>
-          </Show>
-        </div>
-        <div class="flex flex-col gap-2 self-center">
+
+      <div class="lg:grid lg:grid-cols-4 flex flex-col items-center h-95">
+        <div class="flex flex-col col-span-1 gap-2">
           <label for="friends" class="text-2xl mt-3">
             Invite a Friend
           </label>
@@ -205,6 +156,54 @@ const Matchmaking: Component = () => {
             Invite
           </button>
         </div>
+        <button
+          ref={setRef}
+          onClick={onButtonClick}
+          class="btn mx-auto btn-accent w-72 h-72 col-span-2 rounded-full bg-gradient-to-br from-purple-600 to-blue-500 hover:bg-gradient-to-bl focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium text-sm px-5 py-2.5 text-center"
+        >
+          <h1 class="text-4xl text-center w-full">{buttonText()}</h1>
+        </button>
+        <Show
+          when={gameSessions() && gameSessions()!.length > 0}
+          fallback={
+            <LeaderBoard
+              class="self-start col-span-1 h-full"
+              title="Top 5"
+              limit={5}
+            />
+          }
+        >
+          <h1 class="text-xl ">Current matches</h1>
+          <For each={gameSessions()}>
+            {(session) => (
+              <Link href={`/viewer/${session.session_id}`}>
+                <div class="flex gap-2 p-3 bg-base-300 justify-between items-center rounded-md">
+                  <div class="flex flex-col items-center">
+                    <Avatar
+                      imgUrl={
+                        session.p1.avatarId
+                          ? generateImageUrl(session.p1.avatarId)
+                          : undefined
+                      }
+                    />
+                    <p>{session.p1.display_name}</p>
+                  </div>
+                  <p class="text-xl">vs</p>
+                  <div class="flex flex-col items-center">
+                    <Avatar
+                      imgUrl={
+                        session.p2.avatarId
+                          ? generateImageUrl(session.p2.avatarId)
+                          : undefined
+                      }
+                    />
+                    <p>{session.p2.display_name}</p>
+                  </div>
+                </div>
+              </Link>
+            )}
+          </For>
+        </Show>
       </div>
     </>
   );

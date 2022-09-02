@@ -9,12 +9,15 @@ import {
 import { createStore } from 'solid-js/store';
 import { urls } from '../api/utils';
 import { initSocket } from '../game/pong';
+import { initViewerSocket } from '../game/viewer';
 
 const SocketContext = createContext<any>();
 
 interface StoreState {
-  notificationWs: WebSocket | undefined;
-  pongWs: WebSocket | undefined;
+  notificationWs: WebSocket | null;
+  pongWs: WebSocket | null;
+  viewerWs: WebSocket | null;
+  viewerWsState: number;
   notifWsState: number;
   pongWsState: number;
 }
@@ -22,23 +25,50 @@ interface StoreState {
 interface ActionsType {
   connectNotificationWs: () => void;
   connectPongWs: () => void;
+  connectViewerWs: () => void;
   setNotifState: (state: number) => void;
   setWsPongState: (state: number) => void;
   disconnect: () => void;
+  send: (data: any, target: 'pong' | 'notif' | 'viewer') => void;
 }
 
 export const SocketProvider = (props: any) => {
   const [state, setState] = createStore<StoreState>({
-    notificationWs: undefined,
-    pongWs: undefined,
+    notificationWs: null,
+    pongWs: null,
+    viewerWs: null,
     pongWsState: WebSocket.CLOSED,
     notifWsState: WebSocket.CLOSED,
+    viewerWsState: WebSocket.CLOSED,
   });
 
   let reconnectAmount: number = 5;
   const [id, setId] = createSignal<any>();
 
   const actions: ActionsType = {
+    send(data, target) {
+      switch (target) {
+        case 'notif':
+          if (
+            state.notificationWs &&
+            state.notificationWs.readyState === WebSocket.OPEN
+          ) {
+            state.notificationWs.send(JSON.stringify(data));
+          }
+          break;
+        case 'pong':
+          if (state.pongWs && state.pongWs.readyState === WebSocket.OPEN) {
+            state.pongWs.send(JSON.stringify(data));
+          }
+        case 'viewer':
+          if (state.viewerWs && state.viewerWs.readyState === WebSocket.OPEN) {
+            state.viewerWs.send(JSON.stringify(data));
+          }
+          break;
+        default:
+          break;
+      }
+    },
     connectNotificationWs() {
       setState('notificationWs', new WebSocket(urls.wsUrl));
       setState('notifWsState', WebSocket.CONNECTING);
@@ -47,6 +77,10 @@ export const SocketProvider = (props: any) => {
       cancelReconnect();
       setState('pongWs', initSocket());
       setState('pongWsState', WebSocket.CONNECTING);
+    },
+    connectViewerWs() {
+      setState('viewerWs', initViewerSocket());
+      setState('viewerWsState', WebSocket.CONNECTING);
     },
     setNotifState(state) {
       setState('notifWsState', state);
@@ -57,9 +91,11 @@ export const SocketProvider = (props: any) => {
     disconnect() {
       state.notificationWs?.close();
       state.pongWs?.close();
-      setState('notificationWs', undefined);
-      setState('pongWs', undefined);
+      setState('notificationWs', null);
+      setState('pongWs', null);
+      setState('viewerWs', null);
       setState('notifWsState', WebSocket.CLOSED);
+      setState('viewerWsState', WebSocket.CLOSED);
       setState('pongWsState', WebSocket.CLOSED);
     },
   };
@@ -71,6 +107,17 @@ export const SocketProvider = (props: any) => {
       };
       state.notificationWs.onclose = (e) => {
         setState('notifWsState', WebSocket.CLOSED);
+      };
+    }
+  });
+
+  createEffect(() => {
+    if (state.viewerWs) {
+      state.viewerWs.onopen = () => {
+        setState('viewerWsState', WebSocket.OPEN);
+      };
+      state.viewerWs.onclose = () => {
+        setState('viewerWsState', WebSocket.CLOSED);
       };
     }
   });

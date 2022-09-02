@@ -32,8 +32,7 @@ import { createTurboResource } from 'turbo-solid';
 import { useAuth } from '../Providers/AuthProvider';
 
 const Chat: Component = () => {
-  const [state, { changeTab, setCurrentRoomId, mutateNewMessages }] =
-    useStore();
+  const [state, { changeTab, setCurrentRoomId }] = useStore();
   const friendId = () => state.chat.friendId;
   const path = () =>
     state.chat.roomId ? `${routes.chat}/room_info/${state.chat.roomId}` : null;
@@ -89,7 +88,6 @@ const Chat: Component = () => {
               ...e!.filter((m) => m.id != res.message.id),
               res.message,
             ]);
-            mutateNewMessages(res.message.room_id!);
           }
         } else if (res.event === 'chat_dm') {
           if (state.chat.friendId) {
@@ -135,7 +133,7 @@ const Chat: Component = () => {
   const [isWatching, setIsWatching] = createSignal(false);
 
   return (
-    <div class="grid grid-cols-6 h-95">
+    <div class="lg:grid lg:grid-cols-6 flex h-95">
       <div class="flex row-span-4 flex-col col-span-1 border-x border-x-base-300 shadow-sm">
         <ChatSideBar />
       </div>

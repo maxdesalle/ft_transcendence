@@ -81,7 +81,7 @@ const GameInviteNotif: Component = () => {
           when={user() && state.pong.friendInvitation}
           fallback={<NoInvitation />}
         >
-          <div class="flex flex-col bg-base-300 border  gap-2 w-fit px-2 pt-2">
+          <div class="flex flex-col bg-base-300 border gap-5 w-fit shadow-md px-2 border-base-200 py-3">
             <p>{user()!.display_name} invited you to play</p>
             <div class="flex justify-between w-full">
               <button

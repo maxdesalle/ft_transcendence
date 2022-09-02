@@ -4,10 +4,15 @@ import { generateImageUrl } from '../utils/helpers';
 import Avatar from './Avatar';
 import defaultAvatar from '../../../backend/images/avatardefault.png';
 import { useStore } from '../store/all';
+import { createTurboResource } from 'turbo-solid';
+import { GameSession } from '../types/Game.interface';
+import { urls } from '../api/utils';
 
-export const FriendCard: Component<{ friend: Friend; onClick?: () => void }> = (
-  props,
-) => {
+export const FriendCard: Component<{
+  friend: Friend;
+  onClick?: () => void;
+  sessionId?: number;
+}> = (props) => {
   const [state] = useStore();
 
   const isOnline = () => state.onlineUsers.includes(props.friend.id);

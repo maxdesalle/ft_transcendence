@@ -1,5 +1,5 @@
-import { Link, useNavigate, useParams } from 'solid-app-router';
-import { Component, createResource, For, onMount, Show } from 'solid-js';
+import { useNavigate, useParams } from 'solid-app-router';
+import { Component, For, onMount, Show } from 'solid-js';
 import defaultAvatar from '../../../backend/images/avatardefault.png';
 import { generateImageUrl, notifyError, notifySuccess } from '../utils/helpers';
 import { createTurboResource, forget } from 'turbo-solid';
@@ -17,7 +17,7 @@ import { User } from '../types/user.interface';
 import Cookies from 'js-cookie';
 
 const Profile: Component = () => {
-  const [sockets, { disconnect }] = useSockets();
+  const [sockets] = useSockets();
   const [auth, { setToken, setIsAuth }] = useAuth();
   const params = useParams<{ id: string }>();
   const [matches, { refetch }] = createTurboResource<MatchDTO[]>(

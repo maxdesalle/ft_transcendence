@@ -11,7 +11,7 @@ const ChatHome: Component = () => {
   const [publicRooms, { refetch: refetchPublicRooms }] = createTurboResource<
     RoomInfo[]
   >(() => routes.publicRooms);
-  const [rooms, { refetch: refetchRooms }] = createTurboResource<RoomInfo[]>(
+  const [, { refetch: refetchRooms }] = createTurboResource<RoomInfo[]>(
     () => routes.getRooms,
   );
 

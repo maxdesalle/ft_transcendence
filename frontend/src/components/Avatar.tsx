@@ -1,4 +1,4 @@
-import { Component, createEffect, Show } from 'solid-js';
+import { Component, Show } from 'solid-js';
 import defaultAvatar from '../../../backend/images/avatardefault.png';
 
 const Avatar: Component<{

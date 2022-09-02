@@ -8,31 +8,40 @@ import {
 import { initViewerSocket, viewerSketch } from '../game/viewer';
 import { p5 } from '../game/newPong';
 import { useParams } from 'solid-app-router';
+import { useSockets } from '../Providers/SocketProvider';
 
 const Viewer: Component = () => {
   const [ref, setRef] = createSignal<any>();
   const param = useParams<{ id: string }>();
-  let ws: WebSocket;
+  const [sockets, { connectViewerWs, send }] = useSockets();
   let game: typeof p5;
+  const [ready, setReady] = createSignal(false);
   let id: any;
 
   onMount(() => {
-    ws = initViewerSocket();
+    connectViewerWs();
     game = viewerSketch(p5);
     game.setRef(ref());
     game.setup();
     id = setInterval(() => game.draw(), 0);
     game.sessionId = Number(param.id);
+    setReady(true);
   });
 
   onCleanup(() => {
-    ws.close();
     game.deleteAll();
     clearInterval(id);
+    if (sockets.viewerWs) {
+      sockets.viewerWs.close();
+    }
   });
 
   createEffect(() => {
-    console.log('ID: ', game.sessionId);
+    if (ready()) {
+      if (sockets.viewerWs && sockets.viewerWsState === WebSocket.OPEN) {
+        sockets.viewerWs.send(JSON.stringify({ id: +param.id }));
+      }
+    }
   });
 
   return (

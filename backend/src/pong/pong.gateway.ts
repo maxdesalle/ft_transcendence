@@ -59,7 +59,7 @@ export class PongGateway implements OnGatewayConnection, OnGatewayDisconnect {
   async handleConnection(ws: WebSocket, req: IncomingMessage) {
     let user: { id: number; login42: string };
     try {
-			user = await this.wsService.authenticateUser(req);
+      user = await this.wsService.authenticateUser(req);
     } catch (error) {
       ws.close(1008, 'Bad credentials');
       console.log('Authentication to Pong wss failed');
@@ -83,7 +83,7 @@ export class PongGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
   @SubscribeMessage('play')
   @UseGuards(PongGuard)
-  playAgainstAnyone(client: WebSocket, data: string) {
+  playAgainstAnyone(client: WebSocket) {
     const user_id = connected_users.get(client);
 
     if (waiting_player?.user_id == user_id) {
@@ -166,7 +166,7 @@ export class PongGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
   @SubscribeMessage('cancel')
   @UseGuards(PongGuard)
-  clear(client: WebSocket, data: string) {
+  clear(client: WebSocket) {
     const user_id = connected_users.get(client);
     clearInviteWait(user_id);
     console.log(`User ${user_id} cleared as waiting player or inviting player`);
@@ -196,8 +196,14 @@ export class PongGateway implements OnGatewayConnection, OnGatewayDisconnect {
     playing.add(p2);
 
     // notify friends
-    this.wsService.notifyStatusChangeToFriends(p1, 'playing');
-    this.wsService.notifyStatusChangeToFriends(p2, 'playing');
+    this.wsService.notifyStatusChangeToFriendsWsessionId(p1, {
+      sessionId: id,
+      status: 'playing',
+    });
+    this.wsService.notifyStatusChangeToFriendsWsessionId(p2, {
+      sessionId: id,
+      status: 'playing',
+    });
 
     linkPlayers(id).then(async (playerScores: playerScoresInterface) => {
       console.log(
@@ -355,9 +361,8 @@ async function startGame(id: number) {
   console.log(`deleting session ${id}`);
   deleteGameSession(gameSockets.id);
   ///// Rodolpho added these lines: remove session from sockets array
-  const session_idx = sockets.findIndex(val => val.id === id);
-  if (session_idx >= 0)
-    sockets.splice(session_idx, 1);
+  const session_idx = sockets.findIndex((val) => val.id === id);
+  if (session_idx >= 0) sockets.splice(session_idx, 1);
   //////
   viewerSockets.forEach((s) => {
     if (s.id === gameSockets.id) {
@@ -381,7 +386,7 @@ function generateSessionId(): number {
 }
 
 function getSocketFromUser(user_id: number) {
-  for (let [key, value] of connected_users.entries()) {
+  for (const [key, value] of connected_users.entries()) {
     if (value === user_id) return key;
   }
 }

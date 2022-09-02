@@ -60,6 +60,7 @@ const CreateRoom: Component<{ class?: string }> = (props) => {
           class="checkbox"
           name="is_private"
           id="is_private"
+          checked={isPrivate()}
         />
       </div>
       <div class="mt-2">

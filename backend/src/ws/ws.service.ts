@@ -82,6 +82,17 @@ export class WsService {
     });
   }
 
+  async notifyStatusChangeToFriendsWsessionId(
+    user_id: number,
+    data: { status: string; sessionId: number },
+  ) {
+    const friends = await this.friendsService.listFriendsIDs(user_id);
+    this.sendMsgToUsersList(friends, {
+      event: `status: friend_${data.status}`,
+      data,
+    });
+  }
+
   async notifyStatusToFriendsAuto(user_id: number) {
     const status = this.friendsService.getUserStatus(user_id);
     const friends = await this.friendsService.listFriendsIDs(user_id);

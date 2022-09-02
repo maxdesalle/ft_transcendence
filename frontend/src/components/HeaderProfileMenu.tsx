@@ -35,6 +35,7 @@ const HeaderProfileMenu: Component<{ user: User }> = (props) => {
       <div class="dropdown dropdown-end">
         <label tabindex="0" class="btn btn-sm btn-ghost btn-circle avatar">
           <img
+            class="mask-circle mask"
             src={
               auth.user.avatarId
                 ? generateImageUrl(auth.user.avatarId)

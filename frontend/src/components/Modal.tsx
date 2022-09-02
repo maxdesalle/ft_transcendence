@@ -13,17 +13,21 @@ const Modal: Component<{
     if (props.toggleModal) props.toggleModal(!props.isOpen);
   };
   return (
-    <>
-      <Show when={props.isOpen}>
-        <Portal>
-          <div
-            onClick={onClose}
-            class={`fixed z-10 top-0 w-full h-full right-0 left-0 bottom-0 ${props.bgColor}`}
-          />
-        </Portal>
-        <div class={`z-50 fixed ${props.class}`}>{props.children}</div>
-      </Show>
-    </>
+    <Show when={props.isOpen}>
+      <Portal>
+        <div
+          classList={{ [props.bgColor as any]: !!props.bgColor }}
+          onClick={onClose}
+          class={`fixed z-10 top-0 w-full h-full right-0 left-0 bottom-0`}
+        />
+      </Portal>
+      <div
+        class={`z-50 fixed`}
+        classList={{ [props.class as any]: !!props.class }}
+      >
+        {props.children}
+      </div>
+    </Show>
   );
 };
 

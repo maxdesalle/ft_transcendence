@@ -178,7 +178,9 @@ const ChatRightSideBar: Component<{}> = () => {
               <h1 class="p-2 font-semibold">Offline</h1>
               <For
                 each={currentRoom()!.users.filter(
-                  (user) => !state.onlineUsers.includes(user.id),
+                  (user) =>
+                    !state.onlineUsers.includes(user.id) &&
+                    user.id != owner()?.id,
                 )}
               >
                 {(user) => (

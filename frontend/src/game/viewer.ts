@@ -293,7 +293,9 @@ export const viewerSketch = (p5: MyP5) => {
 
   let input: any, button: any; // text box for input of id and submit button
   let idListOpacity = 1; // opacity of id list test
-  let doneChoosing = false; // false if viewer still did not choose first session to watch
+  let doneChoosing = true; // false if viewer still did not choose first session to watch
+  gameStarted = false;
+  gameFinished = false;
   function handleSubmit() {
     const idText = input.value();
     input.value(''); // empty box
@@ -310,9 +312,6 @@ export const viewerSketch = (p5: MyP5) => {
     }
     ws.send(JSON.stringify({ id: Number(idText) }));
     //
-    doneChoosing = true;
-    gameStarted = false;
-    gameFinished = false;
     (document.getElementById('user_id') as HTMLInputElement)!.placeholder =
       'Enter id';
     (document.getElementById('user_id') as HTMLInputElement)!.value = '';

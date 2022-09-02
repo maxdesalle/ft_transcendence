@@ -1,10 +1,18 @@
-import { Link } from 'solid-app-router';
-import { Component, createEffect, createMemo, Setter, Show } from 'solid-js';
+import { Link, useNavigate } from 'solid-app-router';
+import {
+  Component,
+  createEffect,
+  createMemo,
+  createSignal,
+  Setter,
+  Show,
+} from 'solid-js';
 import { createTurboResource } from 'turbo-solid';
 import { blockUser, chatApi } from '../api/chat';
 import { routes } from '../api/utils';
 import { useSockets } from '../Providers/SocketProvider';
 import { useStore } from '../store/all';
+import { WsNotificationEvent } from '../types/chat.interface';
 import { User } from '../types/user.interface';
 import { generateImageUrl, notifyError, notifySuccess } from '../utils/helpers';
 import Avatar from './Avatar';
@@ -57,6 +65,13 @@ const FriendSideBar: Component<{
   );
 
   const inGame = createMemo(() => state.inGameUsers.includes(props.friend.id));
+  const navigate = useNavigate();
+  const onWatch = () => {
+    const id = state.usersSessionIds.find((v) => v.id === props.friend.id);
+    if (id) {
+      navigate(`/viewer/${id.sessionId}`);
+    }
+  };
 
   return (
     <div class="flex flex-col px-2 gap-1">
@@ -103,7 +118,9 @@ const FriendSideBar: Component<{
         </button>
       </Show>
       <Show when={inGame()}>
-        <button class="btn-primary">Watch</button>
+        <button onClick={onWatch} class="btn-primary btn">
+          Watch
+        </button>
       </Show>
     </div>
   );

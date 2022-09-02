@@ -16,7 +16,7 @@ import Loader from './Loader';
 const Protected: Component<{ children: JSXElement }> = (props) => {
   const [state, { setUser, setToken, setIsAuth }] = useAuth();
   const [data] = createResource(
-    () => Cookies.get('jwt_token'),
+    () => !!Cookies.get('jwt_token'),
     async () => {
       try {
         const res = await api.get<User>(routes.currentUser);

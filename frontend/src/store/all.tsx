@@ -26,11 +26,9 @@ export interface ActionsType {
   removeDisconnectedUser: (user_id: number) => void;
   setOnlineUsers: (ids: number[]) => void;
   setInGameUsers: (ids: number[]) => void;
+  setUsersGameSessionIds: (value: { id: number; sessionId: number }[]) => void;
   resetStore: () => void;
-  mutateNewMessages: (room_id: number) => void;
 }
-
-export type Status = 'idle' | 'loading' | 'success' | 'failed';
 
 export enum TAB {
   HOME,
@@ -42,14 +40,12 @@ export interface StoreState {
   token: string | undefined;
   onlineUsers: number[];
   inGameUsers: number[];
+  usersSessionIds: { id: number; sessionId: number }[];
   chat: {
-    status: Status;
     roomId: number | undefined;
     friendId: number | undefined;
-    newMessages: { room_id: number; nbMgs: number }[];
   };
   currentUser: {
-    status: Status;
     readonly pendingFriendReq: { req_user: User; status: number }[];
     friendReqCount: number;
     twoFaQrCode: string;
@@ -71,15 +67,14 @@ export function StoreProvider(props: any) {
     token: Cookies.get('jwt_token'),
     onlineUsers: [],
     inGameUsers: [],
+    usersSessionIds: [],
     pong: {
       friendInvitation: null,
       inMatchMaking: false,
     },
     chat: {
-      status: 'idle',
       roomId: undefined,
       friendId: undefined,
-      newMessages: [],
     },
     chatUi: {
       tab: TAB.HOME,
@@ -87,7 +82,6 @@ export function StoreProvider(props: any) {
     },
     currentUser: {
       twoFaConfirmed: false,
-      status: 'idle',
       twoFaQrCode: '',
       pendingFriendReq: [],
       friendReqCount: 0,
@@ -155,20 +149,8 @@ export function StoreProvider(props: any) {
         }),
       );
     },
-    mutateNewMessages(room_id) {
-      setState(
-        produce((s) => {
-          let m = s.chat.newMessages.find((m) => m.room_id === room_id);
-          if (!m) {
-            s.chat.newMessages.push({ room_id, nbMgs: 1 });
-            return;
-          }
-          const idx = s.chat.newMessages.findIndex(
-            (m) => m.room_id === room_id,
-          );
-        }),
-      );
-      console.log(state.chat.newMessages);
+    setUsersGameSessionIds(value) {
+      setState('usersSessionIds', () => [...value]);
     },
   };
   const store: [StoreState, ActionsType] = [state, actions];

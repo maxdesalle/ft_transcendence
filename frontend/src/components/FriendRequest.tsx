@@ -26,8 +26,11 @@ const FriendRequests: Component = () => {
         class="flex items-center text-black"
         onClick={() => setIsNotifOpen(!isNotifOpen())}
       >
-        <IoNotificationsSharp size={20} class="text-info" />
-        <span class="text-sm text-info">
+        <IoNotificationsSharp
+          size={20}
+          class="font-bold text-secondary-focus"
+        />
+        <span class="text-sm text-secondary-focus">
           {!state.currentUser.pendingFriendReq.length
             ? state.currentUser.pendingFriendReq.length
             : `${state.currentUser.pendingFriendReq.length}+`}

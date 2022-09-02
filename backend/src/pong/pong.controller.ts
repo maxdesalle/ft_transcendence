@@ -14,12 +14,12 @@ export class PongController {
 
   @Get('sessions')
   async getSessions() {
-    let res: {
+    const res: {
       session_id: number;
       p1: Partial<User>;
       p2: Partial<User>;
     }[] = [];
-    for (let s of sockets) {
+    for (const s of sockets) {
       const p1_id = connected_users.get(s.p1Socket);
       const p2_id = connected_users.get(s.p2Socket);
       const p1 = await this.usersService.findById(p1_id);
