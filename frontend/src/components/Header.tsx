@@ -71,12 +71,12 @@ const Header: Component = () => {
       <div class="bg-base-300">
         <header class="lg:container navbar bg-base-300">
           <div class="flex-1">
-            <Link class="lg:block hidden" href="/">
+            <Link href="/">
               <img class="w-9 rounded-xl mr-2 h-8" src={logo} alt="logo" />
             </Link>
             <div class="form-control">
               <label class="input-group">
-                <span>
+                <span class="hidden lg:block">
                   <BiSearchAlt2 size={22} />
                 </span>
                 <input
@@ -94,7 +94,7 @@ const Header: Component = () => {
           <ul class="flex gap-2">
             <For each={LINKS}>
               {(link) => (
-                <li class="first-letter:capitalize font-semibold lg:block hidden">
+                <li class="first-letter:capitalize font-semibold hidden lg:block md:block">
                   <Link href={`/${link}`}>{link}</Link>
                 </li>
               )}

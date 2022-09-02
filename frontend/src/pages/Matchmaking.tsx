@@ -1,6 +1,13 @@
 import Cookies from 'js-cookie';
 import { Link, useNavigate } from 'solid-app-router';
-import { Component, createEffect, createSignal, For, Show } from 'solid-js';
+import {
+  Component,
+  createEffect,
+  createSignal,
+  For,
+  onMount,
+  Show,
+} from 'solid-js';
 import { createTurboResource } from 'turbo-solid';
 import { routes, urls } from '../api/utils';
 import Avatar from '../components/Avatar';
@@ -22,7 +29,7 @@ const Matchmaking: Component = () => {
   const [buttonText, setButtonText] = createSignal('Play');
   const [currentUser] = createTurboResource<User>(() => routes.currentUser);
   const [friends] = createTurboResource<User[]>(() => routes.friends);
-  const [gameSessions] = createTurboResource<GameSession[]>(
+  const [gameSessions, { refetch }] = createTurboResource<GameSession[]>(
     () => `${urls.backendUrl}/pong/sessions`,
   );
   const [sockets] = useSockets();
@@ -36,6 +43,10 @@ const Matchmaking: Component = () => {
       setUser(currentUser()!);
       setIsAuth(true);
     }
+  });
+
+  onMount(() => {
+    refetch();
   });
 
   const onPlay = () => {
@@ -173,36 +184,38 @@ const Matchmaking: Component = () => {
             />
           }
         >
-          <h1 class="text-xl ">Current matches</h1>
-          <For each={gameSessions()}>
-            {(session) => (
-              <Link href={`/viewer/${session.session_id}`}>
-                <div class="flex gap-2 p-3 bg-base-300 justify-between items-center rounded-md">
-                  <div class="flex flex-col items-center">
-                    <Avatar
-                      imgUrl={
-                        session.p1.avatarId
-                          ? generateImageUrl(session.p1.avatarId)
-                          : undefined
-                      }
-                    />
-                    <p>{session.p1.display_name}</p>
+          <div class="self-center col-span-1 h-full">
+            <h1 class="text-xl ">Current matches</h1>
+            <For each={gameSessions()}>
+              {(session) => (
+                <Link href={`/viewer/${session.session_id}`}>
+                  <div class="flex gap-2 p-3 bg-base-300 justify-between items-center rounded-md">
+                    <div class="flex flex-col items-center">
+                      <Avatar
+                        imgUrl={
+                          session.p1.avatarId
+                            ? generateImageUrl(session.p1.avatarId)
+                            : undefined
+                        }
+                      />
+                      <p>{session.p1.display_name}</p>
+                    </div>
+                    <p class="text-xl">vs</p>
+                    <div class="flex flex-col items-center">
+                      <Avatar
+                        imgUrl={
+                          session.p2.avatarId
+                            ? generateImageUrl(session.p2.avatarId)
+                            : undefined
+                        }
+                      />
+                      <p>{session.p2.display_name}</p>
+                    </div>
                   </div>
-                  <p class="text-xl">vs</p>
-                  <div class="flex flex-col items-center">
-                    <Avatar
-                      imgUrl={
-                        session.p2.avatarId
-                          ? generateImageUrl(session.p2.avatarId)
-                          : undefined
-                      }
-                    />
-                    <p>{session.p2.display_name}</p>
-                  </div>
-                </div>
-              </Link>
-            )}
-          </For>
+                </Link>
+              )}
+            </For>
+          </div>
         </Show>
       </div>
     </>

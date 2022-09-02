@@ -20,9 +20,9 @@ export const FriendCard: Component<{
   return (
     <div
       onClick={props.onClick}
-      class="flex  justify-between items-center w-full"
+      class="flex justify-between items-center w-full"
     >
-      <div class="flex sm:m-auto md:m-0">
+      <div class="flex">
         <Avatar
           color={isOnline() ? 'bg-green-400' : 'bg-red-400'}
           imgUrl={
@@ -31,10 +31,7 @@ export const FriendCard: Component<{
               : defaultAvatar
           }
         />
-        <div
-          classList={{ 'animate-pulse': inGame() }}
-          class="pl-3 hidden md:block"
-        >
+        <div classList={{ 'animate-pulse': inGame() }} class="pl-3">
           <h4>{props.friend.display_name}</h4>
           <Show
             when={!inGame()}

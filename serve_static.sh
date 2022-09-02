@@ -1,4 +1,4 @@
-# export VITE_HOST=127.0.0.1
+export VITE_HOST=127.0.0.1
 
 # display warning
 printf "\033[31;1m"
