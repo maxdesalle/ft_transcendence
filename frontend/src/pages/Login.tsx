@@ -44,36 +44,36 @@ const Login: Component = () => {
   };
 
   return (
-    <Show when={!loading()} fallback={<Loader />}>
-      <div class="flex flex-col items-center h-screen">
-        <div class="max-w-md">
-          <div class="flex flex-col border-2 gap-2 p-2 mt-32 h-fit rounded border-base-300">
-            <label class="text-center" for="username">
-              Username
-            </label>
-            <input
-              autocomplete="off"
-              onInput={(e) => setUsername(e.currentTarget.value)}
-              name="username"
-              placeholder="username"
-              class="input input-bordered"
-              value={username()}
-              type="text"
-              id="username"
-            />
+    <div class="flex flex-col items-center h-screen">
+      <div class="max-w-md">
+        <div class="flex flex-col border-2 gap-2 p-2 mt-32 h-fit rounded border-base-300">
+          <label class="text-center" for="username">
+            Username
+          </label>
+          <input
+            autocomplete="off"
+            onInput={(e) => setUsername(e.currentTarget.value)}
+            name="username"
+            placeholder="username"
+            class="input input-bordered"
+            value={username()}
+            type="text"
+            id="username"
+          />
+          <Show when={!loading()} fallback={<Loader />}>
             <button onClick={onLogin} class="btn btn-error">
               Login using Mock api
             </button>
-            <button
-              onClick={() => (window.location.href = routes.login42)}
-              class="btn-primary btn"
-            >
-              Login using 42
-            </button>
-          </div>
+          </Show>
+          <button
+            onClick={() => (window.location.href = routes.login42)}
+            class="btn-primary btn"
+          >
+            Login using 42
+          </button>
         </div>
       </div>
-    </Show>
+    </div>
   );
 };
 

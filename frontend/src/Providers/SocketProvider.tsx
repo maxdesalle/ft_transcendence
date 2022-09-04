@@ -137,7 +137,6 @@ export const SocketProvider = (props: any) => {
       state.pongWs.onclose = (e) => {
         setState('pongWsState', WebSocket.CLOSED);
         if (reconnectAmount > 0 && token) {
-          console.log('reconnecting pong: ');
           setId(setTimeout(actions.connectPongWs, 3000));
           reconnectAmount--;
         }

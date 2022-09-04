@@ -72,12 +72,8 @@ export function initViewerSocket() {
   const serverAddress = `${urls.wsUrl}/${socketServerPath}`;
   ws = new WebSocket(serverAddress);
 
-  ws.addEventListener('open', () => {
-    console.log(`connected to ${serverAddress}`);
-  });
-  ws.addEventListener('close', () => {
-    console.log('connection closed');
-  });
+  ws.addEventListener('open', () => {});
+  ws.addEventListener('close', () => {});
   ws.addEventListener('error', (e: any) => {
     socketErrObject = e;
     console.error(`socket error:${e.message}`);

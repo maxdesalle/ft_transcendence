@@ -141,7 +141,7 @@ const Matchmaking: Component = () => {
         </div>
       </Modal>
 
-      <div class="lg:grid lg:grid-cols-4 flex flex-col items-center h-95">
+      <div class="lg:grid lg:grid-cols-4 flex flex-col gap-1 items-center h-95">
         <div class="flex flex-col col-span-1 gap-2">
           <label for="friends" class="text-2xl mt-3">
             Invite a Friend

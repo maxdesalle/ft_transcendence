@@ -60,10 +60,6 @@ const App: Component = () => {
   );
 
   createEffect(() => {
-    console.log('sessionids: ', unwrap(state.usersSessionIds));
-  });
-
-  createEffect(() => {
     if (sockets.notificationWs && sockets.notifWsState === WebSocket.OPEN) {
       sockets.notificationWs!.addEventListener('message', (e) => {
         let res: {
@@ -129,7 +125,7 @@ const App: Component = () => {
             });
             break;
           default:
-            console.log(res);
+            break;
         }
       });
     }

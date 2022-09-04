@@ -13,7 +13,6 @@ const PendingFriendReqCard: Component = () => {
     acceptFriendReq(id)
       .then((res) => {
         notifySuccess('success');
-        console.log('res: ', res.data);
         mutate(routes.friends, [...res.data]);
         setPendigFriendReq(
           state.currentUser.pendingFriendReq.filter(

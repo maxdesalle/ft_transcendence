@@ -75,13 +75,10 @@ export function initSocket(): WebSocket {
   const serverAddress = `${urls.wsUrl}/${socketServerPath}`;
   ws = new WebSocket(serverAddress);
 
-  ws.addEventListener('open', (e: any) => {
-    // console.log(`connected to ${serverAddress}`, e);
-  });
+  ws.addEventListener('open', (e: any) => {});
   ws.addEventListener('close', (e: any) => {
     isDisconnected = true;
     playerNumber = 0;
-    console.log('pong closed from pong.ts');
   });
   ws.addEventListener('error', (e: any) => {
     socketErrObject = e;
@@ -248,9 +245,7 @@ export const sketch = (
       return true;
     }
 
-    //TODO: for some reason isDisconnected is true by some magic
     if (isDisconnected) {
-      console.log('player disconnected');
       sliders.forEach((s) => s.p5Slider.remove());
       myP5.textAlign('center', 'center');
       myP5.fill(
