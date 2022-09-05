@@ -163,5 +163,4 @@ export class StatsService {
 			wins_percent: Math.round(wins / matches_played * 100),
 		};
 	}
-
 }

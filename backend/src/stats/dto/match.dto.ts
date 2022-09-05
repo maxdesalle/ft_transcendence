@@ -34,14 +34,6 @@ export class LadderDto {
   points: any;
 }
 
-// for testing purposes
-export class PostMatchDto {
-  p1: number;
-  p2: number;
-  p1Score: number;
-  p2Score: number;
-}
-
 export class LadderRankDto {
   ladder_rank: number;
   points: any;

@@ -81,35 +81,6 @@ export class ChatService {
 		for (let room of room_query.rows) {
 			conversations.push(await this.roomInfo(room.id))
 		}
-		// for (let i = 0; i < room_query.rowCount; i++) //for every conversation
-		// {
-		// 	let room_row = room_query.rows[i];
-		// 	let room_id = room_row.id;
-		// 	let part_q = await this.pool.query(`
-		// 		SELECT id, login42, display_name, "avatarId"
-		// 		FROM participants
-		// 		JOIN public.user ON user_id = public.user.id
-		// 		WHERE room_id = ${room_row.id}`
-		// 	);
-		// 	const type = room_row.owner ? 'group':'DM'
-		// 	let blocked: boolean;
-		// 	if (type === 'DM' && (blockedList.includes(part_q.rows[0].user_id) || blockedList.includes(part_q.rows[1].user_id)))
-		// 		blocked = true;
-		// 	let conv = {
-		// 		room_id,
-		// 		room_name: room_row.name,
-		// 		type,
-		// 		blocked,
-		// 		participants: [],
-		// 		last_msg: null
-		// 	}
-		// 	for (let n = 0; n < part_q.rowCount; n++) //get all participants of a given conversation
-		// 		conv.participants.push(part_q.rows[n]);
-		// 	const last_msg = await this.getMessagesByRoomId(room_row.id);
-		// 	if (last_msg.length)
-		// 		conv.last_msg = last_msg[0];
-		// 	conversations.push(conv);
-		// }
 		return conversations;
 	}
 
@@ -346,30 +317,6 @@ export class ChatService {
 			VALUES(${user_id}, ${room_id})`);
 	}
 
-	// to be called when someone gets unbanned
-	// async addGroupUserRoot(room_id: number, user_id: number) {
-	// 	// check if group still exists
-	// 	if (!(await this.listGroups()).includes(room_id))
-	// 		return;
-	// 	// check if user already in group
-	// 	if (await this.is_room_participant(user_id, room_id))
-	// 		return;
-	// 	// check if user is still banned
-	// 	if (await this.is_banned(user_id, room_id))
-	// 		return;
-
-	// 	// add user
-	// 	await this.pool.query(`
-	// 		INSERT INTO participants(user_id, room_id)
-	// 		VALUES(${user_id}, ${room_id})`);
-	// }
-	
-	// set_unban_timer(room_id: number, user_id: number, time_minutes: number) {
-	// 	setTimeout(() => {
-	// 		this.addGroupUserRoot(room_id, user_id);
-	// 	}, time_minutes * 60 * 1000);
-	// }
-
 	async ban_group_user(me: User, room_id: number, user_id: number, ban_minutes: number) {
 		// check if user in the group
 		if (! await this.is_room_participant(user_id, room_id))
@@ -386,7 +333,6 @@ export class ChatService {
 		await this.pool.query(`DELETE FROM participants WHERE user_id=${user_id} AND room_id=${room_id}`);
 		await this.pool.query(`DELETE FROM banned WHERE banned_id=${user_id} AND room_id=${room_id} AND mute=true`);
 		await this.pool.query(`INSERT INTO banned (user_id, banned_id, room_id, unban, mute, role) VALUES(${me.id}, ${user_id}, ${room_id}, to_timestamp(${unban_date.getTime() / 1000}), false, ${role1})`);
-		// this.set_unban_timer(room_id, user_id, ban_minutes);
 	}
 
 	async unban_group_user(me: User, room_id: number, user_id: number) {
@@ -406,9 +352,6 @@ export class ChatService {
 			AND room_id= ${room_id}
 			AND mute=false
 			;`);
-		
-		// reinsert in group
-		// await this.addGroupUserRoot(room_id, user_id);
 	}
 
 	async mute_user(me: User, room_id: number, user_id: number, mute_minutes: number) {
@@ -471,11 +414,11 @@ export class ChatService {
 			WHERE id=${room_id}`);
 	}
 	
-	async set_private(me: User, room_id: number, cond: boolean) { //condition true = private false = public
+	async set_private(me: User, room_id: number, is_private: boolean) {
 		if (await this.get_role(me.id, room_id) != OWNER)
 			throw new ForbiddenException("no owner rights");
 		return this.pool.query(`
-			UPDATE room SET private=${cond}
+			UPDATE room SET private=${is_private}
 			WHERE id=${room_id}`);
 	}
 	

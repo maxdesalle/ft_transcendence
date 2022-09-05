@@ -66,10 +66,9 @@ App should be available at `https://127.0.01:3000` (httpS !)
 
 -----------------------
 ## TODO's before push
-- no more need to serve "client" dir (backend)
 - remove mock auth module
 - typeORM config: no 'synchronize' in production!
-- remove CORS enable (if the setup allows so...)
+- remove CORS enable 
 
 
 

@@ -1,5 +1,5 @@
 import { User } from "src/users/entities/user.entity";
-import { Friendship, FrienshipStatus } from "../entities/friendship.entity"
+import { FrienshipStatus } from "../entities/friendship.entity"
 
 export class friendRequestDto {
 	user_id: number;

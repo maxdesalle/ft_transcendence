@@ -7,14 +7,12 @@ import { AuthService } from './auth.service';
 import { IntraStrategy } from './strategy/intra.strategy';
 import { JwtStrategy } from './strategy/jwt.strategy';
 import { JwtTwoFactorStrategy } from './strategy/tfa.strategy';
-import { HtmlModule } from 'src/html/html.module';
 import { jwtConfig } from 'src/config/jwt.config';
 
 @Module({
 	imports:[
 		PassportModule,
 		UsersModule,
-		// HtmlModule,
 		JwtModule.registerAsync(jwtConfig),
 	],
 	controllers: [AuthController],
