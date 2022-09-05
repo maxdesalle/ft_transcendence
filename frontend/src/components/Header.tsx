@@ -72,7 +72,14 @@ const Header: Component = () => {
         <header class="lg:container navbar bg-base-300">
           <div class="flex-1">
             <Link href="/">
-              <img class="w-9 rounded-xl mr-2 h-8" src={logo} alt="logo" />
+              <img
+                style={{
+                  'max-width': '36px',
+                }}
+                class="rounded-xl mr-2 h-8"
+                src={logo}
+                alt="logo"
+              />
             </Link>
             <div class="form-control">
               <label class="input-group">

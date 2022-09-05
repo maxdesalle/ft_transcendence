@@ -1,5 +1,5 @@
 import { useNavigate, useParams } from 'solid-app-router';
-import { Component, For, onMount, Show } from 'solid-js';
+import { Component, createMemo, For, onMount, Show } from 'solid-js';
 import defaultAvatar from '../../../backend/images/avatardefault.png';
 import { generateImageUrl, notifyError, notifySuccess } from '../utils/helpers';
 import { createTurboResource, forget } from 'turbo-solid';
@@ -15,6 +15,7 @@ import Loader from '../components/Loader';
 import { useStore } from '../store/all';
 import { User } from '../types/user.interface';
 import Cookies from 'js-cookie';
+import { api } from '../utils/api';
 
 const Profile: Component = () => {
   const [sockets] = useSockets();
@@ -31,18 +32,25 @@ const Profile: Component = () => {
     createTurboResource<PlayerStatsDto>(() => userStatsUrl());
   const navigate = useNavigate();
   const [state, { resetStore }] = useStore();
+  const [friends] = createTurboResource<number[]>(() => `${routes.friends}/id`);
 
   const onSendFriendReq = () => {
-    if (user()) {
-      sendFriendReq(user()!.id)
-        .then(() => {
-          notifySuccess(`Request sent to ${user()!.display_name}`);
-        })
-        .catch((err: AxiosError<{ message: string }>) => {
-          notifyError(err.response?.data.message as string);
-        });
-    }
+    api
+      .post(routes.sendFriendReq, { user_id: user()?.id })
+      .then(() => {
+        notifySuccess(`friend request sent to ${user()?.display_name}`);
+      })
+      .catch((err: AxiosError<{ message: string }>) => {
+        notifyError(err.response?.data.message as string);
+      });
   };
+
+  const isFriend = createMemo(() => {
+    if (user() && friends()) {
+      return friends()!.includes(user()!.id);
+    }
+    return false;
+  });
 
   const onLogout = () => {
     setToken(undefined);
@@ -96,12 +104,14 @@ const Profile: Component = () => {
           <ul class="flex flex-col gap-2">
             <Show when={auth.user && parseInt(params.id) !== auth.user.id}>
               <li>
-                <button
-                  onClick={onSendFriendReq}
-                  class="btn-primary btn btn-sm w-full"
-                >
-                  Send friend request
-                </button>
+                <Show when={!isFriend()}>
+                  <button
+                    onClick={onSendFriendReq}
+                    class="btn-primary btn btn-sm w-full"
+                  >
+                    Send friend request
+                  </button>
+                </Show>
               </li>
               <li>
                 <button

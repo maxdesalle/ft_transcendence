@@ -11,7 +11,7 @@ import {
 import { createTurboResource } from 'turbo-solid';
 import { routes, urls } from '../api/utils';
 import Avatar from '../components/Avatar';
-import Modal from '../components/Modal';
+import FirstLogin from '../components/FirstLogin';
 import { useAuth } from '../Providers/AuthProvider';
 import { useSockets } from '../Providers/SocketProvider';
 import { useStore } from '../store/all';
@@ -34,8 +34,6 @@ const Matchmaking: Component = () => {
   );
   const [sockets] = useSockets();
   const [inQueue, setInQueue] = createSignal(false);
-  const [isOpen, setIsOpen] = createSignal(!!Cookies.get('first_login'));
-
   const navigate = useNavigate();
 
   createEffect(() => {
@@ -95,52 +93,9 @@ const Matchmaking: Component = () => {
     }
   });
 
-  const onCloseModal = () => {
-    setIsOpen(false);
-    Cookies.remove('first_login', { sameSite: 'none', secure: true });
-  };
-
-  const onNavigate = () => {
-    onCloseModal();
-    navigate('edit_profile');
-  };
-
   return (
     <>
-      <Modal
-        bgColor="bg-black opacity-60"
-        class="w-full h-full"
-        isOpen={isOpen()}
-      >
-        <div class=" flex flex-col gap-2 p-3 rounded bg-base-300 top-1/4 left-1/3  w-1/4 absolute">
-          <h1 class="text-3xl text-center font-bold">Welcome to 19 pong</h1>
-          <div class="flex items-center gap-1">
-            <p>
-              You can edit your profile (change name, avatar and activate 2
-              factor authentication)
-            </p>
-            <button onClick={onNavigate} class="btn btn-info btn-sm">
-              Edit
-            </button>
-          </div>
-          <p class="text-center text-lg font-semibold">Game controls</p>
-          <div class="flex justify-center w-full">
-            <kbd class="kbd">▲</kbd>
-          </div>
-          <div class="flex justify-center w-full">
-            <kbd class="kbd">▼</kbd>
-          </div>
-          <div class="flex gap-1">
-            <button
-              onClick={onCloseModal}
-              class="w-fit btn btn-sm btn-secondary"
-            >
-              Close
-            </button>
-          </div>
-        </div>
-      </Modal>
-
+      <FirstLogin />
       <div class="lg:grid lg:grid-cols-4 flex flex-col gap-1 items-center h-95">
         <div class="flex flex-col col-span-1 gap-2">
           <label for="friends" class="text-2xl mt-3">
