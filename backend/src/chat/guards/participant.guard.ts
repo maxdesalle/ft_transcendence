@@ -1,4 +1,4 @@
-import { BadRequestException, CanActivate, ExecutionContext, Inject, Injectable } from "@nestjs/common";
+import { BadRequestException, CanActivate, ExecutionContext, Inject } from "@nestjs/common";
 import { ChatService } from "../chat.service";
 
 /**  - checks if room_id is valid (param or request body)

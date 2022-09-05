@@ -262,5 +262,3 @@ export function deleteGameSession(id: number) {
 	else
 		console.error(`could not delete session ${id}: session id not found in sessions array`);
 }
-
-// module.exports = {computeValues, deleteGameSession};

@@ -175,8 +175,6 @@ export class PongGateway implements OnGatewayConnection, OnGatewayDisconnect {
     console.log(`User ${user_id} cleared as waiting player or inviting player`);
   }
 
-  // TODO: refuse invitation ? withdraw invitation?
-
   // starts session and calls linkPlayers
   matchPlayers(p1Socket: WebSocket, p2Socket: WebSocket) {
     const p1 = connected_users.get(p1Socket);

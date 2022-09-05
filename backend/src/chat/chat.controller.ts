@@ -43,7 +43,7 @@ export class ChatController {
 
   // ============ DM ===========
 
-  @Post('dm') // OK
+  @Post('dm')
   @ApiTags('chat - DM')
   async postDM(
     @Usr() me: User,
@@ -63,7 +63,7 @@ export class ChatController {
     return message;
   }
 
-  @Get('dm/:user_id') // OK
+  @Get('dm/:user_id')
   @ApiTags('chat - DM')
   async getDMs(
     @Usr() me: User,
@@ -158,7 +158,7 @@ export class ChatController {
     return this.getConvs(me);
   }
 
-  @Post('group_message') // OK
+  @Post('group_message')
   @ApiTags('chat - groups')
   async postGroupMsg(
     @Usr() me: User,
@@ -178,7 +178,7 @@ export class ChatController {
     return message;
   }
 
-  @Get('group_messages/:room_id') // OK
+  @Get('group_messages/:room_id')
   @ApiTags('chat - groups')
   async getGroupMessages(
     @Usr() me: User,
@@ -430,7 +430,7 @@ export class ChatController {
 
   // ====== INFO (general) ========================
 
-  @Get('room_info/:room_id') // OK
+  @Get('room_info/:room_id')
   @ApiTags('chat - general(DM + groups)')
   groupInfo(
     @Param('room_id', ParseIntPipe, ValidateRoomPipe) room_id: number,
@@ -438,7 +438,7 @@ export class ChatController {
     return this.chatService.roomInfo(room_id);
   }
 
-  @Get('conversations') // OK
+  @Get('conversations')
   @ApiTags('chat - general(DM + groups)')
   @ApiOperation({ summary: ' DMs + groups' })
   getConvs(@Usr() user: User) {
@@ -453,7 +453,7 @@ export class ChatController {
 
   // ============ for compability ===========
 
-  @Post('message_to_room') // OK
+  @Post('message_to_room')
   @ApiTags('chat - compatibility')
   @ApiOperation({
     summary: `Route for compability with previous versions.
@@ -482,7 +482,7 @@ export class ChatController {
     return message;
   }
 
-  @Get('room_messages/:room_id') // OK
+  @Get('room_messages/:room_id')
   @ApiTags('chat - compatibility')
   @ApiOperation({
     summary: `Route for compability with previous versions.
@@ -499,9 +499,4 @@ export class ChatController {
     // case: DM room
     return this.chatService.getDMsByRoomID(me, room_id);
   }
-
-  // @Get('test')
-  // test() {
-  // 	return this.chatService.listGroups();
-  // }
 }
