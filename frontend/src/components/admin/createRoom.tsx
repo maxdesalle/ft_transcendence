@@ -1,8 +1,9 @@
+import { AxiosError } from 'axios';
 import { Component, createSignal } from 'solid-js';
 import { mutate } from 'turbo-solid';
 import { chatApi } from '../../api/chat';
 import { routes } from '../../api/utils';
-import { notifySuccess } from '../../utils/helpers';
+import { notifyError, notifySuccess } from '../../utils/helpers';
 
 const CreateRoom: Component<{ class?: string }> = (props) => {
   const [roomName, setRoomName] = createSignal('');
@@ -22,6 +23,9 @@ const CreateRoom: Component<{ class?: string }> = (props) => {
         notifySuccess(`${roomName()} created`);
         setRoomName('');
         setPassword('');
+      })
+      .catch((err: AxiosError<{ message: string }>) => {
+        notifyError(err.response?.data.message as string);
       });
   };
 
