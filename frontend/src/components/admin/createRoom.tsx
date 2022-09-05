@@ -27,8 +27,15 @@ const CreateRoom: Component<{ class?: string }> = (props) => {
 
   return (
     <div class={`flex flex-col ${props.class}`}>
-      <div>
+      <form
+        class="flex flex-col gap-2"
+        onSubmit={(e) => {
+          e.preventDefault();
+          onCreateRoom();
+        }}
+      >
         <input
+          pattern="^[a-zA-Z0-9_.-]*$"
           value={roomName()}
           onInput={(e) => setRoomName(e.currentTarget.value)}
           autocomplete="off"
@@ -38,8 +45,6 @@ const CreateRoom: Component<{ class?: string }> = (props) => {
           id="room_name"
           placeholder="Enter name"
         />
-      </div>
-      <div class="mt-2">
         <input
           value={password()}
           onInput={(e) => setPassword(e.currentTarget.value)}
@@ -50,24 +55,20 @@ const CreateRoom: Component<{ class?: string }> = (props) => {
           id="room_password"
           placeholder="Enter password"
         />
-      </div>
-      <div class="mt-2 flex items-center">
-        <label class="pr-3 pl-1">Private?</label>
-        <input
-          autocomplete="off"
-          onInput={(e) => setIsPrivate(e.currentTarget.checked)}
-          type="checkbox"
-          class="checkbox"
-          name="is_private"
-          id="is_private"
-          checked={isPrivate()}
-        />
-      </div>
-      <div class="mt-2">
-        <button onClick={onCreateRoom} class="btn-primary btn">
-          Create Room
-        </button>
-      </div>
+        <div class="flex items-center">
+          <label class="pr-3 pl-1">Private?</label>
+          <input
+            autocomplete="off"
+            onInput={(e) => setIsPrivate(e.currentTarget.checked)}
+            type="checkbox"
+            class="checkbox"
+            name="is_private"
+            id="is_private"
+            checked={isPrivate()}
+          />{' '}
+        </div>
+        <button class="btn-primary btn btn-sm">Create Room</button>
+      </form>
     </div>
   );
 };

@@ -125,6 +125,7 @@ export class ChatController {
     @Body('password') password: string,
     @Body() _room: RoomAndPasswordDto,
   ) {
+    console.log('join group with password: ', password);
     await this.chatService.join_public_group(me, room_id, password);
     const room = await this.chatService.roomInfo(room_id);
     // notify all users in group
@@ -272,7 +273,6 @@ export class ChatController {
     });
     return room;
   }
-
 
   @Post('ban_group_user')
   @ApiTags('chat - group admin')

@@ -15,6 +15,7 @@ import { WsService } from 'src/ws/ws.service';
 import { forwardRef, Inject, UseGuards } from '@nestjs/common';
 import { StatsService } from 'src/stats/stats.service';
 import { PongGuard } from './guards/pong.guard';
+import { FriendsService } from 'src/friends/friends.service';
 
 const defaultVals = default_values.df;
 
@@ -53,6 +54,8 @@ export class PongGateway implements OnGatewayConnection, OnGatewayDisconnect {
     @Inject(forwardRef(() => WsService))
     private wsService: WsService,
     private statsService: StatsService,
+    @Inject(forwardRef(() => FriendsService))
+    private friendService: FriendsService,
   ) {}
 
   // authenticates user
@@ -231,12 +234,19 @@ export class PongGateway implements OnGatewayConnection, OnGatewayDisconnect {
           event: `ladder_change`,
           ladder: await this.statsService.ladder(),
         });
-        // notify everyone about end of session
-        this.wsService.sendMsgToAll({
-          event: `pong: session_over`,
-          session_id: id,
-        });
+
+        // this.wsService.sendMsgToAll({
+        //   event: `pong: session_over`,
+        //   session_id: id,
+        // });
       }
+      const p1Friends = await this.friendService.listFriendsIDs(p1);
+      const p2Friends = await this.friendService.listFriendsIDs(p2);
+      // notify everyone about end of session
+      this.wsService.sendMsgToUsersList([...p1Friends, ...p2Friends], {
+        event: 'pong: session_over',
+        session_id: id,
+      });
     });
   }
 }

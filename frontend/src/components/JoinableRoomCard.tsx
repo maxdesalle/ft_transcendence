@@ -4,12 +4,10 @@ import { Component, createSignal, Show } from 'solid-js';
 import { chatApi } from '../api/chat';
 import { RoomInfo } from '../types/chat.interface';
 import { notifyError, notifySuccess } from '../utils/helpers';
-import Modal from './Modal';
 
 const JoinableRoomCard: Component<{ room: RoomInfo; refetch: () => void }> = (
   props,
 ) => {
-  const [isOpen, setIsOpen] = createSignal(false);
   const [password, setPassword] = createSignal('');
   const onSubmitPassword = () => {
     chatApi
@@ -22,6 +20,7 @@ const JoinableRoomCard: Component<{ room: RoomInfo; refetch: () => void }> = (
         notifyError(err.response?.data.message as string);
       });
   };
+
   return (
     <div class="flex p-2 items-center transition-all hover:bg-base-300">
       <HiSolidUserGroup class="text-primary-300" size={24} />
@@ -34,7 +33,37 @@ const JoinableRoomCard: Component<{ room: RoomInfo; refetch: () => void }> = (
             <p class="text-warning">Protected</p>
           </Show>
         </div>
-        <div>
+        <label for="my-modal" class="btn modal-button">
+          Join
+        </label>
+        <input type="checkbox" id="my-modal" class="modal-toggle" />
+        <div class="modal">
+          <div class="modal-box relative">
+            <form
+              onSubmit={(e) => {
+                e.preventDefault();
+                onSubmitPassword();
+              }}
+              class="flex w-fit p-2 rounded-md gap-3 flex-col"
+            >
+              <input
+                onInput={(e) => setPassword(e.currentTarget.value)}
+                class="input input-sm input-bordered"
+                placeholder="Enter room password"
+                type="password"
+                id={`password_${props.room.room_id}`}
+              />
+              <button class="btn-primary btn-sm btn">Submit</button>
+            </form>
+            <label
+              for="my-modal"
+              class="btn btn-sm btn-circle absolute right-2 top-2"
+            >
+              ✕
+            </label>
+          </div>
+        </div>
+        {/* <div>
           <button
             onClick={() => setIsOpen(true)}
             class="btn-primary btn-sm btn"
@@ -69,7 +98,7 @@ const JoinableRoomCard: Component<{ room: RoomInfo; refetch: () => void }> = (
               </div>
             </form>
           </Modal>
-        </div>
+        </div> */}
       </div>
     </div>
   );

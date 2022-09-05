@@ -15,6 +15,7 @@ import { useNavigate } from 'solid-app-router';
 import Cookies from 'js-cookie';
 import { forget } from 'turbo-solid';
 import defaultAvatar from '../../../backend/images/avatardefault.png';
+import { AxiosError } from 'axios';
 
 const EditProfile: Component = () => {
   const [newName, setNewName] = createSignal('');
@@ -27,10 +28,14 @@ const EditProfile: Component = () => {
 
   const onChangeName = () => {
     if (newName()) {
-      changeDisplayName(newName()).then((res) => {
-        setUser(res.data);
-        notifySuccess(`Name changed to ${res.data.display_name}`);
-      });
+      changeDisplayName(newName())
+        .then((res) => {
+          setUser(res.data);
+          notifySuccess(`Name changed to ${res.data.display_name}`);
+        })
+        .catch((err: AxiosError<{ message: string }>) => {
+          notifyError(err.response?.data.message as string);
+        });
       setNewName('');
     }
   };

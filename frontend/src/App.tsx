@@ -1,9 +1,9 @@
 import {
   Component,
   createEffect,
+  createMemo,
   createResource,
   onCleanup,
-  onMount,
 } from 'solid-js';
 import { Route, Routes, useNavigate } from 'solid-app-router';
 import Chat from './pages/Chat';
@@ -26,7 +26,6 @@ import { WsNotificationEvent } from './types/chat.interface';
 import { api } from './utils/api';
 import { User } from './types/user.interface';
 import { routes } from './api/utils';
-import { unwrap } from 'solid-js/store';
 
 const App: Component = () => {
   const [
@@ -59,6 +58,23 @@ const App: Component = () => {
     },
   );
 
+  const getNotif = () => {
+    send(
+      {
+        event: 'isInGame',
+        data: { sender: auth.user.id },
+      },
+      'notif',
+    );
+    send(
+      {
+        event: 'isOnline',
+        data: { sender: auth.user.id },
+      },
+      'notif',
+    );
+  };
+
   createEffect(() => {
     if (sockets.notificationWs && sockets.notifWsState === WebSocket.OPEN) {
       sockets.notificationWs!.addEventListener('message', (e) => {
@@ -86,22 +102,11 @@ const App: Component = () => {
             setInGameUsers(res.data.inGame);
             break;
           case 'pong: session_over':
-            send(
-              {
-                event: 'isInGame',
-                data: { sender: auth.user.id },
-              },
-              'notif',
-            );
+            console.log('session over', res);
+            getNotif();
             break;
           case 'pong: new_session':
-            send(
-              {
-                event: 'isInGame',
-                data: { sender: auth.user.id },
-              },
-              'notif',
-            );
+            getNotif();
             break;
           case 'users: new_user':
             addOnlineUser(res.user_id!);

@@ -1,7 +1,6 @@
 import {
   Component,
   createEffect,
-  createMemo,
   createResource,
   createSignal,
   Match,
@@ -110,6 +109,9 @@ const Chat: Component = () => {
   });
 
   createEffect(() => {
+    state.chatUi.tab;
+    state.chat.friendId;
+    state.chat.roomId;
     if (
       sockets.notificationWs &&
       sockets.notificationWs.readyState === WebSocket.OPEN
