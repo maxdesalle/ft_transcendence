@@ -241,7 +241,7 @@ export class PongGateway implements OnGatewayConnection, OnGatewayDisconnect {
       const p1Friends = await this.friendService.listFriendsIDs(p1);
       const p2Friends = await this.friendService.listFriendsIDs(p2);
       // notify everyone about end of session
-      this.wsService.sendMsgToUsersList([...p1Friends, ...p2Friends], {
+      this.wsService.sendMsgToUsersList([...p1Friends, ...p2Friends, p1, p2], {
         event: 'pong: session_over',
         session_id: id,
       });

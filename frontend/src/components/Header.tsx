@@ -25,11 +25,13 @@ import FriendRequests from './FriendRequest';
 const LINKS = ['chat', 'leaderboard'];
 import { RiDesignPaintFill } from 'solid-icons/ri';
 import { themeChange } from 'theme-change';
+import { useStore } from '../store/all';
 
 const Header: Component = () => {
   const [keyword, setKeyword] = createSignal<string>('');
   const [users] = createTurboResource<User[]>(() => routes.users);
   const [auth] = useAuth();
+  const [state] = useStore();
   const notifySuccess = (msg: string) => toast.success(msg);
   const notifyError = (msg: string) => toast.error(msg);
   const [selectedTheme, setSelectedTheme] = createSignal('dark');
@@ -67,115 +69,113 @@ const Header: Component = () => {
   });
 
   return (
-    <>
-      <div class="bg-base-300">
-        <header class="lg:container navbar bg-base-300">
-          <div class="flex-1">
-            <Link href="/">
-              <img
-                style={{
-                  'max-width': '36px',
-                }}
-                class="rounded-xl mr-2 h-8"
-                src={logo}
-                alt="logo"
+    <div class="bg-base-300">
+      <header class="lg:container navbar bg-base-300">
+        <div class="flex-1">
+          <Link href="/">
+            <img
+              style={{
+                'max-width': '36px',
+              }}
+              class="rounded-xl mr-2 h-8"
+              src={logo}
+              alt="logo"
+            />
+          </Link>
+          <div class="form-control">
+            <label class="input-group">
+              <span class="hidden lg:block">
+                <BiSearchAlt2 size={22} />
+              </span>
+              <input
+                value={keyword()}
+                onInput={(e) => setKeyword(e.currentTarget.value)}
+                placeholder="search user"
+                class="input input-bordered input-sm"
+                autocomplete="off"
+              />
+            </label>
+          </div>
+          <FriendRequests />
+          <GameInviteNotif />
+        </div>
+        <ul class="flex gap-2">
+          <For each={LINKS}>
+            {(link) => (
+              <li class="first-letter:capitalize font-semibold hidden lg:block md:block">
+                <Link href={`/${link}`}>{link}</Link>
+              </li>
+            )}
+          </For>
+          <li class="block lg:hidden">
+            <Link href="/chat" class="my-auto bg-transparent md:hidden">
+              <IoChatbubblesSharp
+                class="shadow-md bg-transparent"
+                size={20}
+                color="#001a4d"
               />
             </Link>
-            <div class="form-control">
-              <label class="input-group">
-                <span class="hidden lg:block">
-                  <BiSearchAlt2 size={22} />
-                </span>
-                <input
-                  value={keyword()}
-                  onInput={(e) => setKeyword(e.currentTarget.value)}
-                  placeholder="search user"
-                  class="input input-bordered input-sm"
-                  autocomplete="off"
-                />
+          </li>
+          <li>
+            <div ref={ref} class="dropdown dropdown-end">
+              <label class="flex items-center font-semibold" tabindex="0">
+                <RiDesignPaintFill />
+                Theme
               </label>
+              <ul
+                tabindex="0"
+                class="dropdown-content menu-compact menu p-2 shadow bg-base-100 rounded w-fit"
+              >
+                <For each={themes}>
+                  {(t) => (
+                    <li
+                      onClick={() => {
+                        setSelectedTheme(t);
+                      }}
+                    >
+                      <a>
+                        <button class="capitalize" data-set-theme={t}>
+                          {t}
+                        </button>
+                      </a>
+                    </li>
+                  )}
+                </For>
+              </ul>
             </div>
-            <FriendRequests />
-            <GameInviteNotif />
-          </div>
-          <ul class="flex gap-2">
-            <For each={LINKS}>
-              {(link) => (
-                <li class="first-letter:capitalize font-semibold hidden lg:block md:block">
-                  <Link href={`/${link}`}>{link}</Link>
-                </li>
+          </li>
+          <li>
+            <HeaderProfileMenu user={auth.user} />
+          </li>
+        </ul>
+        <Show when={keyword()}>
+          <div class="absolute flex bg-base-300 flex-col rounded top-10 z-30 ml-16">
+            <For
+              each={users()
+                ?.slice(0)
+                ?.filter((user) =>
+                  user.display_name
+                    .toLocaleLowerCase()
+                    .includes(keyword().toLocaleLowerCase()),
+                )
+                .slice(0, 10)}
+            >
+              {(user) => (
+                <div class="w-60">
+                  <SearchUserCard
+                    onClick={() => {
+                      onSendFriendReq(user.id, user.display_name);
+                      setKeyword('');
+                    }}
+                    user={user}
+                  />
+                </div>
               )}
             </For>
-            <li class="block lg:hidden">
-              <Link href="/chat" class="my-auto bg-transparent md:hidden">
-                <IoChatbubblesSharp
-                  class="shadow-md bg-transparent"
-                  size={20}
-                  color="#001a4d"
-                />
-              </Link>
-            </li>
-            <li>
-              <div ref={ref} class="dropdown dropdown-end">
-                <label class="flex items-center font-semibold" tabindex="0">
-                  <RiDesignPaintFill />
-                  Theme
-                </label>
-                <ul
-                  tabindex="0"
-                  class="dropdown-content menu-compact menu p-2 shadow bg-base-100 rounded w-fit"
-                >
-                  <For each={themes}>
-                    {(t) => (
-                      <li
-                        onClick={() => {
-                          setSelectedTheme(t);
-                        }}
-                      >
-                        <a>
-                          <button class="capitalize" data-set-theme={t}>
-                            {t}
-                          </button>
-                        </a>
-                      </li>
-                    )}
-                  </For>
-                </ul>
-              </div>
-            </li>
-            <li>
-              <HeaderProfileMenu user={auth.user} />
-            </li>
-          </ul>
-          <Show when={keyword()}>
-            <div class="absolute flex bg-base-300 flex-col rounded top-10 z-30 ml-16">
-              <For
-                each={users()
-                  ?.slice(0)
-                  ?.filter((user) =>
-                    user.display_name
-                      .toLocaleLowerCase()
-                      .includes(keyword().toLocaleLowerCase()),
-                  )
-                  .slice(0, 10)}
-              >
-                {(user) => (
-                  <div class="w-60">
-                    <SearchUserCard
-                      onClick={() => {
-                        onSendFriendReq(user.id, user.display_name);
-                        setKeyword('');
-                      }}
-                      user={user}
-                    />
-                  </div>
-                )}
-              </For>
-            </div>
-          </Show>
-        </header>
-      </div>
-    </>
+          </div>
+        </Show>
+      </header>
+    </div>
   );
 };
 

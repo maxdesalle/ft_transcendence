@@ -11,7 +11,7 @@ const Pong: Component = () => {
   let game: typeof p5;
   let id: any;
   const navigate = useNavigate();
-  const [sockets] = useSockets();
+  const [sockets, { setWsPongState }] = useSockets();
 
   onMount(() => {
     game = sketch(p5, navigate);
@@ -24,8 +24,6 @@ const Pong: Component = () => {
         res = JSON.parse(e.data);
         if (res.event === 'pong: opponent_disconnected') {
           notifyError('player disconnected');
-          //onCleanup well clean every thing when i leave the page
-          // navigate('/');
         }
       });
     }
@@ -34,8 +32,8 @@ const Pong: Component = () => {
   onCleanup(() => {
     game.deleteAll();
     clearInterval(id);
-    if (sockets.notifWsState === WebSocket.OPEN) {
-      sockets.notificationWs!.removeEventListener('message', () => {});
+    if (sockets.notificationWs && sockets.notifWsState === WebSocket.OPEN) {
+      sockets.notificationWs.removeEventListener('message', () => {});
     }
   });
 

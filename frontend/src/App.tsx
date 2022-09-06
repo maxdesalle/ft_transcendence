@@ -26,6 +26,7 @@ import { WsNotificationEvent } from './types/chat.interface';
 import { api } from './utils/api';
 import { User } from './types/user.interface';
 import { routes } from './api/utils';
+import { createTurboResource } from 'turbo-solid';
 
 const App: Component = () => {
   const [
@@ -43,10 +44,11 @@ const App: Component = () => {
   ] = useStore();
   const navigate = useNavigate();
   const [auth] = useAuth();
-  const [
-    sockets,
-    { connectPongWs, connectViewerWs, connectNotificationWs, disconnect, send },
-  ] = useSockets();
+  const [friends, { refetch }] = createTurboResource<User[]>(
+    () => routes.friends,
+  );
+  const [sockets, { connectPongWs, connectNotificationWs, disconnect, send }] =
+    useSockets();
 
   const [pendingFriendReq] = createResource(
     () => auth.isAuth,
@@ -102,7 +104,6 @@ const App: Component = () => {
             setInGameUsers(res.data.inGame);
             break;
           case 'pong: session_over':
-            console.log('session over', res);
             getNotif();
             break;
           case 'pong: new_session':

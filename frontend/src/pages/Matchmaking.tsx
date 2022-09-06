@@ -28,7 +28,9 @@ const Matchmaking: Component = () => {
   const [, { setUser, setIsAuth }] = useAuth();
   const [buttonText, setButtonText] = createSignal('Play');
   const [currentUser] = createTurboResource<User>(() => routes.currentUser);
-  const [friends] = createTurboResource<User[]>(() => routes.friends);
+  const [friends, { refetch: refetchFriends }] = createTurboResource<User[]>(
+    () => routes.friends,
+  );
   const [gameSessions, { refetch }] = createTurboResource<GameSession[]>(
     () => `${urls.backendUrl}/pong/sessions`,
   );
@@ -43,8 +45,21 @@ const Matchmaking: Component = () => {
     }
   });
 
+  createEffect(() => {
+    if (sockets.notificationWs && sockets.notifWsState === WebSocket.OPEN) {
+      sockets.notificationWs.addEventListener('message', (e) => {
+        let res: { event: WsNotificationEvent; data: any };
+        res = JSON.parse(e.data);
+        if (res.event === 'friends: request_accepted') {
+          refetchFriends();
+        }
+      });
+    }
+  });
+
   onMount(() => {
     refetch();
+    refetchFriends();
   });
 
   const onPlay = () => {
