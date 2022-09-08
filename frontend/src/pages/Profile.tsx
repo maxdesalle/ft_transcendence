@@ -6,7 +6,6 @@ import { createTurboResource, forget } from 'turbo-solid';
 import { routes } from '../api/utils';
 import { MatchDTO, PlayerStatsDto } from '../types/stats.interface';
 import MatchHistoryCard from '../components/MatchHistoryCard';
-import { sendFriendReq } from '../api/user';
 import { AxiosError } from 'axios';
 import Scrollbars from 'solid-custom-scrollbars';
 import { useSockets } from '../Providers/SocketProvider';
@@ -27,7 +26,9 @@ const Profile: Component = () => {
   const userByIdUrl = () => (params.id ? `${routes.users}/${params.id}` : null);
   const userStatsUrl = () =>
     params.id ? `${routes.playerStats}/${params.id}` : null;
-  const [user] = createTurboResource<User>(() => userByIdUrl());
+  const [user, { refetch: refetchUser }] = createTurboResource<User>(() =>
+    userByIdUrl(),
+  );
   const [stats, { refetch: refetchStats }] =
     createTurboResource<PlayerStatsDto>(() => userStatsUrl());
   const navigate = useNavigate();
@@ -63,6 +64,7 @@ const Profile: Component = () => {
 
   onMount(() => {
     refetch();
+    refetchUser();
     refetchStats();
   });
 
