@@ -4,8 +4,10 @@ import {
   createMemo,
   createResource,
   onCleanup,
+  onMount,
+  Show,
 } from 'solid-js';
-import { Route, Routes, useNavigate } from 'solid-app-router';
+import { Link, Route, Routes, useNavigate } from 'solid-app-router';
 import Chat from './pages/Chat';
 import Pong from './pages/Pong';
 import Viewer from './pages/Viewer';
@@ -26,7 +28,6 @@ import { WsNotificationEvent } from './types/chat.interface';
 import { api } from './utils/api';
 import { User } from './types/user.interface';
 import { routes } from './api/utils';
-import { createTurboResource } from 'turbo-solid';
 
 const App: Component = () => {
   const [
@@ -44,9 +45,7 @@ const App: Component = () => {
   ] = useStore();
   const navigate = useNavigate();
   const [auth] = useAuth();
-  const [friends, { refetch }] = createTurboResource<User[]>(
-    () => routes.friends,
-  );
+
   const [sockets, { connectPongWs, connectNotificationWs, disconnect, send }] =
     useSockets();
 
@@ -78,8 +77,11 @@ const App: Component = () => {
   };
 
   createEffect(() => {
-    if (sockets.notificationWs && sockets.notifWsState === WebSocket.OPEN) {
-      sockets.notificationWs!.addEventListener('message', (e) => {
+    if (
+      sockets.notificationWs &&
+      sockets.notificationWs.readyState === WebSocket.OPEN
+    ) {
+      sockets.notificationWs.addEventListener('message', (e) => {
         let res: {
           event: WsNotificationEvent;
           data: any;
@@ -110,6 +112,7 @@ const App: Component = () => {
             getNotif();
             break;
           case 'users: new_user':
+            console.log('new user');
             addOnlineUser(res.user_id!);
             break;
           case 'status: friend_online':
@@ -125,12 +128,14 @@ const App: Component = () => {
             removeDisconnectedUser(res.data.user_id);
             break;
           case 'friends: new_request':
+            console.log('new friend');
             addPendingFriendReq({
               req_user: res.friend_request.requesting_user,
               status: 0,
             });
             break;
           default:
+            console.log(res);
             break;
         }
       });
@@ -167,10 +172,12 @@ const App: Component = () => {
     }
   });
 
-  onCleanup(() => disconnect());
-
+  const inGame = () => state.inGameUsers.includes(auth.user.id);
   return (
     <>
+      <Show when={inGame() && location.pathname !== '/pong'}>
+        <Link href="/pong">Back to pong</Link>
+      </Show>
       <div class="w-full overflow-hidden">
         <Routes>
           <Route

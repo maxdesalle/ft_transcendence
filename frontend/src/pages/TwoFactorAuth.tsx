@@ -29,17 +29,23 @@ const TwoFactorAuth: Component = () => {
   };
 
   return (
-    <div class="m-auto w-full h-full">
-      <input
-        type="number"
-        onInput={(e) => setCode(e.currentTarget.value)}
-        name="code"
-        id="code"
-        placeholder="enter code"
-      />
-      <button class="btn-primary" onClick={onSendCode}>
-        Confirm
-      </button>
+    <div class="h-screen flex items-center justify-center">
+      <div class="flex flex-col w-2/5 h-auto gap-3 items-center border border-base-100 p-2 justify-center">
+        <label for="code" class="text-2xl font-semibold">
+          Enter 2fa Code
+        </label>
+        <input
+          type="number"
+          class="input w-full"
+          onInput={(e) => setCode(e.currentTarget.value)}
+          name="code"
+          id="code"
+          placeholder="enter code"
+        />
+        <button class="btn-primary btn w-full" onClick={onSendCode}>
+          Confirm
+        </button>
+      </div>
     </div>
   );
 };
