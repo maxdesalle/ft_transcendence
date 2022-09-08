@@ -6,8 +6,6 @@ export const urls = {
   wsUrl: `wss://${host_ip ? host_ip : 'localhost'}:3000`,
 };
 
-//TODO: add endpoints
-
 export const routes = {
   createGroup: `${urls.backendUrl}/chat/create_group`,
   getRooms: `${urls.backendUrl}/chat/conversations`,
