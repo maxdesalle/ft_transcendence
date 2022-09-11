@@ -8,8 +8,8 @@ import {
 } from 'solid-js';
 import { RoomUser } from '../types/user.interface';
 import Modal from './Modal';
-import { TAB, useStore } from '../store/all';
-import { Link } from 'solid-app-router';
+import { TAB, useStore } from '../store/StoreProvider';
+import { Link, useNavigate } from 'solid-app-router';
 import Avatar from './Avatar';
 import { blockUser, chatApi } from '../api/chat';
 import { createTurboResource } from 'turbo-solid';
@@ -60,6 +60,15 @@ const ChatRoomUserCard: Component<{
     const data = { event: 'invite', data: props.user.id };
     sockets.pongWs!.send(JSON.stringify(data));
     notify(`invitation sent to ${props.user.display_name}`);
+  };
+
+  const navigate = useNavigate();
+
+  const onWatch = () => {
+    const id = state.usersSessionIds.find((v) => v.id === props.user.id);
+    if (id) {
+      navigate(`/viewer/${id.sessionId}`);
+    }
   };
 
   const currentUserRole = () =>
@@ -209,7 +218,7 @@ const ChatRoomUserCard: Component<{
 
   onMount(() => {
     autoAnimate(ref);
-    if (sockets.notifWsState === WebSocket.OPEN) {
+    if (sockets.notificationState === WebSocket.OPEN) {
       sockets.notificationWs!.addEventListener('message', (e) => {
         let res: { event: WsNotificationEvent; data: any; room: RoomInfo };
         res = JSON.parse(e.data);
@@ -244,7 +253,7 @@ const ChatRoomUserCard: Component<{
   });
 
   onCleanup(() => {
-    if (sockets.notifWsState === WebSocket.OPEN) {
+    if (sockets.notificationState === WebSocket.OPEN) {
       sockets.notificationWs?.removeEventListener('message', () => {});
     }
   });
@@ -284,6 +293,11 @@ const ChatRoomUserCard: Component<{
       </div>
       <Modal isOpen={isOpen()} toggleModal={setIsOpen}>
         <div class="menu menu-compact border rounded border-base-300 bg-base-300 right-1 -top-10 absolute w-32">
+          <Show when={isInGame()}>
+            <li>
+              <button onClick={onWatch}>Watch</button>
+            </li>
+          </Show>
           <li>
             <Link href={`/profile/${props.user.id}`}>Profile</Link>
           </li>

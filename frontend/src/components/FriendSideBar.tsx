@@ -11,7 +11,7 @@ import { createTurboResource } from 'turbo-solid';
 import { blockUser, chatApi } from '../api/chat';
 import { routes } from '../api/utils';
 import { useSockets } from '../Providers/SocketProvider';
-import { useStore } from '../store/all';
+import { useStore } from '../store/StoreProvider';
 import { WsNotificationEvent } from '../types/chat.interface';
 import { User } from '../types/user.interface';
 import { generateImageUrl, notifyError, notifySuccess } from '../utils/helpers';

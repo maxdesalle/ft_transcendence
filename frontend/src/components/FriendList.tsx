@@ -2,7 +2,7 @@ import { Component, createEffect, createSignal, For, Show } from 'solid-js';
 import { createTurboResource } from 'turbo-solid';
 import { routes } from '../api/utils';
 import { useSockets } from '../Providers/SocketProvider';
-import { useStore } from '../store/all';
+import { useStore } from '../store/StoreProvider';
 import { WsNotificationEvent } from '../types/chat.interface';
 import { Friend } from '../types/user.interface';
 import AddFriend from './AddFriend';
@@ -26,7 +26,10 @@ const FriendList: Component = () => {
 
   let ref: any;
   createEffect(() => {
-    if (sockets.notificationWs && sockets.notifWsState === WebSocket.OPEN) {
+    if (
+      sockets.notificationWs &&
+      sockets.notificationState === WebSocket.OPEN
+    ) {
       sockets.notificationWs.addEventListener('message', (e) => {
         let res: { event: WsNotificationEvent; data: any };
         res = JSON.parse(e.data);

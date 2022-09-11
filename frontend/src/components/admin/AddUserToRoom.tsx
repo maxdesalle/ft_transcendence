@@ -2,7 +2,7 @@ import { Component, createSignal } from 'solid-js';
 import { mutate } from 'turbo-solid';
 import { addUserToRoomByName } from '../../api/chat';
 import { routes } from '../../api/utils';
-import { useStore } from '../../store/all';
+import { useStore } from '../../store/StoreProvider';
 import { RoomInfo } from '../../types/chat.interface';
 import { notifyError, notifySuccess } from '../../utils/helpers';
 

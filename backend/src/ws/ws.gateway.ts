@@ -97,7 +97,6 @@ export class WsGateway implements OnGatewayConnection, OnGatewayDisconnect {
   @SubscribeMessage('isOnline')
   isOnline(client: WebSocket, data: { user_id: number; sender: number }) {
     const connectedUsers = this.wsService.getConnectedUsersIDs();
-    console.log('connected users: ', connectedUsers);
     this.wsService.sendMsgToUser(data.sender, {
       event: 'isOnline',
       data: connectedUsers,
@@ -105,7 +104,7 @@ export class WsGateway implements OnGatewayConnection, OnGatewayDisconnect {
   }
 
   @SubscribeMessage('isInGame')
-  async isInGame(client: WebSocket, data: { user_id: number; sender: number }) {
+  async isInGame(client: WebSocket, data: { sender: number }) {
     const inGame = Array.from(playing);
     const ids = sockets
       .map((s) => {

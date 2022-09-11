@@ -13,7 +13,7 @@ import ChatMessagesBox from '../components/ChatMessagesBox';
 import ChatRightSideBar from '../components/ChatRightSideBar';
 import 'simplebar';
 import { chatApi } from '../api/chat';
-import { TAB, useStore } from '../store/all';
+import { TAB, useStore } from '../store/StoreProvider';
 import { routes } from '../api/utils';
 import {
   Message,
@@ -116,14 +116,14 @@ const Chat: Component = () => {
       sockets.notificationWs &&
       sockets.notificationWs.readyState === WebSocket.OPEN
     ) {
-      sockets.notificationWs!.send(
+      sockets.notificationWs.send(
         JSON.stringify({
           event: 'isOnline',
           data: { sender: auth.user.id },
         }),
       );
 
-      sockets.notificationWs!.send(
+      sockets.notificationWs.send(
         JSON.stringify({
           event: 'isInGame',
           data: { sender: auth.user.id },

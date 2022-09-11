@@ -1,5 +1,5 @@
 import { Component, createSignal } from 'solid-js';
-import { useStore } from '../store/all';
+import { useStore } from '../store/StoreProvider';
 
 const AddFriend: Component = () => {
   const [username, setUsername] = createSignal();

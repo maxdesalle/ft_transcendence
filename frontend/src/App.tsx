@@ -1,12 +1,4 @@
-import {
-  Component,
-  createEffect,
-  createMemo,
-  createResource,
-  onCleanup,
-  onMount,
-  Show,
-} from 'solid-js';
+import { Component, createEffect, createResource, Show } from 'solid-js';
 import { Link, Route, Routes, useNavigate } from 'solid-app-router';
 import Chat from './pages/Chat';
 import Pong from './pages/Pong';
@@ -15,7 +7,7 @@ import Header from './components/Header';
 import Matchmaking from './pages/Matchmaking';
 import Profile from './pages/Profile';
 import Login from './pages/Login';
-import { useStore } from './store/all';
+import { useStore } from './store/StoreProvider';
 import EditProfile from './pages/EditProfile';
 import TwoFactorAuth from './pages/TwoFactorAuth';
 import LeaderBoard from './pages/LeaderBoard';
@@ -46,7 +38,7 @@ const App: Component = () => {
   const navigate = useNavigate();
   const [auth] = useAuth();
 
-  const [sockets, { connectPongWs, connectNotificationWs, disconnect, send }] =
+  const [sockets, { connectPongWs, connectNotificationWs, send }] =
     useSockets();
 
   const [pendingFriendReq] = createResource(
@@ -60,26 +52,23 @@ const App: Component = () => {
   );
 
   const getNotif = () => {
-    send(
-      {
-        event: 'isInGame',
-        data: { sender: auth.user.id },
-      },
-      'notif',
-    );
-    send(
-      {
-        event: 'isOnline',
-        data: { sender: auth.user.id },
-      },
-      'notif',
-    );
+    if (
+      sockets.notificationWs &&
+      sockets.notificationState === WebSocket.OPEN
+    ) {
+      sockets.notificationWs.send(
+        JSON.stringify({ event: 'isOnline', data: { sender: auth.user.id } }),
+      );
+      sockets.notificationWs.send(
+        JSON.stringify({ event: 'isInGame', data: { sender: auth.user.id } }),
+      );
+    }
   };
 
   createEffect(() => {
     if (
       sockets.notificationWs &&
-      sockets.notificationWs.readyState === WebSocket.OPEN
+      sockets.notificationState === WebSocket.OPEN
     ) {
       sockets.notificationWs.addEventListener('message', (e) => {
         let res: {
@@ -96,6 +85,7 @@ const App: Component = () => {
             setFriendInvitation(res);
             break;
           case 'pong: invitation_accepted':
+            console.log(res);
             navigate('/pong');
             break;
           case 'isOnline':
@@ -112,7 +102,6 @@ const App: Component = () => {
             getNotif();
             break;
           case 'users: new_user':
-            console.log('new user');
             addOnlineUser(res.user_id!);
             break;
           case 'status: friend_online':
@@ -128,7 +117,6 @@ const App: Component = () => {
             removeDisconnectedUser(res.data.user_id);
             break;
           case 'friends: new_request':
-            console.log('new friend');
             addPendingFriendReq({
               req_user: res.friend_request.requesting_user,
               status: 0,
@@ -149,20 +137,17 @@ const App: Component = () => {
   });
 
   createEffect(() => {
-    send(
-      {
-        event: 'isOnline',
-        data: { sender: auth.user.id },
-      },
-      'notif',
-    );
-    send(
-      {
-        event: 'isInGame',
-        data: { sender: auth.user.id },
-      },
-      'notif',
-    );
+    if (
+      sockets.notificationWs &&
+      sockets.notificationState === WebSocket.OPEN
+    ) {
+      sockets.notificationWs.send(
+        JSON.stringify({ event: 'isOnline', data: { sender: auth.user.id } }),
+      );
+      sockets.notificationWs.send(
+        JSON.stringify({ event: 'isInGame', data: { sender: auth.user.id } }),
+      );
+    }
   });
 
   createEffect(() => {

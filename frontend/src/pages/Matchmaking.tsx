@@ -1,4 +1,3 @@
-import Cookies from 'js-cookie';
 import { Link, useNavigate } from 'solid-app-router';
 import {
   Component,
@@ -14,7 +13,7 @@ import Avatar from '../components/Avatar';
 import FirstLogin from '../components/FirstLogin';
 import { useAuth } from '../Providers/AuthProvider';
 import { useSockets } from '../Providers/SocketProvider';
-import { useStore } from '../store/all';
+import { useStore } from '../store/StoreProvider';
 import { WsNotificationEvent } from '../types/chat.interface';
 import { GameSession } from '../types/Game.interface';
 import { User } from '../types/user.interface';
@@ -25,7 +24,7 @@ const Matchmaking: Component = () => {
   const [state, { toggleMatchMaking }] = useStore();
   const [ref, setRef] = createSignal<any>();
   const [id, setId] = createSignal(0);
-  const [, { setUser, setIsAuth }] = useAuth();
+  const [auth, { setUser, setIsAuth }] = useAuth();
   const [buttonText, setButtonText] = createSignal('Play');
   const [currentUser] = createTurboResource<User>(() => routes.currentUser);
   const [friends, { refetch: refetchFriends }] = createTurboResource<User[]>(
@@ -46,7 +45,10 @@ const Matchmaking: Component = () => {
   });
 
   createEffect(() => {
-    if (sockets.notificationWs && sockets.notifWsState === WebSocket.OPEN) {
+    if (
+      sockets.notificationWs &&
+      sockets.notificationWs.readyState === WebSocket.OPEN
+    ) {
       sockets.notificationWs.addEventListener('message', (e) => {
         let res: { event: WsNotificationEvent; data: any };
         res = JSON.parse(e.data);
@@ -89,6 +91,7 @@ const Matchmaking: Component = () => {
 
   const inviteFriend = () => {
     if (!id()) return;
+
     if (!state.onlineUsers.includes(id())) {
       notifyError('User offline');
     }
@@ -105,6 +108,20 @@ const Matchmaking: Component = () => {
           navigate('/pong');
         }
       });
+    }
+  });
+
+  createEffect(() => {
+    if (
+      sockets.notificationWs &&
+      sockets.notificationState === WebSocket.OPEN
+    ) {
+      sockets.notificationWs.send(
+        JSON.stringify({ event: 'isOnline', data: { sender: auth.user.id } }),
+      );
+      sockets.notificationWs.send(
+        JSON.stringify({ event: 'isInGame', data: { sender: auth.user.id } }),
+      );
     }
   });
 

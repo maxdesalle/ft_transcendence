@@ -12,7 +12,7 @@ import {
 import { AiOutlinePlusCircle } from 'solid-icons/ai';
 import Modal from './Modal';
 import AddUserToRoom from './admin/AddUserToRoom';
-import { TAB, useStore } from '../store/all';
+import { TAB, useStore } from '../store/StoreProvider';
 import Avatar from './Avatar';
 import ChatRoomUserCard from './ChatRoomUserCard';
 import { generateImageUrl, notifyError, notifySuccess } from '../utils/helpers';
@@ -102,7 +102,7 @@ const ChatRightSideBar: Component<{}> = () => {
   });
   return (
     <Show when={state.chat.roomId}>
-      <div class="">
+      <div class="min-w-fit">
         <h4 class="p-2 text-start">Owner</h4>
         <Show when={owner()}>
           {(o) => (

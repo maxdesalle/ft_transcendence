@@ -1,5 +1,5 @@
 import { Component, For } from 'solid-js';
-import { useStore } from '../store/all';
+import { useStore } from '../store/StoreProvider';
 import { RoomInfo } from '../types/chat.interface';
 import { TiGroup } from 'solid-icons/ti';
 

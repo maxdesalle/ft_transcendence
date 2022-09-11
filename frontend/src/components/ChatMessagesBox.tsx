@@ -4,7 +4,7 @@ import MessageList from './MessageList';
 import ChatForm from './ChatForm';
 import { Message } from '../types/chat.interface';
 import { useAuth } from '../Providers/AuthProvider';
-import { useStore } from '../store/all';
+import { useStore } from '../store/StoreProvider';
 
 const ChatMessagesBox: Component<{
   onSendMessage: (message: string) => void;

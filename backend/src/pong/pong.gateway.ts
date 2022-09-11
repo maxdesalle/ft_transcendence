@@ -81,6 +81,9 @@ export class PongGateway implements OnGatewayConnection, OnGatewayDisconnect {
     playing.delete(user_id);
     clearInviteWait(user_id);
     removeGameSession(client);
+    this.wsService.sendMsgToAll({
+      event: `pong: session_over`,
+    });
     if (user_id) console.log(`User ${user_id} disconnected from pong wss`);
   }
 
@@ -233,18 +236,11 @@ export class PongGateway implements OnGatewayConnection, OnGatewayDisconnect {
           ladder: await this.statsService.ladder(),
         });
 
-        // this.wsService.sendMsgToAll({
-        //   event: `pong: session_over`,
-        //   session_id: id,
-        // });
+        this.wsService.sendMsgToAll({
+          event: `pong: session_over`,
+          session_id: id,
+        });
       }
-      const p1Friends = await this.friendService.listFriendsIDs(p1);
-      const p2Friends = await this.friendService.listFriendsIDs(p2);
-      // notify everyone about end of session
-      this.wsService.sendMsgToUsersList([...p1Friends, ...p2Friends, p1, p2], {
-        event: 'pong: session_over',
-        session_id: id,
-      });
     });
   }
 }

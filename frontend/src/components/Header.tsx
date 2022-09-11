@@ -25,7 +25,7 @@ import FriendRequests from './FriendRequest';
 const LINKS = ['chat', 'leaderboard'];
 import { RiDesignPaintFill } from 'solid-icons/ri';
 import { themeChange } from 'theme-change';
-import { useStore } from '../store/all';
+import { useStore } from '../store/StoreProvider';
 
 const Header: Component = () => {
   const [keyword, setKeyword] = createSignal<string>('');

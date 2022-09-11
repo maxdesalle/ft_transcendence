@@ -11,7 +11,7 @@ import Scrollbars from 'solid-custom-scrollbars';
 import { useSockets } from '../Providers/SocketProvider';
 import { useAuth } from '../Providers/AuthProvider';
 import Loader from '../components/Loader';
-import { useStore } from '../store/all';
+import { useStore } from '../store/StoreProvider';
 import { User } from '../types/user.interface';
 import Cookies from 'js-cookie';
 import { api } from '../utils/api';

@@ -5,15 +5,18 @@ import {
   onCleanup,
   onMount,
 } from 'solid-js';
-import { initViewerSocket, viewerSketch } from '../game/viewer';
+import { viewerSketch } from '../game/viewer';
 import { p5 } from '../game/newPong';
 import { useParams } from 'solid-app-router';
 import { useSockets } from '../Providers/SocketProvider';
+import { urls } from '../api/utils';
+import { createTurboResource } from 'turbo-solid';
+import { GameSession } from '../types/Game.interface';
 
 const Viewer: Component = () => {
   const [ref, setRef] = createSignal<any>();
   const param = useParams<{ id: string }>();
-  const [sockets, { connectViewerWs, send }] = useSockets();
+  const [sockets, { connectViewerWs }] = useSockets();
   let game: typeof p5;
   const [ready, setReady] = createSignal(false);
   let id: any;

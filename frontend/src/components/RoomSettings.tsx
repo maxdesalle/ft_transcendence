@@ -11,7 +11,7 @@ import { createTurboResource } from 'turbo-solid';
 import { chatApi } from '../api/chat';
 import { routes } from '../api/utils';
 import { useAuth } from '../Providers/AuthProvider';
-import { TAB, useStore } from '../store/all';
+import { TAB, useStore } from '../store/StoreProvider';
 import { RoomInfo } from '../types/chat.interface';
 import { User } from '../types/user.interface';
 import { notifyError, notifySuccess } from '../utils/helpers';

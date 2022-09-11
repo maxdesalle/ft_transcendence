@@ -9,7 +9,7 @@ import Modal from '../components/Modal';
 import QRCode from 'qrcode';
 import { generateImageUrl, notifyError, notifySuccess } from '../utils/helpers';
 import { useAuth } from '../Providers/AuthProvider';
-import { useStore } from '../store/all';
+import { useStore } from '../store/StoreProvider';
 import { useSockets } from '../Providers/SocketProvider';
 import { useNavigate } from 'solid-app-router';
 import Cookies from 'js-cookie';

@@ -1,7 +1,7 @@
 import autoAnimate from '@formkit/auto-animate';
 import { IoNotificationsSharp } from 'solid-icons/io';
 import { Component, createSignal, onMount } from 'solid-js';
-import { useStore } from '../store/all';
+import { useStore } from '../store/StoreProvider';
 import Modal from './Modal';
 import PendingFriendReqCard from './PendingFriendReqCard';
 

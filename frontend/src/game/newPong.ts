@@ -86,7 +86,7 @@ opacity: ${this.opacity};`,
 }
 
 class sliderClass {
-  private readonly sliderElement: HTMLInputElement;
+  public sliderElement: HTMLInputElement;
   private x: number = 0;
   private y: number = 0;
   private w: number = 100;
@@ -291,6 +291,8 @@ export const p5: {
     slider.type = 'range';
     slider.classList.add('range');
     slider.classList.add('range-primary');
+    slider.classList.add('slider');
+    // slider.setAttribute('id', `slide`);
 
     slider.min = String(min);
     slider.max = String(max);

@@ -7,7 +7,7 @@ import {
   Show,
   Switch,
 } from 'solid-js';
-import { TAB, useStore } from '../store/all';
+import { TAB, useStore } from '../store/StoreProvider';
 import FriendList from './FriendList';
 import Search from './Search';
 import CreateRoom from './admin/createRoom';

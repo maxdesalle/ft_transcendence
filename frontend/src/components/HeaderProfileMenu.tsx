@@ -11,7 +11,7 @@ import { forget } from 'turbo-solid';
 import Cookies from 'js-cookie';
 import { useAuth } from '../Providers/AuthProvider';
 import { useSockets } from '../Providers/SocketProvider';
-import { useStore } from '../store/all';
+import { useStore } from '../store/StoreProvider';
 import { generateImageUrl } from '../utils/helpers';
 import defaultAvatar from '../../../backend/images/avatardefault.png';
 

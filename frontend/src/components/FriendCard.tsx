@@ -3,7 +3,7 @@ import { Friend } from '../types/user.interface';
 import { generateImageUrl } from '../utils/helpers';
 import Avatar from './Avatar';
 import defaultAvatar from '../../../backend/images/avatardefault.png';
-import { useStore } from '../store/all';
+import { useStore } from '../store/StoreProvider';
 import { createTurboResource } from 'turbo-solid';
 import { GameSession } from '../types/Game.interface';
 import { urls } from '../api/utils';

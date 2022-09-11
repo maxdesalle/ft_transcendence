@@ -3,7 +3,7 @@ import { render } from 'solid-js/web';
 import { Router } from 'solid-app-router';
 import './index.css';
 import App from './App';
-import { StoreProvider } from './store/all';
+import { StoreProvider } from './store/StoreProvider';
 import { TurboContext, TurboSolidResourceOptions } from 'turbo-solid';
 import { api } from './utils/api';
 import { AuthProvider } from './Providers/AuthProvider';
@@ -21,17 +21,17 @@ const configuration: TurboSolidResourceOptions = {
 };
 render(
   () => (
-    <AuthProvider>
-      <TurboContext.Provider value={configuration}>
-        <SocketProvider>
-          <Router>
+    <Router>
+      <AuthProvider>
+        <TurboContext.Provider value={configuration}>
+          <SocketProvider>
             <StoreProvider>
               <App />
             </StoreProvider>
-          </Router>
-        </SocketProvider>
-      </TurboContext.Provider>
-    </AuthProvider>
+          </SocketProvider>
+        </TurboContext.Provider>
+      </AuthProvider>
+    </Router>
   ),
   document.getElementById('root') as HTMLElement,
 );

@@ -4,6 +4,7 @@ import { Component, createSignal, Show } from 'solid-js';
 import { chatApi } from '../api/chat';
 import { RoomInfo } from '../types/chat.interface';
 import { notifyError, notifySuccess } from '../utils/helpers';
+import Modal from './Modal';
 
 const JoinableRoomCard: Component<{ room: RoomInfo; refetch: () => void }> = (
   props,
@@ -20,6 +21,7 @@ const JoinableRoomCard: Component<{ room: RoomInfo; refetch: () => void }> = (
         notifyError(err.response?.data.message as string);
       });
   };
+  const [isOpen, setIsOpen] = createSignal(false);
 
   return (
     <div class="flex p-2 items-center transition-all hover:bg-base-300">
@@ -33,37 +35,7 @@ const JoinableRoomCard: Component<{ room: RoomInfo; refetch: () => void }> = (
             <p class="text-warning">Protected</p>
           </Show>
         </div>
-        <label for="my-modal" class="btn modal-button">
-          Join
-        </label>
-        <input type="checkbox" id="my-modal" class="modal-toggle" />
-        <div class="modal">
-          <div class="modal-box relative">
-            <form
-              onSubmit={(e) => {
-                e.preventDefault();
-                onSubmitPassword();
-              }}
-              class="flex w-fit p-2 rounded-md gap-3 flex-col"
-            >
-              <input
-                onInput={(e) => setPassword(e.currentTarget.value)}
-                class="input input-sm input-bordered"
-                placeholder="Enter room password"
-                type="password"
-                id={`password_${props.room.room_id}`}
-              />
-              <button class="btn-primary btn-sm btn">Submit</button>
-            </form>
-            <label
-              for="my-modal"
-              class="btn btn-sm btn-circle absolute right-2 top-2"
-            >
-              ✕
-            </label>
-          </div>
-        </div>
-        {/* <div>
+        <div>
           <button
             onClick={() => setIsOpen(true)}
             class="btn-primary btn-sm btn"
@@ -71,34 +43,30 @@ const JoinableRoomCard: Component<{ room: RoomInfo; refetch: () => void }> = (
             Join
           </button>
           <Modal isOpen={isOpen()} toggleModal={setIsOpen}>
-            <form
-              onSubmit={(e) => {
-                e.preventDefault();
-                onSubmitPassword();
-              }}
-              class="flex flex-col bg-base-300 absolute p-2 rounded-md"
-            >
-              <input
-                onInput={(e) => setPassword(e.currentTarget.value)}
-                class="input"
-                placeholder="Enter room password"
-                type="password"
-                name="password"
-                id="password"
-                required={props.room.password_protected}
-              />
-              <div class="flex items-center mt-3 justify-between w-full">
-                <button
-                  class="btn-secondary btn"
-                  onClick={() => setIsOpen(false)}
-                >
-                  Close
-                </button>
-                <button class="btn-primary btn">Submit</button>
-              </div>
-            </form>
+            <div class="flex p-2 absolute bg-base-300 rounded-md">
+              <form
+                onSubmit={(e) => {
+                  e.preventDefault();
+                  onSubmitPassword();
+                }}
+                class="flex flex-col"
+              >
+                <input
+                  onInput={(e) => setPassword(e.currentTarget.value)}
+                  class="input"
+                  placeholder="Enter room password"
+                  type="password"
+                  name="password"
+                  id="password"
+                  required={props.room.password_protected}
+                />
+                <div class="flex items-center mt-3 justify-between w-full">
+                  <button class="btn-primary btn btn-sm w-full">Submit</button>
+                </div>
+              </form>
+            </div>
           </Modal>
-        </div> */}
+        </div>
       </div>
     </div>
   );

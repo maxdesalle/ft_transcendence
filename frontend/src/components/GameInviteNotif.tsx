@@ -6,7 +6,7 @@ import {
   onMount,
   Show,
 } from 'solid-js';
-import { useStore } from '../store/all';
+import { useStore } from '../store/StoreProvider';
 import Modal from './Modal';
 import { TbDeviceGamepad } from 'solid-icons/tb';
 import autoAnimate from '@formkit/auto-animate';
@@ -39,7 +39,11 @@ const GameInviteNotif: Component = () => {
   }
 
   const onAcceptInvite = () => {
-    if (user() && sockets.pongWsState === WebSocket.OPEN) {
+    if (
+      user() &&
+      sockets.pongWs &&
+      sockets.pongWs.readyState === WebSocket.OPEN
+    ) {
       sockets.pongWs!.send(
         JSON.stringify({
           event: 'accept',
@@ -53,7 +57,11 @@ const GameInviteNotif: Component = () => {
   };
 
   const onRejectInvite = () => {
-    if (user() && sockets.pongWsState === WebSocket.OPEN) {
+    if (
+      user() &&
+      sockets.pongWs &&
+      sockets.pongWs.readyState === WebSocket.OPEN
+    ) {
       sockets.pongWs!.send(
         JSON.stringify({
           event: 'cancel',

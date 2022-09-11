@@ -1,3 +1,4 @@
+import Scrollbars from 'solid-custom-scrollbars';
 import { Component, Show } from 'solid-js';
 import { createTurboResource } from 'turbo-solid';
 import { routes } from '../api/utils';
@@ -24,14 +25,16 @@ const ChatHome: Component = () => {
   return (
     <Show when={joinableRooms()}>
       <h1 class=" text-center text-2xl font-semibold py-2">Public Rooms</h1>
-      <JoinableRoomList
-        keyword=""
-        refetch={() => {
-          refetchPublicRooms();
-          refetchRooms();
-        }}
-        rooms={joinableRooms()!}
-      />
+      <Scrollbars>
+        <JoinableRoomList
+          keyword=""
+          refetch={() => {
+            refetchPublicRooms();
+            refetchRooms();
+          }}
+          rooms={joinableRooms()!}
+        />
+      </Scrollbars>
     </Show>
   );
 };

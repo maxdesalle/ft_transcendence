@@ -3,7 +3,7 @@ import { Component, For, Show } from 'solid-js';
 import { mutate } from 'turbo-solid';
 import { acceptFriendReq, rejectFriendReq } from '../api/user';
 import { routes } from '../api/utils';
-import { useStore } from '../store/all';
+import { useStore } from '../store/StoreProvider';
 import { notifyError, notifySuccess } from '../utils/helpers';
 
 const PendingFriendReqCard: Component = () => {
