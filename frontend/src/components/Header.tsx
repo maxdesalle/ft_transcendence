@@ -1,4 +1,4 @@
-import { Link } from 'solid-app-router';
+import { Link, useLocation } from 'solid-app-router';
 import {
   Component,
   createEffect,
@@ -59,6 +59,8 @@ const Header: Component = () => {
       });
   };
 
+  const inGame = () => state.inGameUsers.includes(auth.user.id);
+
   onMount(() => {
     autoAnimate(ref);
   });
@@ -67,6 +69,7 @@ const Header: Component = () => {
     selectedTheme();
     themeChange(false);
   });
+  const location = useLocation();
 
   return (
     <div class="bg-base-300">
@@ -107,6 +110,13 @@ const Header: Component = () => {
               </li>
             )}
           </For>
+          <Show when={inGame() && location.pathname !== '/pong'}>
+            <li class="first-letter:capitalize font-semibold hidden lg:block md:block">
+              <Link class="btn btn-sm btn-warning" href="/pong">
+                Back to Pong
+              </Link>
+            </li>
+          </Show>
           <li class="block lg:hidden">
             <Link href="/chat" class="my-auto bg-transparent md:hidden">
               <IoChatbubblesSharp

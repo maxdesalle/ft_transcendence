@@ -1,5 +1,11 @@
 import { Component, createEffect, createResource, Show } from 'solid-js';
-import { Link, Route, Routes, useNavigate } from 'solid-app-router';
+import {
+  Link,
+  Route,
+  Routes,
+  useLocation,
+  useNavigate,
+} from 'solid-app-router';
 import Chat from './pages/Chat';
 import Pong from './pages/Pong';
 import Viewer from './pages/Viewer';
@@ -65,7 +71,10 @@ const App: Component = () => {
     }
   };
 
+  const location = useLocation();
+
   createEffect(() => {
+    location;
     if (
       sockets.notificationWs &&
       sockets.notificationState === WebSocket.OPEN
@@ -85,7 +94,6 @@ const App: Component = () => {
             setFriendInvitation(res);
             break;
           case 'pong: invitation_accepted':
-            console.log(res);
             navigate('/pong');
             break;
           case 'isOnline':
@@ -123,7 +131,6 @@ const App: Component = () => {
             });
             break;
           default:
-            console.log(res);
             break;
         }
       });
@@ -160,9 +167,6 @@ const App: Component = () => {
   const inGame = () => state.inGameUsers.includes(auth.user.id);
   return (
     <>
-      <Show when={inGame() && location.pathname !== '/pong'}>
-        <Link href="/pong">Back to pong</Link>
-      </Show>
       <div class="w-full overflow-hidden">
         <Routes>
           <Route

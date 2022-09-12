@@ -1,12 +1,10 @@
 import { p5 } from '../game/newPong';
 
 import { Slider } from './slider';
-import { useStore } from '../store/StoreProvider';
 
 import { urls } from '../api/utils';
 import { useSockets } from '../Providers/SocketProvider';
-import { WsNotificationEvent } from '../types/chat.interface';
-import { useNavigate } from 'solid-app-router';
+import { createEffect } from 'solid-js';
 
 // const socketServerIP = 'localhost';
 // const socketServerPort = 3000;
@@ -15,7 +13,7 @@ let isDisconnected = false;
 let socketErrObject: any = undefined; // if not undefined, socket returned an error
 let ws: any; // webSocket
 let playerNumber = 0; // 0 if not set yet, otherwise 1 or 2
-let heightOffset: number = 44 + 64; // top bar height
+let heightOffset: number = 46; // top bar height
 let canvasWidth: number = Math.min(
   window.innerHeight - heightOffset,
   window.innerWidth,
@@ -112,17 +110,11 @@ function handleOkButtonPressed(): void {
   playScore = false;
   isReady = false;
   isOtherPlayerReady = false;
-
-  // Sliders are removed, so let's init them again!
-  // initSliders();
-  // okButton.hide();
 }
 
 export function initSocket(): WebSocket {
-  // const serverAddress = `ws://${socketServerIP}:${socketServerPort}/${socketServerPath}`;
   const serverAddress = `${urls.wsUrl}/${socketServerPath}`;
   ws = new WebSocket(serverAddress);
-  const navigate = useNavigate();
 
   ws.addEventListener('open', (e: any) => {
     handleOkButtonPressed();
@@ -664,7 +656,15 @@ export const sketch = (
     heightOffset = newHeightOffset;
   }
 
-  myP5.setup = () => {
+  myP5.setup = (ref) => {
+    // const btn = document.getElementById('back-btn');
+    createEffect(() => {
+      if (ref) {
+        ref.addEventListener('click', () => {
+          handleOkButtonPressed();
+        });
+      }
+    });
     myP5.createCanvas(canvasWidth, canvasHeight);
     myP5.noStroke();
     initSliders();

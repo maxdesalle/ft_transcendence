@@ -261,7 +261,7 @@ export const p5: {
   resizeCanvas: (width: number, height: number) => void;
   background: (b: number) => void;
   // functions that need to be defined by user
-  setup: () => void;
+  setup: (ref: HTMLButtonElement) => void;
   draw: () => void;
   deleteAll: () => void;
   setRef: (ref: any) => void;

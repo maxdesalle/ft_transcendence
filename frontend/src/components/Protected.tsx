@@ -39,7 +39,14 @@ const Protected: Component<{ children: JSXElement }> = (props) => {
   });
 
   return (
-    <Show when={!data.loading && state.isAuth} fallback={<Loader />}>
+    <Show
+      when={!data.loading && state.isAuth}
+      fallback={
+        <div class="flex items-center justify-center h-screen w-full">
+          <Loader />
+        </div>
+      }
+    >
       {props.children}
       <Outlet />
     </Show>

@@ -1,5 +1,12 @@
 import { Link, useNavigate } from 'solid-app-router';
-import { Component, createEffect, onCleanup, onMount, Show } from 'solid-js';
+import {
+  Component,
+  createEffect,
+  createSignal,
+  onCleanup,
+  onMount,
+  Show,
+} from 'solid-js';
 import { p5 } from '../game/newPong';
 import { sketch } from '../game/pong';
 import { useAuth } from '../Providers/AuthProvider';
@@ -16,11 +23,12 @@ const Pong: Component = () => {
   const [state] = useStore();
   const [sockets, { send }] = useSockets();
   const [auth] = useAuth();
+  const [btnRef, setBtnRef] = createSignal<any>();
 
   onMount(() => {
     game = sketch(p5, navigate);
     game.setRef(ref);
-    game.setup();
+    game.setup(btnRef());
     id = setInterval(() => game.draw(), 10);
   });
 
@@ -29,11 +37,6 @@ const Pong: Component = () => {
   onCleanup(() => {
     game.deleteAll();
     clearInterval(id);
-    if (
-      sockets.notificationWs &&
-      sockets.notificationWs.readyState === WebSocket.OPEN
-    ) {
-    }
   });
 
   createEffect(() => {
@@ -60,9 +63,6 @@ const Pong: Component = () => {
 
   return (
     <div class="flex items-center flex-col h-95">
-      <Link class="btn btn-primary" href="/">
-        Go Home
-      </Link>
       <canvas ref={ref} id="pongCanvas"></canvas>
     </div>
   );
