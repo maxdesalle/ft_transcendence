@@ -485,12 +485,12 @@ A new user was created
 (things that are not cristal clear in the subject and a decision had to be made)
 ### Block: 
 
-applies only to DMs
+~~applies only to DMs~~
 
 applies both ways (one blocking the other results in the DM beign blocked)
 
-users in a blocked DM cannot POST new messages. But the old ones are still there to be seen.
-(this has been changed from David's original design. And it's open to discussion, of course)
+~~users in a blocked DM cannot POST new messages. But the old ones are still there to be seen.
+(this has been changed from David's original design. And it's open to discussion, of course)~~
 
 ### Banned and muted:
 
