@@ -1,3 +1,9 @@
+## TODO's before push
+- clear debug logs
+- remove Mock auth module
+    - backend
+    - frontend
+
 ## How to make stuff happen
 
 ### your new best friend:
@@ -9,9 +15,11 @@ When to use it? Follow your heart.
 
 There are now 3 (!) ways to bring up the whole thing, because we're masochists.
 
-1) docker-compose up
+1) docker-compose up --build
 2) ./launch.sh
 3) ./serve_static.sh
+
+Obs: **1** is the "production" way, and the only way it's gonna be avaible for the pushed version for correction
 
 Either way, you need: 
 - .env file at the **ROOT** of the repo.
@@ -30,6 +38,7 @@ FORTYTWO_CLIENT_SECRET=XXXXXXXXXXXXXX
 FORTYTWO_CALLBACK_URL=https://localhost:3000/login/42/return
 JWT_TOKEN_SECRET="hello there"
 JWT_TOKEN_EXPIRY=99999999999999999999
+TWOFA_ISSUER=Transcendence
 
 # database
 DB_PASSWORD=5om3th1ngApp@rently5tr0ng
