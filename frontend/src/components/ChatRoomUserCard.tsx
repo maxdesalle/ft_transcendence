@@ -7,11 +7,9 @@ import Avatar from './Avatar';
 import { blockUser, chatApi } from '../api/chat';
 import { createTurboResource, TurboMutateValue } from 'turbo-solid';
 import { routes } from '../api/utils';
-import toast from 'solid-toast';
 import { RoomInfo, WsNotificationEvent } from '../types/chat.interface';
 import { generateImageUrl, notifyError, notifySuccess } from '../utils/helpers';
 import { AxiosError } from 'axios';
-import autoAnimate from '@formkit/auto-animate';
 import { sendFriendReq } from '../api/user';
 import { useSockets } from '../Providers/SocketProvider';
 import { useAuth } from '../Providers/AuthProvider';
@@ -233,14 +231,14 @@ const ChatRoomUserCard: Component<{
             }
           />
           <div class="flex pl-3 flex-col w-full">
-            <h1 class="hidden lg:block font-medium">
+            <h1 class="hidden md:block lg:block font-medium">
               {props.user.display_name}
             </h1>
             <Show when={isOnline() && !isInGame()}>
-              <p class="text-green-600 hidden lg:block">online</p>
+              <p class="text-green-600 hidden md:block lg:block">online</p>
             </Show>
             <Show when={state.inGameUsers.length}>
-              <p class="text-sm hidden lg:block text-cyan-700">
+              <p class="text-sm hidden lg:block md:block text-cyan-700">
                 {isInGame() ? 'In Game' : ''}
               </p>
             </Show>

@@ -18,6 +18,7 @@ const configuration: TurboSolidResourceOptions = {
     });
     return response.data;
   },
+  refetchOnFocus: false,
 };
 render(
   () => (

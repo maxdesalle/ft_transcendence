@@ -103,7 +103,6 @@ export const SocketProvider = (props: any) => {
   createEffect(() => {
     if (state.notificationWs) {
       state.notificationWs.onopen = () => {
-        console.log('notif connected');
         setState('notificationState', WebSocket.OPEN);
       };
       state.notificationWs.onclose = () => {

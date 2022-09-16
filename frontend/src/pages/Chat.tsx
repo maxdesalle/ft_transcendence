@@ -4,7 +4,9 @@ import {
   createResource,
   createSignal,
   Match,
+  on,
   onCleanup,
+  onMount,
   Show,
   Switch,
 } from 'solid-js';
@@ -26,7 +28,6 @@ import ChatHome from '../components/ChatHome';
 import { useSockets } from '../Providers/SocketProvider';
 import FriendSideBar from '../components/FriendSideBar';
 import { fetchUserById } from '../api/user';
-import Viewer from './Viewer';
 import { createTurboResource } from 'turbo-solid';
 import { useAuth } from '../Providers/AuthProvider';
 
@@ -44,17 +45,21 @@ const Chat: Component = () => {
     fetchUserById,
   );
 
-  const [roomMessages, { mutate: mutateRoomMessages }] = createResource(
-    () => state.chat.roomId,
-    chatApi.getMessagesByRoomId,
-    { initialValue: [] },
-  );
+  const roomId = () => state.chat.roomId;
+
+  const url = () =>
+    state.chat.roomId ? `${routes.roomMessages}/${roomId()}` : undefined;
+
+  const [
+    roomMessages,
+    { mutate: mutateRoomMessages, refetch: refetchRoomMsgs },
+  ] = createTurboResource<Message[]>(() => url());
+
   const [auth] = useAuth();
-  const [friendMessages, { mutate: mutateFriendMessages }] = createResource(
-    friendId,
-    chatApi.getFriendMessages,
-    { initialValue: [] },
-  );
+  const friendMsgPath = () =>
+    friendId() ? `${routes.chat}/dm/${friendId()}` : undefined;
+  const [friendMessages, { mutate: mutateFriendMessages, refetch }] =
+    createTurboResource<Message[]>(() => friendMsgPath());
 
   const onSendMessageToRoom = (message: string) => {
     if (!currentRoom()) return;
@@ -68,16 +73,29 @@ const Chat: Component = () => {
       });
   };
 
+  createEffect(
+    on(roomId, () => {
+      refetchRoomMsgs();
+    }),
+  );
+
   const onSendMessageToFriend = (message: string) => {
     if (state.chat.friendId && friend()) {
       chatApi
         .sendDm({ user_id: friend()!.id, message: message })
-        .then(() => {})
+        .then(() => {
+          if (ref()) ref()!.focus();
+        })
         .catch((err: AxiosError<{ message: string }>) => {
           notifyError(err.response?.data.message as string);
         });
     }
   };
+  createEffect(
+    on(friendId, () => {
+      refetch();
+    }),
+  );
 
   createEffect(() => {
     if (sockets.notificationWs) {
@@ -86,17 +104,23 @@ const Chat: Component = () => {
         res = JSON.parse(e.data);
         if (res.event === 'chat_room_msg') {
           if (state.chat.roomId) {
-            mutateRoomMessages((e) => [
-              ...e!.filter((m) => m.id != res.message.id),
-              res.message,
-            ]);
+            if (res.message.room_id === state.chat.roomId) {
+              mutateRoomMessages((e) => [
+                ...e!.filter((m) => m.id != res.message.id),
+                res.message,
+              ]);
+            }
           }
         } else if (res.event === 'chat_dm') {
           if (state.chat.friendId) {
-            mutateFriendMessages((e) => [
-              ...e!.filter((m) => m.id != res.message.id),
-              res.message,
-            ]);
+            if (
+              res.message.user_id === state.chat.friendId ||
+              res.message.user_id === auth.user.id
+            )
+              mutateFriendMessages((e) => [
+                ...e!.filter((m) => m.id != res.message.id),
+                res.message,
+              ]);
           }
         } else if (res.event === 'chat: youGotBanned') {
           mutateRoomMessages(() => []);
@@ -111,31 +135,56 @@ const Chat: Component = () => {
     mutateRoomMessages(() => []);
   });
 
-  createEffect(() => {
-    state.chatUi.tab;
-    state.chat.friendId;
-    state.chat.roomId;
-    if (
-      sockets.notificationWs &&
-      sockets.notificationWs.readyState === WebSocket.OPEN
-    ) {
-      sockets.notificationWs.send(
-        JSON.stringify({
-          event: 'isOnline',
-          data: { sender: auth.user.id },
-        }),
-      );
+  createEffect(
+    on(
+      [
+        () => state.chatUi.tab,
+        () => state.chat.roomId,
+        () => state.chat.friendId,
+      ],
+      () => {
+        if (
+          sockets.notificationWs &&
+          sockets.notificationWs.readyState === WebSocket.OPEN
+        ) {
+          sockets.notificationWs.send(
+            JSON.stringify({
+              event: 'isOnline',
+              data: { sender: auth.user.id },
+            }),
+          );
 
-      sockets.notificationWs.send(
-        JSON.stringify({
-          event: 'isInGame',
-          data: { sender: auth.user.id },
-        }),
-      );
-    }
-  });
+          sockets.notificationWs.send(
+            JSON.stringify({
+              event: 'isInGame',
+              data: { sender: auth.user.id },
+            }),
+          );
+        }
+      },
+    ),
+  );
 
-  const [isWatching, setIsWatching] = createSignal(false);
+  const [ref, setRef] = createSignal<HTMLElement | null>(null);
+  createEffect(
+    on(roomId, () => {
+      setRef(document.getElementById('message_input'));
+    }),
+  );
+
+  createEffect(
+    on(friendId, () => {
+      setRef(document.getElementById('message_input'));
+    }),
+  );
+
+  createEffect(
+    on(ref, () => {
+      if (ref()) {
+        ref()!.focus();
+      }
+    }),
+  );
 
   return (
     <div class="lg:grid lg:grid-cols-6 flex h-95">
@@ -145,13 +194,15 @@ const Chat: Component = () => {
       <div class="col-span-4 w-full flex flex-col h-95 pl-1 pr-1">
         <Switch>
           <Match when={state.chatUi.tab === TAB.ROOMS}>
-            <ChatMessagesBox
-              messages={roomMessages()!}
-              onSendMessage={onSendMessageToRoom}
-            />
+            <Show when={roomMessages()}>
+              <ChatMessagesBox
+                messages={roomMessages()!}
+                onSendMessage={onSendMessageToRoom}
+              />
+            </Show>
           </Match>
           <Match when={state.chatUi.tab === TAB.FRIENDS}>
-            <Show when={!isWatching()} fallback={<Viewer />}>
+            <Show when={friendMessages()}>
               <ChatMessagesBox
                 messages={friendMessages()!}
                 onSendMessage={onSendMessageToFriend}
@@ -170,11 +221,7 @@ const Chat: Component = () => {
           </Match>
           <Match when={state.chatUi.tab === TAB.FRIENDS}>
             <Show when={friend()}>
-              <FriendSideBar
-                mutate={mutate}
-                setIsWatching={setIsWatching}
-                friend={friend()!}
-              />
+              <FriendSideBar mutate={mutate} friend={friend()!} />
             </Show>
           </Match>
         </Switch>

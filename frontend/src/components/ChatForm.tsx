@@ -20,7 +20,7 @@ const ChatForm: Component<{
         <input
           type="text"
           autocomplete="off"
-          id="message"
+          id="message_input"
           value={props.message}
           onInput={(e) => props.setMessage(e.currentTarget.value)}
           class="input w-full input-md input-bordered focus:outline-none"

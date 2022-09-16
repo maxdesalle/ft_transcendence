@@ -54,7 +54,7 @@ const FriendList: Component = () => {
         <ul class="menu bg-base-100">
           <For each={filteredFriends()}>
             {(friend) => (
-              <li class="lg:w-fit">
+              <li class="w-full">
                 <a
                   classList={{
                     active: state.chat.friendId === friend.id,

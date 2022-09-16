@@ -20,7 +20,6 @@ import { AiFillSetting } from 'solid-icons/ai';
 import { ImCross } from 'solid-icons/im';
 const FriendSideBar: Component<{
   friend: User;
-  setIsWatching: Setter<boolean>;
   mutate: Setter<User>;
 }> = (props) => {
   const [sockets] = useSockets();

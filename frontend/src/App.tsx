@@ -1,4 +1,4 @@
-import { Component, createEffect, createResource, Show } from 'solid-js';
+import { Component, createEffect, createResource, on, Show } from 'solid-js';
 import {
   Link,
   Route,
@@ -144,19 +144,27 @@ const App: Component = () => {
     }
   });
 
-  createEffect(() => {
-    if (
-      sockets.notificationWs &&
-      sockets.notificationState === WebSocket.OPEN
-    ) {
-      sockets.notificationWs.send(
-        JSON.stringify({ event: 'isOnline', data: { sender: auth.user.id } }),
-      );
-      sockets.notificationWs.send(
-        JSON.stringify({ event: 'isInGame', data: { sender: auth.user.id } }),
-      );
-    }
-  });
+  createEffect(
+    on([() => location.pathname, () => sockets.notificationState], () => {
+      if (
+        sockets.notificationWs &&
+        sockets.notificationWs.readyState === WebSocket.OPEN
+      ) {
+        sockets.notificationWs.send(
+          JSON.stringify({
+            event: 'isOnline',
+            data: { sender: auth.user.id },
+          }),
+        );
+        sockets.notificationWs.send(
+          JSON.stringify({
+            event: 'isInGame',
+            data: { sender: auth.user.id },
+          }),
+        );
+      }
+    }),
+  );
 
   createEffect(() => {
     if (auth.isAuth) {
@@ -165,7 +173,6 @@ const App: Component = () => {
     }
   });
 
-  const inGame = () => state.inGameUsers.includes(auth.user.id);
   return (
     <>
       <div class="w-full overflow-hidden">

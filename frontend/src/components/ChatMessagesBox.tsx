@@ -3,20 +3,16 @@ import { Component, createSignal, Show } from 'solid-js';
 import MessageList from './MessageList';
 import ChatForm from './ChatForm';
 import { Message } from '../types/chat.interface';
-import { useAuth } from '../Providers/AuthProvider';
-import { useStore } from '../store/StoreProvider';
 
 const ChatMessagesBox: Component<{
   onSendMessage: (message: string) => void;
   messages: Message[];
 }> = (props) => {
   const [message, setMessage] = createSignal('');
-  const [auth] = useAuth();
-  const [state] = useStore();
 
   return (
     <>
-      <Show when={state.chat.roomId || state.chat.friendId}>
+      <Show when={props.messages}>
         <MessageList
           messages={props.messages
             .slice()
@@ -26,7 +22,6 @@ const ChatMessagesBox: Component<{
                 parseISO(a.timestamp.toString()),
               ),
             )}
-          id={auth.user.id}
         />
         <ChatForm
           message={message()}

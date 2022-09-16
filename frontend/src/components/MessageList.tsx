@@ -1,8 +1,11 @@
 import autoAnimate from '@formkit/auto-animate';
+import Scrollbars from 'solid-custom-scrollbars';
 import {
   Component,
   createEffect,
+  createSignal,
   For,
+  on,
   onCleanup,
   onMount,
   Show,
@@ -12,13 +15,12 @@ import { routes } from '../api/utils';
 import { Message } from '../types/chat.interface';
 import MessageCard from './MessageCard';
 
-const MessageList: Component<{ messages?: Message[]; id?: number }> = (
-  props,
-) => {
-  let ref: any;
+const MessageList: Component<{ messages?: Message[] }> = (props) => {
   const [blockedUsers] = createTurboResource<number[]>(() => routes.blocked);
 
+  const [ref, setRef] = createSignal<HTMLElement>();
   onMount(() => {
+    autoAnimate(ref() as any);
     document.addEventListener(
       'mousedown',
       function (event) {
@@ -34,9 +36,20 @@ const MessageList: Component<{ messages?: Message[]; id?: number }> = (
     document.removeEventListener('mousedown', () => {});
   });
 
+  createEffect(
+    on(
+      () => props.messages,
+      () => {
+        if (ref()) {
+          ref()!.scrollTop = ref()!.scrollHeight;
+        }
+      },
+    ),
+  );
+
   return (
     <div
-      ref={ref}
+      ref={setRef}
       class="flex flex-col-reverse gap-3 bg-base-100 w-full first:mt-auto overflow-y-scroll scrollbar scrollbar-thumb-gray-700 scrollbar-track-gray-500 h-full"
     >
       <For each={props.messages}>
