@@ -1,4 +1,4 @@
-import { Link, useNavigate } from 'solid-app-router';
+import { Link, useLocation, useNavigate } from 'solid-app-router';
 import {
   Component,
   createEffect,
@@ -36,6 +36,7 @@ const Matchmaking: Component = () => {
   const [sockets] = useSockets();
   const [inQueue, setInQueue] = createSignal(false);
   const navigate = useNavigate();
+  const location = useLocation();
 
   createEffect(() => {
     if (currentUser()) {
@@ -112,9 +113,11 @@ const Matchmaking: Component = () => {
   });
 
   createEffect(() => {
+    location;
+    sockets.notificationState;
     if (
       sockets.notificationWs &&
-      sockets.notificationState === WebSocket.OPEN
+      sockets.notificationWs.readyState === WebSocket.OPEN
     ) {
       sockets.notificationWs.send(
         JSON.stringify({ event: 'isOnline', data: { sender: auth.user.id } }),

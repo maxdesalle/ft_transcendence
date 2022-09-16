@@ -1,18 +1,11 @@
-import {
-  Component,
-  createMemo,
-  createSignal,
-  onCleanup,
-  onMount,
-  Show,
-} from 'solid-js';
+import { Component, createMemo, createSignal, onCleanup, Show } from 'solid-js';
 import { RoomUser } from '../types/user.interface';
 import Modal from './Modal';
 import { TAB, useStore } from '../store/StoreProvider';
 import { Link, useNavigate } from 'solid-app-router';
 import Avatar from './Avatar';
 import { blockUser, chatApi } from '../api/chat';
-import { createTurboResource } from 'turbo-solid';
+import { createTurboResource, TurboMutateValue } from 'turbo-solid';
 import { routes } from '../api/utils';
 import toast from 'solid-toast';
 import { RoomInfo, WsNotificationEvent } from '../types/chat.interface';
@@ -27,18 +20,21 @@ import Custom from './Custom';
 const ChatRoomUserCard: Component<{
   user: RoomUser;
   ownerId: number;
+  room: RoomInfo;
 }> = (props) => {
   const [isOpen, setIsOpen] = createSignal(false);
   const [banTime, setBanTime] = createSignal(0);
-  const [state, { changeTab, setFriendId, setCurrentRoomId }] = useStore();
+  const [state, { changeTab, setFriendId }] = useStore();
   let ref: any;
   const [sockets] = useSockets();
+  const roomId = () => state.chat.roomId;
 
-  const path = state.chat.roomId
-    ? `${routes.chat}/room_info/${state.chat.roomId}`
-    : null;
-  const [currentRoom, { mutate: mutateCurrentRoom }] =
-    createTurboResource<RoomInfo>(() => path);
+  const url = () => (roomId() ? `${routes.chat}/room_info/${roomId()}` : null);
+
+  const [, { mutate: mutateCurrentRoom }] = createTurboResource<RoomInfo>(() =>
+    url(),
+  );
+
   const [auth] = useAuth();
   const [friends] = createTurboResource<number[]>(() => `${routes.friends}/id`);
   const [blockedUsers, { mutate }] = createTurboResource<number[]>(
@@ -51,7 +47,6 @@ const ChatRoomUserCard: Component<{
     { id: number; login42: string; display_name: string; unban: Date }[]
   >(() => bannedUserUrl());
 
-  const notify = (msg: string) => toast.success(msg);
   const inviteUser = () => {
     if (!state.onlineUsers.includes(props.user.id)) {
       notifyError(`${props.user.display_name} is offline`);
@@ -59,7 +54,7 @@ const ChatRoomUserCard: Component<{
     }
     const data = { event: 'invite', data: props.user.id };
     sockets.pongWs!.send(JSON.stringify(data));
-    notify(`invitation sent to ${props.user.display_name}`);
+    notifySuccess(`invitation sent to ${props.user.display_name}`);
   };
 
   const navigate = useNavigate();
@@ -72,7 +67,7 @@ const ChatRoomUserCard: Component<{
   };
 
   const currentUserRole = () =>
-    currentRoom()?.users.find((user) => user.id === auth.user.id)?.role;
+    props.room.users.find((user) => user.id === auth.user.id)?.role;
 
   const onBlockUser = () => {
     blockUser({ user_id: props.user.id })
@@ -98,23 +93,21 @@ const ChatRoomUserCard: Component<{
   };
 
   const onMuteUser = () => {
-    if (currentRoom()) {
-      chatApi
-        .muteUser({
-          room_id: currentRoom()!.room_id,
-          user_id: props.user.id,
-          time_minutes: 5,
-        })
-        .then((res) => {
-          notifySuccess(
-            `${props.user.display_name} muted from ${currentRoom()!.room_name}`,
-          );
-          mutateCurrentRoom({ ...res.data });
-        })
-        .catch((e: AxiosError<{ message: string }>) => {
-          notifyError(e.response?.data.message as string);
-        });
-    }
+    chatApi
+      .muteUser({
+        room_id: props.room.room_id,
+        user_id: props.user.id,
+        time_minutes: 5,
+      })
+      .then((res) => {
+        notifySuccess(
+          `${props.user.display_name} muted from ${props.room.room_name}`,
+        );
+        mutateCurrentRoom({ ...res.data });
+      })
+      .catch((e: AxiosError<{ message: string }>) => {
+        notifyError(e.response?.data.message as string);
+      });
   };
 
   const onSendFriendReq = () => {
@@ -130,12 +123,12 @@ const ChatRoomUserCard: Component<{
   const onUnmuteUser = () => {
     chatApi
       .unmuteUser({
-        room_id: currentRoom()!.room_id,
+        room_id: props.room.room_id,
         user_id: props.user.id,
       })
       .then((res) => {
         notifySuccess(
-          `${props.user.display_name} unmuted from ${currentRoom()!.room_name}`,
+          `${props.user.display_name} unmuted from ${props.room.room_name}`,
         );
         mutateCurrentRoom({ ...res.data });
       });
@@ -144,13 +137,13 @@ const ChatRoomUserCard: Component<{
   const onBanUser = () => {
     chatApi
       .banUser({
-        room_id: currentRoom()!.room_id,
+        room_id: props.room.room_id,
         user_id: props.user.id,
         time_minutes: banTime(),
       })
       .then((res) => {
         notifySuccess(
-          `${props.user.display_name} banned from ${currentRoom()!.room_name}`,
+          `${props.user.display_name} banned from ${props.room.room_name}`,
         );
         refetch();
         mutateCurrentRoom({ ...res.data });
@@ -163,14 +156,12 @@ const ChatRoomUserCard: Component<{
   const onPromoteUser = () => {
     chatApi
       .promoteUser({
-        room_id: currentRoom()!.room_id,
+        room_id: props.room.room_id,
         user_id: props.user.id,
       })
       .then((res) => {
         notifySuccess(
-          `${props.user.display_name} promoted as admin: ${
-            currentRoom()!.room_name
-          }`,
+          `${props.user.display_name} promoted as admin: ${props.room.room_name}`,
         );
         mutateCurrentRoom({ ...res.data });
       })
@@ -182,14 +173,12 @@ const ChatRoomUserCard: Component<{
   const onDemoteUser = () => {
     chatApi
       .demoteUser({
-        room_id: currentRoom()!.room_id,
+        room_id: props.room.room_id,
         user_id: props.user.id,
       })
       .then((res) => {
         notifySuccess(
-          `${props.user.display_name} demoted to participant: ${
-            currentRoom()!.room_name
-          }`,
+          `${props.user.display_name} demoted to participant: ${props.room.room_name}`,
         );
         mutateCurrentRoom({ ...res.data });
       })
@@ -199,15 +188,13 @@ const ChatRoomUserCard: Component<{
   };
 
   const onKickUser = () => {
-    if (currentRoom()) {
+    if (props.room) {
       chatApi
-        .kickUser({ user_id: props.user.id, room_id: currentRoom()!.room_id })
+        .kickUser({ user_id: props.user.id, room_id: props.room.room_id })
         .then((res) => {
           mutateCurrentRoom({ ...res.data });
           notifySuccess(
-            `${props.user.display_name} got kicked from ${
-              currentRoom()!.room_name
-            }`,
+            `${props.user.display_name} got kicked from ${props.room.room_name}`,
           );
         })
         .catch((err: AxiosError<{ message: string }>) => {
@@ -215,42 +202,6 @@ const ChatRoomUserCard: Component<{
         });
     }
   };
-
-  onMount(() => {
-    autoAnimate(ref);
-    if (sockets.notificationState === WebSocket.OPEN) {
-      sockets.notificationWs!.addEventListener('message', (e) => {
-        let res: { event: WsNotificationEvent; data: any; room: RoomInfo };
-        res = JSON.parse(e.data);
-        switch (res.event) {
-          case 'chat: banned':
-            mutateCurrentRoom({ ...res.room! });
-            break;
-          case 'chat: demoted':
-            mutateCurrentRoom({ ...res.room! });
-            break;
-          case 'chat: unbanned':
-            mutateCurrentRoom({ ...res.room! });
-            break;
-          case 'chat: promoted':
-            mutateCurrentRoom({ ...res.room! });
-            break;
-          case 'chat: muted':
-            mutateCurrentRoom({ ...res.room! });
-            break;
-          case 'chat: unmuted':
-            mutateCurrentRoom({ ...res.room! });
-            break;
-          case 'chat: youGotBanned':
-            changeTab(TAB.HOME);
-            setCurrentRoomId(undefined);
-            break;
-          default:
-            break;
-        }
-      });
-    }
-  });
 
   onCleanup(() => {
     if (sockets.notificationState === WebSocket.OPEN) {
@@ -266,12 +217,12 @@ const ChatRoomUserCard: Component<{
   return (
     <div ref={ref} class="w-full shadow-md relative">
       <div
-        class={`flex items-center hover:bg-base-300 justify-between transition-all px-1 py-2`}
+        class={`flex items-center mx-auto hover:bg-base-300 justify-between transition-all px-1 py-2`}
       >
         <div
           classList={{ 'animate-pulse': isInGame() }}
           onClick={() => setIsOpen(true)}
-          class="flex w-full md:pl-0 pl-4"
+          class="flex w-full items-center"
         >
           <Avatar
             color={isOnline() ? 'bg-green-400' : 'bg-red-400'}
@@ -282,11 +233,16 @@ const ChatRoomUserCard: Component<{
             }
           />
           <div class="flex pl-3 flex-col w-full">
-            <h1 class="hidden md:block font-medium">
+            <h1 class="hidden lg:block font-medium">
               {props.user.display_name}
             </h1>
+            <Show when={isOnline() && !isInGame()}>
+              <p class="text-green-600 hidden lg:block">online</p>
+            </Show>
             <Show when={state.inGameUsers.length}>
-              <p class="text-sm text-cyan-700">{isInGame() ? 'In Game' : ''}</p>
+              <p class="text-sm hidden lg:block text-cyan-700">
+                {isInGame() ? 'In Game' : ''}
+              </p>
             </Show>
           </div>
         </div>

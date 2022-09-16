@@ -13,26 +13,14 @@ const ResultsCard: Component<{
       class="flex items-center p-4"
       classList={{ 'justify-self-end': props.position === 'after' }}
     >
-      <Show when={props.position === 'before'}>
-        <img
-          class="w-12 h-12 rounded-full pr-2"
-          src={
-            props.avatarId ? generateImageUrl(props.avatarId) : defaultAvatar
-          }
-        />
-      </Show>
-      <div class="flex flex-col">
+      <img
+        class="w-12 h-12 rounded-full pl-2"
+        src={props.avatarId ? generateImageUrl(props.avatarId) : defaultAvatar}
+      />
+      <div class="flex pl-4 flex-col">
         <h1 class="capitalize font-semibold">{props.name}</h1>
         <p class="text-center">Score: {props.score}</p>
       </div>
-      <Show when={props.position === 'after'}>
-        <img
-          class="w-12 h-12 rounded-full pl-2"
-          src={
-            props.avatarId ? generateImageUrl(props.avatarId) : defaultAvatar
-          }
-        />
-      </Show>
     </div>
   );
 };

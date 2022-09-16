@@ -5,6 +5,7 @@ import { ChatController } from './chat.controller';
 import { ChatService } from './chat.service';
 import { UsersModule } from 'src/users/users.module';
 import { WsModule } from 'src/ws/ws.module';
+import { FriendsModule } from 'src/friends/friends.module';
 
 @Module({
   controllers: [ChatController],

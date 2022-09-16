@@ -1,11 +1,11 @@
-import { Component, createEffect, Show } from 'solid-js';
+import { Component, Show } from 'solid-js';
 import { User } from '../types/user.interface';
 import Avatar from './Avatar';
 import leaderboardLogo from '../assets/podium.png';
 import userProfileLogo from '../assets/user.png';
 import settingsLogo from '../assets/settings.png';
 import logOutLogo from '../assets/log-out.png';
-import { Link, useNavigate } from 'solid-app-router';
+import { Link, useLocation, useNavigate } from 'solid-app-router';
 import { urls } from '../api/utils';
 import { forget } from 'turbo-solid';
 import Cookies from 'js-cookie';
@@ -14,12 +14,13 @@ import { useSockets } from '../Providers/SocketProvider';
 import { useStore } from '../store/StoreProvider';
 import { generateImageUrl } from '../utils/helpers';
 import defaultAvatar from '../../../backend/images/avatardefault.png';
+import { IoChatbubblesSharp } from 'solid-icons/io';
 
 const HeaderProfileMenu: Component<{ user: User }> = (props) => {
   const navigate = useNavigate();
   const [auth, { setToken, setIsAuth }] = useAuth();
   const [, { disconnect }] = useSockets();
-  const [, { resetStore }] = useStore();
+  const [state, { resetStore }] = useStore();
   const onLogout = () => {
     setToken(undefined);
     Cookies.remove('jwt_token', { sameSite: 'none', secure: true });
@@ -29,6 +30,9 @@ const HeaderProfileMenu: Component<{ user: User }> = (props) => {
     setIsAuth(false);
     navigate('/login');
   };
+
+  const inGame = () => state.inGameUsers.includes(auth.user.id);
+  const location = useLocation();
 
   return (
     <Show when={props.user}>
@@ -60,6 +64,13 @@ const HeaderProfileMenu: Component<{ user: User }> = (props) => {
             <h3 class="font-bold">{props.user.display_name}</h3>
             <p class="text-slate-500 font-light">{props.user.login42}</p>
           </div>
+          <Show when={inGame() && location.pathname !== '/pong'}>
+            <li class="first-letter:capitalize font-semibold">
+              <Link class="btn btn-sm btn-warning" href="/pong">
+                Back to Pong
+              </Link>
+            </li>
+          </Show>
           <li>
             <Link class="flex items-center" href="/leaderboard">
               <img
@@ -84,6 +95,16 @@ const HeaderProfileMenu: Component<{ user: User }> = (props) => {
             <Link class="" href="/edit_profile">
               <img src={settingsLogo} alt="setting logo" class="w-5 h-5" />
               <p class="pl-2">Edit Profile</p>
+            </Link>
+          </li>
+          <li class="block lg:hidden">
+            <Link href="/chat">
+              <IoChatbubblesSharp
+                class="w-5 h-5 bg-transparent"
+                color="#001a4d"
+                size={2}
+              />
+              <p class="pl-2">Chat</p>
             </Link>
           </li>
           <li>

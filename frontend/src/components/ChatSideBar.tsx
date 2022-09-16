@@ -17,6 +17,8 @@ import { RoomInfo, WsNotificationEvent } from '../types/chat.interface';
 import RoomList from './RoomList';
 import { useAuth } from '../Providers/AuthProvider';
 import { useSockets } from '../Providers/SocketProvider';
+import { AiOutlinePlusCircle } from 'solid-icons/ai';
+import { ImCross } from 'solid-icons/im';
 
 const ChatSideBar: Component = () => {
   const [keyword, setKeyword] = createSignal('');
@@ -30,6 +32,10 @@ const ChatSideBar: Component = () => {
     () => routes.getRooms,
   );
 
+  let ref: any;
+  const toggleCreateRoom = () => {
+    ref.classList.toggle('hidden');
+  };
   const myRooms = () =>
     rooms()?.filter((rooms) => {
       const b = rooms.users.find((user) => user.id === auth.user.id);
@@ -58,7 +64,7 @@ const ChatSideBar: Component = () => {
 
   return (
     <div class="flex flex-col gap-2">
-      <ul class="menu bg-base-100 min-w-fit gap-1 py-1 border-b border-b-base-300 shadow-md">
+      <ul class="menu bg-base-100 w-fit lg:w-full min-w-fit gap-1 py-1 border-b border-b-base-300 shadow-md">
         <li
           onClick={() => {
             setCurrentRoomId(undefined);
@@ -83,8 +89,8 @@ const ChatSideBar: Component = () => {
           }}
         >
           <a
-            class="border rounded-md border-base-300 mx-auto"
             style={{ width: '95%' }}
+            class="border rounded-md border-base-300 mx-auto"
             classList={{
               active: state.chatUi.tab === TAB.ROOMS,
             }}
@@ -113,6 +119,7 @@ const ChatSideBar: Component = () => {
         <Switch>
           <Match when={state.chatUi.tab === TAB.ROOMS}>
             <Search
+              class="hidden lg:block"
               setKeyword={setKeyword}
               placeHolder="Search for room"
               popperMsg="Create new room"
@@ -127,8 +134,24 @@ const ChatSideBar: Component = () => {
             <FriendList />
           </Match>
           <Match when={state.chatUi.tab === TAB.HOME}>
-            <p class=" p-2">Create room</p>
-            <CreateRoom class="px-2" />
+            <div class="flex items-center w-full flex-col">
+              <button onClick={toggleCreateRoom} class="btn btn-md lg:hidden">
+                <AiOutlinePlusCircle class="block" size={20} />
+                <p>create</p>
+              </button>
+              <div
+                ref={ref}
+                class="hidden lg:flex lg:static absolute left-1/2 z-20 bg-base-300 p-3"
+              >
+                <CreateRoom />
+                <button
+                  onClick={toggleCreateRoom}
+                  class="btn mt-3 lg:hidden btn-secondary btn-md"
+                >
+                  <ImCross />
+                </button>
+              </div>
+            </div>
           </Match>
         </Switch>
       </div>

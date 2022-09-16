@@ -9,11 +9,15 @@ import Modal from './Modal';
 const Search: Component<{
   setKeyword: Setter<string>;
   popperMsg: string;
+  class?: string;
   children: JSXElement;
   placeHolder?: string;
 }> = (props) => {
   return (
-    <div class="flex items-center">
+    <div
+      class={`flex items-center`}
+      classList={{ [props.class as any]: !!props.class }}
+    >
       <div class="form-control">
         <label class="input-group">
           <span>
@@ -29,22 +33,6 @@ const Search: Component<{
           />
         </label>
       </div>
-      {/* <div ref={setAnchor} class="ml-5 lg:self-start">
-        <button onclick={() => setIsOpen(!isOpen())}>
-          <AiOutlinePlusCircle ref={ref} size={26} />
-        </button>
-        <p
-          ref={setPopper}
-          class="hidden p-1 pl-2 z-10  pr-2 bg-blue-500 rounded-sm shadow-md"
-        >
-          {props.popperMsg}
-        </p>
-        <Modal isOpen={isOpen()} toggleModal={setIsOpen}>
-          <div class="p-2 bg-skin-header-background rounded-md">
-            {props.children}
-          </div>
-        </Modal>
-      </div> */}
     </div>
   );
 };

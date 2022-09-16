@@ -33,7 +33,7 @@ const MatchHistoryCard: Component<{ match: MatchDTO }> = (props) => {
           'bg-success': currentUserWon(),
           'bg-error': !currentUserWon(),
         }}
-        class="grid border-b-2 border-b-gray-600 grid-cols-3 justify-between"
+        class="grid border-b-2 border-b-gray-600 lg:grid-cols-3 justify-between"
       >
         <ResultsCard
           position="before"

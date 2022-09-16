@@ -60,7 +60,7 @@ const App: Component = () => {
   const getNotif = () => {
     if (
       sockets.notificationWs &&
-      sockets.notificationState === WebSocket.OPEN
+      sockets.notificationWs.readyState === WebSocket.OPEN
     ) {
       sockets.notificationWs.send(
         JSON.stringify({ event: 'isOnline', data: { sender: auth.user.id } }),
@@ -75,6 +75,7 @@ const App: Component = () => {
 
   createEffect(() => {
     location;
+    sockets.notificationState;
     if (
       sockets.notificationWs &&
       sockets.notificationState === WebSocket.OPEN

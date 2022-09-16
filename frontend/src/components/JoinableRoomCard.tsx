@@ -28,9 +28,7 @@ const JoinableRoomCard: Component<{ room: RoomInfo; refetch: () => void }> = (
       <HiSolidUserGroup class="text-primary-300" size={24} />
       <div class="pl-2 justify-between items-center flex w-full transition-all">
         <div>
-          <p class="font-bold first-letter:capitalize">
-            {props.room.room_name}
-          </p>
+          <p class="font-bold">{props.room.room_name}</p>
           <Show when={props.room.password_protected}>
             <p class="text-warning">Protected</p>
           </Show>
@@ -43,7 +41,7 @@ const JoinableRoomCard: Component<{ room: RoomInfo; refetch: () => void }> = (
             Join
           </button>
           <Modal isOpen={isOpen()} toggleModal={setIsOpen}>
-            <div class="flex p-2 absolute bg-base-300 rounded-md">
+            <div class="flex p-2 right-0 absolute bg-base-300 rounded-md">
               <form
                 onSubmit={(e) => {
                   e.preventDefault();

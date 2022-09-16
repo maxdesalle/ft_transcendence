@@ -23,14 +23,12 @@ const RoomList: Component<{ room: RoomInfo[]; keyword: string }> = (props) => {
             onClick={() => {
               setCurrentRoomId(room.room_id);
             }}
-            class="menu bg-base-100"
+            class="menu bg-base-100 items-center lg:items-start"
           >
-            <li>
+            <li class="lg:w-full">
               <a classList={{ active: state.chat.roomId === room.room_id }}>
                 <TiGroup size={24} />
-                <p class="font-bold first-letter:capitalize">
-                  {room.room_name}
-                </p>
+                <p class="font-bold hidden lg:block">{room.room_name}</p>
               </a>
             </li>
           </ul>

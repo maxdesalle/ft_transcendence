@@ -16,7 +16,7 @@ const FriendList: Component = () => {
     setFriendId(friend.id);
   };
   const [sockets] = useSockets();
-  const [friends, { refetch }] = createTurboResource<Friend[]>(
+  const [friends, { refetch, mutate }] = createTurboResource<Friend[]>(
     () => routes.friends,
   );
   const filteredFriends = () =>
@@ -31,7 +31,7 @@ const FriendList: Component = () => {
       sockets.notificationState === WebSocket.OPEN
     ) {
       sockets.notificationWs.addEventListener('message', (e) => {
-        let res: { event: WsNotificationEvent; data: any };
+        let res: { event: WsNotificationEvent; data: any; f: any };
         res = JSON.parse(e.data);
         if (res.event === 'friends: request_accepted') {
           refetch();
@@ -43,6 +43,7 @@ const FriendList: Component = () => {
   return (
     <div ref={ref} class="flex flex-col gap-2 h-full">
       <Search
+        class="hidden lg:block"
         setKeyword={setKeyword}
         popperMsg="Add friend"
         placeHolder="Search for a friend"
@@ -53,7 +54,7 @@ const FriendList: Component = () => {
         <ul class="menu bg-base-100">
           <For each={filteredFriends()}>
             {(friend) => (
-              <li>
+              <li class="lg:w-fit">
                 <a
                   classList={{
                     active: state.chat.friendId === friend.id,

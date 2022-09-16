@@ -30,10 +30,6 @@ const MessageList: Component<{ messages?: Message[]; id?: number }> = (
     );
   });
 
-  onMount(() => {
-    autoAnimate(ref);
-  });
-
   onCleanup(() => {
     document.removeEventListener('mousedown', () => {});
   });

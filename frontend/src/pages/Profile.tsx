@@ -148,7 +148,7 @@ const Profile: Component = () => {
           <h1 class="text-center font-bold text-2xl py-2">Match History</h1>
           <Scrollbars
             style={{
-              height: '89vh',
+              height: '85vh',
               display: 'flex',
               'flex-direction': 'column',
               'justify-content': 'flex-end',

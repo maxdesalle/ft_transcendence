@@ -5,15 +5,12 @@ import {
   createSignal,
   onCleanup,
   onMount,
-  Show,
 } from 'solid-js';
 import { p5 } from '../game/newPong';
 import { sketch } from '../game/pong';
 import { useAuth } from '../Providers/AuthProvider';
 import { useSockets } from '../Providers/SocketProvider';
 import { useStore } from '../store/StoreProvider';
-import { WsNotificationEvent } from '../types/chat.interface';
-import { notifyError } from '../utils/helpers';
 
 const Pong: Component = () => {
   let ref: any;
@@ -31,8 +28,6 @@ const Pong: Component = () => {
     game.setup(btnRef());
     id = setInterval(() => game.draw(), 10);
   });
-
-  const inGame = () => state.inGameUsers.includes(auth.user.id);
 
   onCleanup(() => {
     game.deleteAll();

@@ -9,6 +9,7 @@ import {
 } from '@nestjs/common';
 import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { JwtGuard } from 'src/auth/guards/jwt.guard';
+import { FriendsService } from 'src/friends/friends.service';
 import { Usr } from 'src/users/decorators/user.decorator';
 import { User } from 'src/users/entities/user.entity';
 import { WsService } from 'src/ws/ws.service';
@@ -81,11 +82,11 @@ export class ChatController {
     @Body() _body: UserIdDto,
   ) {
     await this.chatService.block_user(me, blocked_id);
-
     const blocked = await this.chatService.listBlockedUsers(me.id);
     this.wsService.sendMsgToUser(blocked_id, {
       event: 'chat: blocked',
       data: me.id,
+      friend: me,
     });
     return blocked;
   }
@@ -99,6 +100,11 @@ export class ChatController {
     @Body() _body: UserIdDto,
   ) {
     await this.chatService.unblock_user(me, blocked_id);
+    this.wsService.sendMsgToUser(blocked_id, {
+      event: 'chat: blocked',
+      data: me.id,
+      friend: me,
+    });
     return this.chatService.listBlockedUsers(me.id);
   }
 
@@ -247,6 +253,14 @@ export class ChatController {
     @Body('user_display_name', UserDisplayNameToIdPipe) user_id: number,
     @Body() _body: AddGroupUserByNameDTO,
   ): Promise<RoomInfo> {
+    const room = await this.chatService.roomInfo(room_id);
+    const users_id = room.users
+      .filter((user) => user.id != me.id)
+      .map((user) => user.id);
+    this.wsService.sendMsgToUsersList(users_id, {
+      event: 'chat_new_user_in_group',
+      room,
+    });
     return this.addGroupUser(me, room_id, user_id);
   }
 
@@ -260,7 +274,9 @@ export class ChatController {
   ) {
     await this.chatService.ban_group_user(me, room_id, user_id, 0);
     const room = await this.chatService.roomInfo(room_id);
-    const users_id = room.users.map((user) => user.id);
+    const users_id = room.users
+      .filter((user) => user.id != me.id)
+      .map((user) => user.id);
     this.wsService.sendMsgToUser(user_id, {
       event: 'chat: youGotKicked',
       data: {
@@ -285,7 +301,9 @@ export class ChatController {
   ) {
     await this.chatService.ban_group_user(me, room_id, user_id, ban_minutes);
     const room = await this.chatService.roomInfo(room_id);
-    const users_id = room.users.map((user) => user.id);
+    const users_id = room.users
+      .filter((user) => user.id != me.id)
+      .map((user) => user.id);
     this.wsService.sendMsgToUser(user_id, {
       event: 'chat: youGotBanned',
       data: {
@@ -309,7 +327,9 @@ export class ChatController {
   ) {
     await this.chatService.unban_group_user(me, room_id, user_id);
     const room = await this.chatService.roomInfo(room_id);
-    const users_id = room.users.map((user) => user.id);
+    const users_id = room.users
+      .filter((user) => user.id != me.id)
+      .map((user) => user.id);
     this.wsService.sendMsgToUsersList([...users_id, user_id], {
       event: 'chat: unbanned',
       room,
@@ -328,7 +348,9 @@ export class ChatController {
   ) {
     await this.chatService.mute_user(me, room_id, user_id, mute_minutes);
     const room = await this.chatService.roomInfo(room_id);
-    const users_id = room.users.map((user) => user.id);
+    const users_id = room.users
+      .filter((user) => user.id != me.id)
+      .map((user) => user.id);
     this.wsService.sendMsgToUsersList(users_id, {
       event: 'chat: muted',
       room,
@@ -346,7 +368,9 @@ export class ChatController {
   ) {
     await this.chatService.unmute_user(me, room_id, user_id);
     const room = await this.chatService.roomInfo(room_id);
-    const users_id = room.users.map((user) => user.id);
+    const users_id = room.users
+      .filter((user) => user.id != me.id)
+      .map((user) => user.id);
     this.wsService.sendMsgToUsersList(users_id, {
       event: 'chat: unmuted',
       room,
@@ -364,7 +388,9 @@ export class ChatController {
   ) {
     await this.chatService.add_admin_group(me, room_id, user_id);
     const room = await this.chatService.roomInfo(room_id);
-    const users_id = room.users.map((user) => user.id);
+    const users_id = room.users
+      .filter((user) => user.id != me.id)
+      .map((user) => user.id);
     // send notification to all users in this room
     this.wsService.sendMsgToUsersList(users_id, {
       event: 'chat: promoted',
@@ -383,7 +409,9 @@ export class ChatController {
   ) {
     await this.chatService.rm_admin_group(me, room_id, user_id);
     const room = await this.chatService.roomInfo(room_id);
-    const users_id = room.users.map((user) => user.id);
+    const users_id = room.users
+      .filter((user) => user.id != me.id)
+      .map((user) => user.id);
     // send notification to all users in this room
     this.wsService.sendMsgToUsersList(users_id, {
       event: 'chat: demoted',
@@ -413,6 +441,7 @@ export class ChatController {
     @Body() body: SetPrivateDto,
   ) {
     await this.chatService.set_private(me, room_id, body.private);
+
     return this.chatService.roomInfo(room_id);
   }
 
@@ -425,6 +454,15 @@ export class ChatController {
     @Body() _body: RoomAndUserDto,
   ) {
     await this.chatService.set_owner(me, room_id, user_id);
+    const room = await this.chatService.roomInfo(room_id);
+    const users_id = room.users
+      .filter((user) => user.id != me.id)
+      .map((user) => user.id);
+    // send notification to all users in this room
+    this.wsService.sendMsgToUsersList(users_id, {
+      event: 'chat: new_owner',
+      room,
+    });
     return this.chatService.roomInfo(room_id);
   }
 

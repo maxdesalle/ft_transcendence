@@ -33,13 +33,16 @@ import { useAuth } from '../Providers/AuthProvider';
 const Chat: Component = () => {
   const [state, { changeTab, setCurrentRoomId }] = useStore();
   const friendId = () => state.chat.friendId;
-  const path = () =>
+  const roomPath = () =>
     state.chat.roomId ? `${routes.chat}/room_info/${state.chat.roomId}` : null;
-  const [currentRoom] = createTurboResource<RoomInfo>(() => path());
+  const [currentRoom] = createTurboResource<RoomInfo>(() => roomPath());
 
   const [sockets] = useSockets();
 
-  const [friend] = createResource(() => state.chat.friendId, fetchUserById);
+  const [friend, { mutate }] = createResource(
+    () => state.chat.friendId,
+    fetchUserById,
+  );
 
   const [roomMessages, { mutate: mutateRoomMessages }] = createResource(
     () => state.chat.roomId,
@@ -167,7 +170,11 @@ const Chat: Component = () => {
           </Match>
           <Match when={state.chatUi.tab === TAB.FRIENDS}>
             <Show when={friend()}>
-              <FriendSideBar setIsWatching={setIsWatching} friend={friend()!} />
+              <FriendSideBar
+                mutate={mutate}
+                setIsWatching={setIsWatching}
+                friend={friend()!}
+              />
             </Show>
           </Match>
         </Switch>

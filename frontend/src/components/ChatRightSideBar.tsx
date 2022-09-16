@@ -2,10 +2,12 @@ import {
   Component,
   createEffect,
   createMemo,
+  createResource,
   createSignal,
   For,
   Match,
   onCleanup,
+  onMount,
   Show,
   Switch,
 } from 'solid-js';
@@ -37,7 +39,7 @@ const ChatRightSideBar: Component<{}> = () => {
   const [sockets] = useSockets();
   const url = () => (roomId() ? `${routes.chat}/room_info/${roomId()}` : null);
 
-  const [currentRoom, { refetch, mutate, forget }] =
+  const [currentRoom, { refetch, mutate: mutateCurrentRoom }] =
     createTurboResource<RoomInfo>(() => url());
   const currentUserRole = createMemo(
     () => currentRoom()?.users.find((user) => user.id === auth.user.id)?.role,
@@ -46,22 +48,32 @@ const ChatRightSideBar: Component<{}> = () => {
   const owner = () =>
     currentRoom()?.users.find((user) => user.role === 'owner');
 
-  const admins = createMemo(() =>
-    currentRoom()?.users.filter(
+  const admins = createMemo(() => {
+    if (!currentRoom()) return [];
+    return currentRoom()!.users.filter(
       (user) =>
         user.id !== owner()?.id &&
         user.role === 'admin' &&
         state.onlineUsers.includes(user.id),
-    ),
-  );
+    );
+  });
 
-  const onlineUsers = () =>
-    currentRoom()!.users.filter(
+  const onlineUsers = createMemo(() => {
+    if (!currentRoom()) return [];
+    return currentRoom()!.users.filter(
       (user) =>
         user.id !== owner()!.id &&
         user.role === 'participant' &&
         state.onlineUsers.includes(user.id),
     );
+  });
+
+  const offlineUsers = createMemo(() => {
+    if (!currentRoom()) return [];
+    return currentRoom()!.users.filter(
+      (user) => !state.onlineUsers.includes(user.id) && user.id != owner()?.id,
+    );
+  });
 
   createEffect(() => {
     if (sockets.notificationWs) {
@@ -69,7 +81,7 @@ const ChatRightSideBar: Component<{}> = () => {
         let res: { event: WsNotificationEvent; room?: RoomInfo };
         res = JSON.parse(e.data);
         if (res.event === 'chat_new_user_in_group') {
-          mutate({ ...res.room! });
+          mutateCurrentRoom({ ...res.room! });
         } else if (res.event === 'chat: userLeave') {
           refetch();
         }
@@ -94,8 +106,53 @@ const ChatRightSideBar: Component<{}> = () => {
       });
   };
 
+  onMount(() => {
+    if (sockets.notificationState === WebSocket.OPEN) {
+      sockets.notificationWs!.addEventListener('message', (e) => {
+        let res: { event: WsNotificationEvent; data: any; room: RoomInfo };
+        res = JSON.parse(e.data);
+        switch (res.event) {
+          case 'chat: banned':
+            mutateCurrentRoom({ ...res.room! });
+            break;
+          case 'chat: demoted':
+            mutateCurrentRoom({ ...res.room! });
+            break;
+          case 'chat: unbanned':
+            mutateCurrentRoom({ ...res.room! });
+            break;
+          case 'chat: promoted':
+            mutateCurrentRoom({ ...res.room! });
+            break;
+          case 'chat: muted':
+            mutateCurrentRoom({ ...res.room! });
+            break;
+          case 'chat: unmuted':
+            mutateCurrentRoom({ ...res.room! });
+            break;
+          case 'chat: youGotBanned':
+            changeTab(TAB.HOME);
+            setCurrentRoomId(undefined);
+            break;
+          case 'chat: youGotKicked':
+            changeTab(TAB.HOME);
+            setCurrentRoomId(undefined);
+            break;
+
+          case 'chat_new_user_in_group':
+            mutateCurrentRoom({ ...res.room! });
+            break;
+          case 'chat: new_owner':
+            mutateCurrentRoom({ ...res.room! });
+            break;
+          default:
+            break;
+        }
+      });
+    }
+  });
+
   onCleanup(() => {
-    forget();
     if (sockets.notificationWs) {
       sockets.notificationWs.removeEventListener('message', () => {});
     }
@@ -106,7 +163,7 @@ const ChatRightSideBar: Component<{}> = () => {
         <h4 class="p-2 text-start">Owner</h4>
         <Show when={owner()}>
           {(o) => (
-            <div class="p-2 flex items-center border border-base-200 shadow-md">
+            <div class="p-2 gap-2 flex flex-col items-center border border-base-200 shadow-md">
               <Avatar
                 color={
                   state.onlineUsers.includes(o.id)
@@ -117,8 +174,8 @@ const ChatRightSideBar: Component<{}> = () => {
                   o.avatarId ? `${generateImageUrl(o.avatarId)}` : undefined
                 }
               />
-              <div class="pl-3">
-                <h1 class="font-semibold text-neutral-focus">
+              <div class="">
+                <h1 class="font-semibold text-primary-focus">
                   {o.display_name}
                 </h1>
                 <Show when={state.inGameUsers.includes(o.id)}>
@@ -129,24 +186,23 @@ const ChatRightSideBar: Component<{}> = () => {
           )}
         </Show>
       </div>
-      <ul class="flex items-center justify-between">
-        <li onClick={() => setTab(0)} class="text-start p-2 btn btn-ghost">
-          Members
-        </li>
-        <Show when={currentUserRole() !== 'participant'}>
-          <li onClick={() => setTab(1)} class="text-start p-2">
-            <IoSettingsOutline size={24} color="#000000" />
-          </li>
-        </Show>
-      </ul>
+      <Show when={tab() == 0}>
+        <ul class="flex items-center flex-col gap-3 my-2 lg:flex-row justify-between">
+          <Show when={currentUserRole() !== 'participant'}>
+            <li onClick={() => setTab(1)} class="text-start p-2">
+              <IoSettingsOutline size={24} color="#000000" />
+            </li>
+          </Show>
+        </ul>
+      </Show>
       <Switch>
         <Match when={tab() == 0}>
-          <div ref={addRef} class="flex items-center py-2 pl-5">
+          <div ref={addRef} class="flex items-center mx-auto lg:mx-0 py-2">
             <Show when={currentUserRole() === 'owner'}>
-              <button onClick={() => setIsOpen(!isOpen())}>
+              <button class="btn btn-sm" onClick={() => setIsOpen(!isOpen())}>
                 <AiOutlinePlusCircle class="block" size={26} />
+                <h4 class="pl-2 hidden lg:block">Add user</h4>
               </button>
-              <h4 class="pl-2">Add member</h4>
               <Modal isOpen={isOpen()} toggleModal={setIsOpen}>
                 <div class="p-2 bg-skin-header-background absolute right-7 border border-header-menu rounded-md shadow-md">
                   <AddUserToRoom
@@ -163,28 +219,34 @@ const ChatRightSideBar: Component<{}> = () => {
             }}
           >
             <h1 class="p-2 font-semibold">Admin</h1>
-            <Show when={admins()} fallback={<Loader />}>
+            <Show when={admins() && currentRoom()} fallback={<Loader />}>
               <For each={admins()}>
                 {(user) => (
-                  <ChatRoomUserCard user={user} ownerId={owner()!.id} />
+                  <ChatRoomUserCard
+                    user={user}
+                    room={currentRoom()!}
+                    ownerId={owner()!.id}
+                  />
                 )}
               </For>
               <h1 class="p-2 font-semibold">Online</h1>
               <For each={onlineUsers()}>
                 {(user) => (
-                  <ChatRoomUserCard user={user} ownerId={owner()!.id} />
+                  <ChatRoomUserCard
+                    user={user}
+                    room={currentRoom()!}
+                    ownerId={owner()!.id}
+                  />
                 )}
               </For>
               <h1 class="p-2 font-semibold">Offline</h1>
-              <For
-                each={currentRoom()!.users.filter(
-                  (user) =>
-                    !state.onlineUsers.includes(user.id) &&
-                    user.id != owner()?.id,
-                )}
-              >
+              <For each={offlineUsers()}>
                 {(user) => (
-                  <ChatRoomUserCard user={user} ownerId={owner()!.id} />
+                  <ChatRoomUserCard
+                    user={user}
+                    room={currentRoom()!}
+                    ownerId={owner()!.id}
+                  />
                 )}
               </For>
             </Show>
@@ -194,7 +256,9 @@ const ChatRightSideBar: Component<{}> = () => {
           </button>
         </Match>
         <Match when={tab() == 1}>
-          <Show when={owner()}>{(o) => <RoomSettings owner={o} />}</Show>
+          <Show when={owner()}>
+            {(o) => <RoomSettings setTab={setTab} owner={o} />}
+          </Show>
         </Match>
       </Switch>
     </Show>

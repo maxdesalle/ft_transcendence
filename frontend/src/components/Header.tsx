@@ -73,7 +73,7 @@ const Header: Component = () => {
 
   return (
     <div class="bg-base-300">
-      <header class="lg:container navbar bg-base-300">
+      <header class="navbar bg-base-300">
         <div class="flex-1">
           <Link href="/">
             <img
@@ -117,20 +117,11 @@ const Header: Component = () => {
               </Link>
             </li>
           </Show>
-          <li class="block lg:hidden">
-            <Link href="/chat" class="my-auto bg-transparent md:hidden">
-              <IoChatbubblesSharp
-                class="shadow-md bg-transparent"
-                size={20}
-                color="#001a4d"
-              />
-            </Link>
-          </li>
           <li>
             <div ref={ref} class="dropdown dropdown-end">
               <label class="flex items-center font-semibold" tabindex="0">
-                <RiDesignPaintFill />
-                Theme
+                <RiDesignPaintFill size={20} />
+                <p class="hidden lg:block">Theme</p>
               </label>
               <ul
                 tabindex="0"
@@ -144,7 +135,10 @@ const Header: Component = () => {
                       }}
                     >
                       <a>
-                        <button class="capitalize" data-set-theme={t}>
+                        <button
+                          class="capitalize text-start w-full"
+                          data-set-theme={t}
+                        >
                           {t}
                         </button>
                       </a>

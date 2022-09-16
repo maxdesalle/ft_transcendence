@@ -5,6 +5,7 @@ import {
   createMemo,
   createSignal,
   For,
+  Setter,
   Show,
 } from 'solid-js';
 import { createTurboResource } from 'turbo-solid';
@@ -16,7 +17,9 @@ import { RoomInfo } from '../types/chat.interface';
 import { User } from '../types/user.interface';
 import { notifyError, notifySuccess } from '../utils/helpers';
 
-const RoomSettings: Component<{ owner: User }> = (props) => {
+const RoomSettings: Component<{ owner: User; setTab: Setter<number> }> = (
+  props,
+) => {
   const [state, { setCurrentRoomId, changeTab }] = useStore();
   const [userId, setUserId] = createSignal(0);
   const [password, setPassword] = createSignal('');
@@ -70,7 +73,7 @@ const RoomSettings: Component<{ owner: User }> = (props) => {
       .then((res) => {
         mutate({ ...res.data });
         setUserId(0);
-        const user = currentRoom()?.users.find((user) => user.id === userId());
+        const user = currentRoom()?.users.find((user) => user.id === id);
         notifySuccess(`${user?.display_name} is the new owner`);
       })
       .catch((err: AxiosError<{ message: string }>) => {
@@ -83,7 +86,6 @@ const RoomSettings: Component<{ owner: User }> = (props) => {
       .leaveGroup(currentRoom()!.room_id)
       .then(() => {
         notifySuccess(`${user.display_name} left ${currentRoom()!.room_name}`);
-        //TODO: reset the room messages (it stays in cache)
         setCurrentRoomId(undefined);
         changeTab(TAB.HOME);
       })
@@ -107,6 +109,9 @@ const RoomSettings: Component<{ owner: User }> = (props) => {
 
   return (
     <div class="p-2 flex flex-col ">
+      <button onclick={() => props.setTab(0)} class="btn btn-sm">
+        Back
+      </button>
       <form
         class="flex flex-col gap-3"
         onSubmit={(e) => {
@@ -170,7 +175,7 @@ const RoomSettings: Component<{ owner: User }> = (props) => {
         </button>
       </div>
       <div>
-        <p class="text-lg font-semibold py-2">Benned users</p>
+        <p class="text-lg font-semibold py-2">Banned users</p>
         <For each={bannedUsers()}>
           {(user) => (
             <div class="flex justify-between p-1 items-center">

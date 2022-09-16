@@ -14,7 +14,7 @@ const Custom: Component<{
       <div class="modal">
         <div class="modal-box form-control">
           <label for="ban_time" class="input-group">
-            <span>Ban time</span>
+            <span>Minutes</span>
             <input
               onInput={(e) => props.setBanTime(+e.currentTarget.value)}
               type="number"

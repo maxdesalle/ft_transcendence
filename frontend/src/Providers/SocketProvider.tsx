@@ -40,6 +40,7 @@ export const SocketProvider = (props: any) => {
 
   let reconnectAmount: number = 5;
   const [id, setId] = createSignal<any>();
+  const [notId, setNotId] = createSignal<any>();
 
   const actions: ActionsType = {
     send(data, target) {
@@ -66,6 +67,7 @@ export const SocketProvider = (props: any) => {
       }
     },
     connectNotificationWs() {
+      cancelReconnect();
       setState('notificationWs', new WebSocket(urls.wsUrl));
       setState('notificationState', WebSocket.CONNECTING);
     },
@@ -93,15 +95,29 @@ export const SocketProvider = (props: any) => {
     if (id()) {
       clearTimeout(id());
     }
+    if (notId()) {
+      clearTimeout(notId());
+    }
   };
 
   createEffect(() => {
     if (state.notificationWs) {
       state.notificationWs.onopen = () => {
+        console.log('notif connected');
         setState('notificationState', WebSocket.OPEN);
       };
       state.notificationWs.onclose = () => {
-        setState('notificationState', WebSocket.CLOSED);
+        // setState('notificationState', WebSocket.CLOSED);
+        if (state.notificationWs) {
+          const token = Cookies.get('jwt_token');
+          let reco = 5;
+          state.notificationWs.onclose = () => {
+            if (reco > 0 && token) {
+              setNotId(setTimeout(actions.connectNotificationWs, 3000));
+              reco--;
+            }
+          };
+        }
       };
     }
   });
@@ -119,7 +135,6 @@ export const SocketProvider = (props: any) => {
 
   createEffect(() => {
     if (state.pongWs) {
-      state.pongWs.onopen = (e) => {};
       const token = Cookies.get('jwt_token');
       state.pongWs.onclose = () => {
         if (reconnectAmount > 0 && token) {

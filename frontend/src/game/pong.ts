@@ -277,7 +277,6 @@ export const sketch = (
     myP5.textSize(canvasHeight * 0.03);
 
     if (socketErrObject) {
-      console.log('destroyed');
       sliders.forEach((s) => s.p5Slider.remove());
       myP5.textAlign('center', 'center');
       myP5.fill(
@@ -296,7 +295,6 @@ export const sketch = (
     }
 
     if (isDisconnected) {
-      console.log('destroyed');
       sliders.forEach((s) => s.p5Slider.remove());
       myP5.textAlign('center', 'center');
       myP5.fill(
@@ -540,7 +538,6 @@ export const sketch = (
     if (isReady && isOtherPlayerReady) {
       //don't display settings menu
       if (sliders) sliders.forEach((s) => s.p5Slider.remove());
-      console.log('destroyed');
       return false;
     }
     if (isReady) {
@@ -557,7 +554,6 @@ export const sketch = (
     sliders = sliders.filter((s) => {
       if (!(playerNumber === 2 && s.isGlobal)) return true;
       s.p5Slider.remove();
-      console.log('destroyed');
       return false;
     });
     sliders.forEach((s) => {
@@ -603,7 +599,6 @@ export const sketch = (
     if (myP5.keyIsPressed && myP5.keyIsDown(myP5.ENTER)) {
       isReady = true;
       sliders.forEach((s) => s.p5Slider.remove());
-      console.log('destroyed');
       if (playerNumber === 1) {
         const ob: any = { p1Ready: true };
         sliders.forEach((s) => {

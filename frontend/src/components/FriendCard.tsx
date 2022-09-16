@@ -31,7 +31,10 @@ export const FriendCard: Component<{
               : defaultAvatar
           }
         />
-        <div classList={{ 'animate-pulse': inGame() }} class="pl-3">
+        <div
+          classList={{ 'animate-pulse': inGame() }}
+          class="pl-3 hidden lg:block"
+        >
           <h4>{props.friend.display_name}</h4>
           <Show
             when={!inGame()}
