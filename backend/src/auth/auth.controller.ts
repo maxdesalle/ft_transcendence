@@ -46,7 +46,7 @@ export class AuthController {
       login42: user.login42,
     });
     if (this.configService.get('SERVE_STATIC'))
-      res.cookie('jwt_token', jwtToken, { sameSite: 'strict' });
+      res.cookie('jwt_token', jwtToken, { sameSite: 'strict', secure: true });
     else res.cookie('jwt_token', jwtToken, { sameSite: 'none', secure: true });
     if (user.isTwoFactorAuthenticationEnabled) {
       return res.redirect(
@@ -105,7 +105,7 @@ export class AuthController {
       res.clearCookie('jwt_token');
       res.cookie('jwt_token', jwtToken, { sameSite: 'strict' });
     } else {
-      res.clearCookie('jwt_token', { sameSite: 'none', secure: true });
+      res.clearCookie('jwt_token', { sameSite: "none", secure: true });
       res.cookie('jwt_token', jwtToken, { sameSite: 'none', secure: true });
     }
     return { success: true };
