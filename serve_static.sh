@@ -1,4 +1,4 @@
-# export VITE_HOST=127.0.0.1
+export VITE_HOST=127.0.0.1
 
 # display warning
 printf "\033[31;1m"
@@ -8,10 +8,10 @@ printf "\033[39m\n"
 echo "This script does not install node modules (so do it first if you haven't done so yet)"
 
 # build frontend
-cd frontend && npm run build && cd .. # comment out this line to skip build
+cd frontend && npm i && npm run build && cd .. # comment out this line to skip build
 
 # restart DB with a fresh one
-cd backend
+cd backend && npm i
 docker-compose --env-file ../.env down
 docker-compose --env-file ../.env  up -d
 

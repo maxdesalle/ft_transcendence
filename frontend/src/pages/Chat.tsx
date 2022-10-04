@@ -186,6 +186,15 @@ const Chat: Component = () => {
     }),
   );
 
+  const tab = () => state.chatUi.tab;
+
+  createEffect(
+    on(tab, () => {
+      mutateFriendMessages([]);
+      mutateRoomMessages([]);
+    }),
+  );
+
   return (
     <div class="lg:grid lg:grid-cols-6 flex h-95">
       <div class="flex row-span-4 flex-col col-span-1 border-x border-x-base-300 shadow-sm">

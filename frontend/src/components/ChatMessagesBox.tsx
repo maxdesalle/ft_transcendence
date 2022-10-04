@@ -12,7 +12,7 @@ const ChatMessagesBox: Component<{
 
   return (
     <>
-      <Show when={props.messages}>
+      <Show when={props.messages.length}>
         <MessageList
           messages={props.messages
             .slice()
