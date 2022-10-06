@@ -4,7 +4,7 @@ import { RoomInfo } from '../types/chat.interface';
 import { TiGroup } from 'solid-icons/ti';
 
 const RoomList: Component<{ room: RoomInfo[]; keyword: string }> = (props) => {
-  const [state, { setCurrentRoomId }] = useStore();
+  const [state, { setCurrentRoomId, setShowMessages }] = useStore();
   let ref: any;
 
   return (
@@ -22,6 +22,7 @@ const RoomList: Component<{ room: RoomInfo[]; keyword: string }> = (props) => {
           <ul
             onClick={() => {
               setCurrentRoomId(room.room_id);
+              setShowMessages(true);
             }}
             class="menu bg-base-100 items-center lg:items-start"
           >

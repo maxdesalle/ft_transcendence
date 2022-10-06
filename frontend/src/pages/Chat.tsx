@@ -6,7 +6,6 @@ import {
   Match,
   on,
   onCleanup,
-  onMount,
   Show,
   Switch,
 } from 'solid-js';
@@ -52,7 +51,7 @@ const Chat: Component = () => {
 
   const [
     roomMessages,
-    { mutate: mutateRoomMessages, refetch: refetchRoomMsgs },
+    { mutate: mutateRoomMessages, refetch: refetchRoomMsgs, forget },
   ] = createTurboResource<Message[]>(() => url());
 
   const [auth] = useAuth();

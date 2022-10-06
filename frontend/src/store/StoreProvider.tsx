@@ -1,5 +1,5 @@
 import Cookies from 'js-cookie';
-import { createContext, Resource, useContext } from 'solid-js';
+import { createContext, useContext } from 'solid-js';
 import { WsNotificationEvent } from '../types/chat.interface';
 import { User } from '../types/user.interface';
 import { createStore, produce } from 'solid-js/store';
@@ -28,6 +28,7 @@ export interface ActionsType {
   setInGameUsers: (ids: number[]) => void;
   setUsersGameSessionIds: (value: { id: number; sessionId: number }[]) => void;
   resetStore: () => void;
+  setShowMessages: (v: boolean) => void;
 }
 
 export enum TAB {
@@ -151,6 +152,9 @@ export function StoreProvider(props: any) {
     },
     setUsersGameSessionIds(value) {
       setState('usersSessionIds', () => [...value]);
+    },
+    setShowMessages(v) {
+      setState("chatUi", "showMessages", v);
     },
   };
   const store: [StoreState, ActionsType] = [state, actions];
