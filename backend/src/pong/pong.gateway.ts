@@ -4,18 +4,18 @@ import {
   OnGatewayInit,
   SubscribeMessage,
   WebSocketGateway,
-} from '@nestjs/websockets';
-import { IncomingMessage } from 'http';
-import { WebSocket, WebSocketServer as WSS } from 'ws';
-import { computeValues, deleteGameSession } from './computeValues';
-import { default_values } from './defaultVals';
-import { JwtService } from '@nestjs/jwt';
-import { UsersService } from 'src/users/users.service';
-import { WsService } from 'src/ws/ws.service';
-import { forwardRef, Inject, UseGuards } from '@nestjs/common';
-import { StatsService } from 'src/stats/stats.service';
-import { PongGuard } from './guards/pong.guard';
-import { FriendsService } from 'src/friends/friends.service';
+} from "@nestjs/websockets";
+import { IncomingMessage } from "http";
+import { WebSocket, WebSocketServer as WSS } from "ws";
+import { computeValues, deleteGameSession } from "./computeValues";
+import { default_values } from "./defaultVals";
+import { JwtService } from "@nestjs/jwt";
+import { UsersService } from "src/users/users.service";
+import { WsService } from "src/ws/ws.service";
+import { forwardRef, Inject, UseGuards } from "@nestjs/common";
+import { StatsService } from "src/stats/stats.service";
+import { PongGuard } from "./guards/pong.guard";
+import { FriendsService } from "src/friends/friends.service";
 
 const defaultVals = default_values.df;
 
@@ -45,17 +45,15 @@ let waiting_player: { user_id: number; socket: WebSocket } = null;
 // set of user_ids that are currently playing a match
 export const playing = new Set<number>();
 
-@WebSocketGateway({ path: '/pong' })
+@WebSocketGateway({ path: "/pong" })
 export class PongGateway implements OnGatewayConnection, OnGatewayDisconnect {
   constructor(
     private jwtService: JwtService,
-    @Inject(forwardRef(() => UsersService))
-    private usersService: UsersService,
-    @Inject(forwardRef(() => WsService))
-    private wsService: WsService,
+    @Inject(forwardRef(() => UsersService)) private usersService: UsersService,
+    @Inject(forwardRef(() => WsService)) private wsService: WsService,
     private statsService: StatsService,
-    @Inject(forwardRef(() => FriendsService))
-    private friendService: FriendsService,
+    @Inject(forwardRef(() => FriendsService)) private friendService:
+      FriendsService,
   ) {}
 
   // authenticates user
@@ -64,15 +62,13 @@ export class PongGateway implements OnGatewayConnection, OnGatewayDisconnect {
     try {
       user = await this.wsService.authenticateUser(req);
     } catch (error) {
-      ws.close(1008, 'Bad credentials');
-      console.log('Authentication to Pong wss failed');
+      ws.close(1008, "Bad credentials");
       return;
     }
     // add to connected_users map
     connected_users.set(ws, user.id);
-    console.log(`User ${user.login42} (id: ${user.id}) connected to pong WSS`);
 
-    ws.on('error', (e) => console.error(`socket error: ${e.message}`));
+    ws.on("error", (e) => console.error(`socket error: ${e.message}`));
   }
 
   handleDisconnect(client: WebSocket) {
@@ -84,16 +80,14 @@ export class PongGateway implements OnGatewayConnection, OnGatewayDisconnect {
     this.wsService.sendMsgToAll({
       event: `pong: session_over`,
     });
-    if (user_id) console.log(`User ${user_id} disconnected from pong wss`);
   }
 
-  @SubscribeMessage('play')
+  @SubscribeMessage("play")
   @UseGuards(PongGuard)
   playAgainstAnyone(client: WebSocket) {
     const user_id = connected_users.get(client);
 
     if (waiting_player?.user_id == user_id) {
-      console.log('You shall not play against yourself');
       return;
     }
 
@@ -101,7 +95,7 @@ export class PongGateway implements OnGatewayConnection, OnGatewayDisconnect {
     if (waiting_player) {
       // notify boths users
       this.wsService.sendMsgToUsersList([waiting_player.user_id, user_id], {
-        event: 'pong: player_joined',
+        event: "pong: player_joined",
         waiting_player: waiting_player.user_id,
         joining_player: user_id,
       });
@@ -109,11 +103,10 @@ export class PongGateway implements OnGatewayConnection, OnGatewayDisconnect {
       this.matchPlayers(waiting_player.socket, client);
     } else {
       waiting_player = { user_id, socket: client };
-      console.log(`User ${user_id} is waiting for another player`);
     }
   }
 
-  @SubscribeMessage('invite')
+  @SubscribeMessage("invite")
   @UseGuards(PongGuard)
   async invitePlayer(client: WebSocket, data: string) {
     const user_id = connected_users.get(client);
@@ -124,45 +117,40 @@ export class PongGateway implements OnGatewayConnection, OnGatewayDisconnect {
       invited_user_id === user_id ||
       !(await this.usersService.findById(invited_user_id))
     ) {
-      console.log('invalid invited_user_id');
       return;
     }
     // insert invitation in the map (new invitation overwrites an old one)
     invitations.set(user_id, invited_user_id);
-    console.log(`User ${user_id} is waiting for User ${invited_user_id}`);
 
     // notify user via ws
     this.wsService.sendMsgToUser(invited_user_id, {
-      event: 'pong: invitation',
+      event: "pong: invitation",
       user_id,
     });
   }
 
-  @SubscribeMessage('accept')
+  @SubscribeMessage("accept")
   @UseGuards(PongGuard)
   acceptInvitation(client: WebSocket, data: string) {
     const user_id = connected_users.get(client);
     const inviting_user_id = +data;
     if (!inviting_user_id) {
-      console.log('invalid inviting_user_id');
       return;
     }
     // check if invitation exists
     if (invitations.get(inviting_user_id) !== user_id) {
-      console.log('Invitation does not exist');
       // client.close(1000, 'Invitation does not exist');
       return;
     }
     // get inviting user socket
     const inviting_user_socket = getSocketFromUser(inviting_user_id);
     if (!inviting_user_socket) {
-      console.log('inviting user is no longer available');
       // client.close(1000, 'inviting user is no longer available');
       return;
     }
     // notify inviting user
     this.wsService.sendMsgToUser(inviting_user_id, {
-      event: 'pong: invitation_accepted',
+      event: "pong: invitation_accepted",
       user_id,
     });
 
@@ -170,12 +158,11 @@ export class PongGateway implements OnGatewayConnection, OnGatewayDisconnect {
     this.matchPlayers(inviting_user_socket, client);
   }
 
-  @SubscribeMessage('cancel')
+  @SubscribeMessage("cancel")
   @UseGuards(PongGuard)
   clear(client: WebSocket) {
     const user_id = connected_users.get(client);
     clearInviteWait(user_id);
-    console.log(`User ${user_id} cleared as waiting player or inviting player`);
   }
 
   // starts session and calls linkPlayers
@@ -202,18 +189,14 @@ export class PongGateway implements OnGatewayConnection, OnGatewayDisconnect {
     // notify friends
     this.wsService.notifyStatusChangeToFriendsWsessionId(p1, {
       sessionId: id,
-      status: 'playing',
+      status: "playing",
     });
     this.wsService.notifyStatusChangeToFriendsWsessionId(p2, {
       sessionId: id,
-      status: 'playing',
+      status: "playing",
     });
 
     linkPlayers(id).then(async (playerScores: playerScoresInterface) => {
-      console.log(
-        `Session ${id} ended with scores: p1 ${playerScores.p1Score}, p2 ${playerScores.p2Score}`,
-      );
-
       // update status
       playing.delete(p1);
       playing.delete(p2);
@@ -245,24 +228,20 @@ export class PongGateway implements OnGatewayConnection, OnGatewayDisconnect {
   }
 }
 
-@WebSocketGateway({ path: '/pong_viewer' })
+@WebSocketGateway({ path: "/pong_viewer" })
 export class PongViewerGateway implements OnGatewayInit {
   afterInit(wss: WSS) {
-    wss.on('connection', (ws: WebSocket) => {
-      console.log('new viewer connected to server');
+    wss.on("connection", (ws: WebSocket) => {
       viewerSockets.push({ id: -1, ws: ws });
       ws.send(JSON.stringify(defaultVals)); //sending viewer the default values
-      ws.on('error', (e) => console.error(`viewer socket error: ${e.message}`));
-      ws.on('close', () => {
+      ws.on("error", (e) => console.error(`viewer socket error: ${e.message}`));
+      ws.on("close", () => {
         const i: number = viewerSockets.findIndex(
           (s: { id: number; ws: any }) => s.ws === ws,
         );
-        console.log(
-          `viewer socket leaving game session ${viewerSockets[i].id}`,
-        );
         viewerSockets.splice(i, 1);
       });
-      ws.on('message', (data: any) => {
+      ws.on("message", (data: any) => {
         const ob: any = JSON.parse(String(data));
         const i: number = viewerSockets.findIndex(
           (s: { id: number; ws: any }) => s.ws === ws,
@@ -277,7 +256,6 @@ export class PongViewerGateway implements OnGatewayInit {
         }
         // if the viewer wants to change session (id is guaranteed to be valid)
         if (ob.id !== undefined) {
-          console.log(`setting id ${ob.id} to viewer socket`);
           viewerSockets[i].id = ob.id;
         }
       });
@@ -290,16 +268,12 @@ function removeGameSession(ws: WebSocket) {
   if (i === -1) return; // Rodolpho added this line
   if (sockets[i].p1Socket === ws) {
     sockets[i].p1Socket = undefined;
-    console.log(`p1 of session ${sockets[i].id} left`);
     if (sockets[i].p2Socket) {
-      console.log(`closing connection with p2 of session ${sockets[i].id}...`);
       sockets[i].p2Socket.close();
     } else sockets.splice(i, 1); // deleting game session from array
   } else {
     sockets[i].p2Socket = undefined;
-    console.log(`p2 of session ${sockets[i].id} left`);
     if (sockets[i].p1Socket) {
-      console.log(`closing connection with p1 of session ${sockets[i].id}...`);
       sockets[i].p1Socket.close();
     } else sockets.splice(i, 1); // deleting game session from array
   }
@@ -308,13 +282,12 @@ function removeGameSession(ws: WebSocket) {
 //function to execute right after second player has been connected
 async function linkPlayers(id: number) {
   const gameSockets: gameSocketsInterface = sockets.find((s) => id === s.id);
-  console.log(`linking players for session ${id}`);
   gameSockets.p1Socket.on(
-    'message',
+    "message",
     (data: any) => (gameSockets.p1Ob = JSON.parse(String(data))),
   );
   gameSockets.p2Socket.on(
-    'message',
+    "message",
     (data: any) => (gameSockets.p2Ob = JSON.parse(String(data))),
   );
   //players will automatically start after receiving their number
@@ -329,7 +302,6 @@ async function linkPlayers(id: number) {
 
 //game loop
 async function startGame(id: number) {
-  console.log(`creating new game session ${id}`); // compute values will create the game session for the id the first time it's called
   const playerScores: playerScoresInterface = { p1Score: 0, p2Score: 0 };
   const gameSockets: gameSocketsInterface = sockets.find((s) => id === s.id);
   const minUpdateTime = 20; //ms (higher -> laggier, lower -> heavier for the bandwidth)
@@ -362,7 +334,6 @@ async function startGame(id: number) {
     await delay(minUpdateTime > execTime ? minUpdateTime - execTime : 0);
     deltaTime = (performance.now() - beginTime) / 1000;
   }
-  console.log(`deleting session ${id}`);
   deleteGameSession(gameSockets.id);
   ///// Rodolpho added these lines: remove session from sockets array
   const session_idx = sockets.findIndex((val) => val.id === id);

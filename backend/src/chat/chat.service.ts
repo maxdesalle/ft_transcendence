@@ -2,17 +2,17 @@ import {
   BadRequestException,
   ForbiddenException,
   Injectable,
-} from '@nestjs/common';
-import { User } from 'src/users/entities/user.entity';
-import { UsersService } from 'src/users/users.service';
-import { DataSource, EntityManager } from 'typeorm';
+} from "@nestjs/common";
+import { User } from "src/users/entities/user.entity";
+import { UsersService } from "src/users/users.service";
+import { DataSource, EntityManager } from "typeorm";
 import {
   BannedUser,
   GroupConfigDto,
   MessageDTO,
   RoomInfo,
-} from './DTO/chat.dto';
-import { Message } from './entities/message.entity';
+} from "./DTO/chat.dto";
+import { Message } from "./entities/message.entity";
 
 const PARTICIPANT = 0;
 const ADMIN = 1;
@@ -109,7 +109,7 @@ export class ChatService {
     ).rows;
 
     // get their roles
-    const roles: string[] = ['participant', 'admin', 'owner'];
+    const roles: string[] = ["participant", "admin", "owner"];
     if (is_group) {
       for (const user of users) {
         user.role = roles[await this.get_role(user.id, room_id)];
@@ -125,7 +125,7 @@ export class ChatService {
     return {
       room_id: room_id,
       room_name: info.name,
-      type: is_group ? 'group' : 'DM',
+      type: is_group ? "group" : "DM",
       blocked: !is_group
         ? await this.is_blocked(users[0].id, users[1].id)
         : undefined,
@@ -141,18 +141,21 @@ export class ChatService {
   // assumes valid user in toId
   async postDM(me: User, toId: number, msg: string) {
     // checks
-    if (me.id === toId)
-      throw new BadRequestException('You shall not talk to yourself');
-    if (await this.is_blocked(me.id, toId))
+    if (me.id === toId) {
+      throw new BadRequestException("You shall not talk to yourself");
+    }
+    if (await this.is_blocked(me.id, toId)) {
       throw new ForbiddenException(
-        'You are blocked by the user OR the user is blocked by you',
+        "You are blocked by the user OR the user is blocked by you",
       );
+    }
 
     // check if dm_room already exists
     let room_id = await this.get_dm_room(me, toId);
-    if (!room_id)
+    if (!room_id) {
       // create room if necessary
       room_id = await this.create_dm_room(me, toId);
+    }
 
     return this.send_msg_to_room(me, room_id, msg);
   }
@@ -162,14 +165,16 @@ export class ChatService {
   async postDMbyRoomId(me: User, room_id: number, msg: string) {
     // check if you're part of this DM room
     const room_members = await this.listRoomParticipants(room_id);
-    if (!room_members.includes(me.id))
-      throw new ForbiddenException('user is not a member of this DM room');
+    if (!room_members.includes(me.id)) {
+      throw new ForbiddenException("user is not a member of this DM room");
+    }
     const toId = room_members.find((user_id) => user_id !== me.id);
     // check if blocked
-    if (await this.is_blocked(me.id, toId))
+    if (await this.is_blocked(me.id, toId)) {
       throw new ForbiddenException(
-        'You are blocked by the user OR the user is blocked by you',
+        "You are blocked by the user OR the user is blocked by you",
       );
+    }
 
     return this.send_msg_to_room(me, room_id, msg);
   }
@@ -196,7 +201,7 @@ export class ChatService {
       `SELECT login42 FROM public.user WHERE id= ${friend_id}`,
     );
     if (!tmp.rowCount) {
-      throw new BadRequestException('user does not exist');
+      throw new BadRequestException("user does not exist");
     }
     const login42: string = tmp.rows[0].login42;
 
@@ -220,8 +225,9 @@ export class ChatService {
 
   async getDMbyUser(me: User, user_id: number): Promise<MessageDTO[]> {
     // checks
-    if (me.id === user_id)
-      throw new BadRequestException('No talking to yourself, plz...');
+    if (me.id === user_id) {
+      throw new BadRequestException("No talking to yourself, plz...");
+    }
 
     const room_id = await this.get_dm_room(me, user_id);
     if (!room_id) return [];
@@ -230,14 +236,16 @@ export class ChatService {
 
   // assumes room_id is a DM room
   async getDMsByRoomID(me: User, room_id: number) {
-    if (!(await this.is_room_participant(me.id, room_id)))
+    if (!(await this.is_room_participant(me.id, room_id))) {
       throw new ForbiddenException("you're not part of this DM room");
+    }
     return this.getMessagesByRoomId(room_id);
   }
 
   async block_user(me: User, block_id: number) {
-    if (me.id === block_id)
+    if (me.id === block_id) {
       throw new BadRequestException("blocking yourself... that's kinda weird");
+    }
     await this.pool.query(
       `INSERT INTO blocked(user_id, blocked_id)
 			VALUES(${me.id}, ${block_id})
@@ -256,10 +264,12 @@ export class ChatService {
   // valid room_id is assumed
   async postGroupMsg(me: User, room_id: number, message: string) {
     // checks
-    if (!(await this.is_room_participant(me.id, room_id)))
-      throw new ForbiddenException('user is not a group member');
-    if (await this.is_muted(me.id, room_id))
-      throw new ForbiddenException('user is muted');
+    if (!(await this.is_room_participant(me.id, room_id))) {
+      throw new ForbiddenException("user is not a group member");
+    }
+    if (await this.is_muted(me.id, room_id)) {
+      throw new ForbiddenException("user is muted");
+    }
 
     return this.send_msg_to_room(me, room_id, message);
   }
@@ -267,8 +277,9 @@ export class ChatService {
   // assumes valid group room
   async getGroupMessages(me: User, room_id: number) {
     // checks
-    if (!(await this.is_room_participant(me.id, room_id)))
-      throw new ForbiddenException('not a group member');
+    if (!(await this.is_room_participant(me.id, room_id))) {
+      throw new ForbiddenException("not a group member");
+    }
 
     return this.getMessagesByRoomId(room_id);
   }
@@ -276,8 +287,9 @@ export class ChatService {
   // ================= GROUP ADMIN TASKS ===========================
 
   async create_group(me: User, group: GroupConfigDto) {
-    if (await this.groupNameExists(group.name))
-      throw new BadRequestException('group name already taken');
+    if (await this.groupNameExists(group.name)) {
+      throw new BadRequestException("group name already taken");
+    }
 
     const query = await this.pool.query(`
 			INSERT INTO room (name, owner, activity)
@@ -289,15 +301,17 @@ export class ChatService {
       `INSERT INTO participants(user_id, room_id) VALUES(${me.id}, ${room_id})`,
     );
     if (group.password) await this.set_password(me, room_id, group.password);
-    if (group.private === false)
+    if (group.private === false) {
       // room is create private by default
       await this.set_private(me, room_id, false);
+    }
     return room_id;
   }
 
   async rm_group(me: User, room_id: number) {
-    if ((await this.get_role(me.id, room_id)) != OWNER)
-      throw new ForbiddenException('you must be the group owner to remove it');
+    if ((await this.get_role(me.id, room_id)) != OWNER) {
+      throw new ForbiddenException("you must be the group owner to remove it");
+    }
 
     await this.pool.query(`DELETE FROM message WHERE room_id=${room_id}`);
     await this.pool.query(`DELETE FROM participants WHERE room_id=${room_id}`);
@@ -311,13 +325,15 @@ export class ChatService {
     // checks:
     // me must have admins
     const role = await this.get_role(me.id, room_id);
-    if (role < ADMIN) throw new ForbiddenException('no admin rights');
+    if (role < ADMIN) throw new ForbiddenException("no admin rights");
     // user must not already be in the group
-    if (await this.is_room_participant(user_id, room_id))
-      throw new BadRequestException('user is already in the room');
+    if (await this.is_room_participant(user_id, room_id)) {
+      throw new BadRequestException("user is already in the room");
+    }
     // user must not be banned from group
-    if (await this.is_banned(user_id, room_id))
-      throw new ForbiddenException('user is banned. (unban it first)');
+    if (await this.is_banned(user_id, room_id)) {
+      throw new ForbiddenException("user is banned. (unban it first)");
+    }
 
     // add user
     await this.pool.query(`
@@ -332,14 +348,16 @@ export class ChatService {
     ban_minutes: number,
   ) {
     // check if user in the group
-    if (!(await this.is_room_participant(user_id, room_id)))
-      throw new BadRequestException('user is not in group');
+    if (!(await this.is_room_participant(user_id, room_id))) {
+      throw new BadRequestException("user is not in group");
+    }
 
     // check if you have more privileges than the user
     const role1 = await this.get_role(me.id, room_id);
     const role2 = await this.get_role(user_id, room_id);
-    if (role1 < ADMIN || role1 <= role2)
-      throw new ForbiddenException('insufficient rights');
+    if (role1 < ADMIN || role1 <= role2) {
+      throw new ForbiddenException("insufficient rights");
+    }
 
     const unban_date = new Date(new Date().getTime() + ban_minutes * 60000);
 
@@ -350,9 +368,7 @@ export class ChatService {
       `DELETE FROM banned WHERE banned_id=${user_id} AND room_id=${room_id} AND mute=true`,
     );
     await this.pool.query(
-      `INSERT INTO banned (user_id, banned_id, room_id, unban, mute, role) VALUES(${
-        me.id
-      }, ${user_id}, ${room_id}, to_timestamp(${
+      `INSERT INTO banned (user_id, banned_id, room_id, unban, mute, role) VALUES(${me.id}, ${user_id}, ${room_id}, to_timestamp(${
         unban_date.getTime() / 1000
       }), false, ${role1})`,
     );
@@ -362,10 +378,11 @@ export class ChatService {
     // checks
     // must be admin
     const role = await this.get_role(me.id, room_id);
-    if (role < ADMIN) throw new ForbiddenException('insufficient rights');
+    if (role < ADMIN) throw new ForbiddenException("insufficient rights");
     // user is banned from group
-    if (!(await this.is_banned(user_id, room_id)))
-      throw new BadRequestException('user is not banned from this group');
+    if (!(await this.is_banned(user_id, room_id))) {
+      throw new BadRequestException("user is not banned from this group");
+    }
 
     // remove all ban entries from DB
     await this.pool.query(`
@@ -385,8 +402,9 @@ export class ChatService {
     // check rights
     const role1 = await this.get_role(me.id, room_id);
     const role2 = await this.get_role(user_id, room_id);
-    if (role1 < ADMIN || role1 <= role2)
-      throw new ForbiddenException('insufficient rights');
+    if (role1 < ADMIN || role1 <= role2) {
+      throw new ForbiddenException("insufficient rights");
+    }
 
     const unmute_date = new Date(new Date().getTime() + mute_minutes * 60000);
 
@@ -399,7 +417,7 @@ export class ChatService {
 
   async unmute_user(me: User, room_id: number, user_id: number) {
     const role = await this.get_role(me.id, room_id);
-    if (role < ADMIN) throw new ForbiddenException('no admin rights');
+    if (role < ADMIN) throw new ForbiddenException("no admin rights");
     await this.pool.query(`
 			DELETE FROM banned
 			WHERE banned_id= ${user_id}
@@ -409,16 +427,18 @@ export class ChatService {
   }
 
   async add_admin_group(me: User, room_id: number, user_id: number) {
-    if ((await this.get_role(me.id, room_id)) != OWNER)
-      throw new ForbiddenException('no owner rights');
+    if ((await this.get_role(me.id, room_id)) != OWNER) {
+      throw new ForbiddenException("no owner rights");
+    }
     await this.pool.query(`
 			INSERT INTO admins(user_id, room_id)
 			VALUES(${user_id}, ${room_id})`);
   }
 
   async rm_admin_group(me: User, room_id: number, user_id: number) {
-    if ((await this.get_role(me.id, room_id)) != OWNER)
-      throw new ForbiddenException('no owner rights');
+    if ((await this.get_role(me.id, room_id)) != OWNER) {
+      throw new ForbiddenException("no owner rights");
+    }
     await this.pool.query(`
 			DELETE FROM admins
 			WHERE user_id=${user_id}
@@ -426,13 +446,15 @@ export class ChatService {
   }
 
   async set_password(me: User, room_id: number, password?: string) {
-    if ((await this.get_role(me.id, room_id)) != OWNER)
-      throw new ForbiddenException('no owner rights');
-    if (!password)
+    if ((await this.get_role(me.id, room_id)) != OWNER) {
+      throw new ForbiddenException("no owner rights");
+    }
+    if (!password) {
       return this.pool.query(`
 				UPDATE room
 				SET password=NULL
 				WHERE id=${room_id}`);
+    }
     await this.pool.query(`
 			CREATE EXTENSION IF NOT EXISTS pgcrypto WITH SCHEMA public;`);
 
@@ -443,18 +465,21 @@ export class ChatService {
   }
 
   async set_private(me: User, room_id: number, is_private: boolean) {
-    if ((await this.get_role(me.id, room_id)) != OWNER)
-      throw new ForbiddenException('no owner rights');
+    if ((await this.get_role(me.id, room_id)) != OWNER) {
+      throw new ForbiddenException("no owner rights");
+    }
     return this.pool.query(`
 			UPDATE room SET private=${is_private}
 			WHERE id=${room_id}`);
   }
 
   async set_owner(me: User, room_id: number, user_id: number) {
-    if ((await this.get_role(me.id, room_id)) != OWNER)
-      throw new ForbiddenException('no owner rights');
-    if (!(await this.is_room_participant(user_id, room_id)))
-      throw new BadRequestException('user is not a participant in the room');
+    if ((await this.get_role(me.id, room_id)) != OWNER) {
+      throw new ForbiddenException("no owner rights");
+    }
+    if (!(await this.is_room_participant(user_id, room_id))) {
+      throw new BadRequestException("user is not a participant in the room");
+    }
 
     await this.pool.query(
       `UPDATE room SET owner=${user_id} WHERE id=${room_id}`,
@@ -483,24 +508,27 @@ export class ChatService {
 
   async join_public_group(me: User, room_id: number, password?: string) {
     // check if private
-    if (await this.is_group_private(room_id))
-      throw new ForbiddenException('private group, buddy');
+    if (await this.is_group_private(room_id)) {
+      throw new ForbiddenException("private group, buddy");
+    }
 
     // check if user already in group
-    if (await this.is_room_participant(me.id, room_id))
-      throw new BadRequestException('user is already in the room');
+    if (await this.is_room_participant(me.id, room_id)) {
+      throw new BadRequestException("user is already in the room");
+    }
 
     // check if banned
-    if (await this.is_banned(me.id, room_id))
-      throw new ForbiddenException('user is banned from group');
+    if (await this.is_banned(me.id, room_id)) {
+      throw new ForbiddenException("user is banned from group");
+    }
 
     // check if password protected && pswd match
-    console.log(await this.is_group_pswd_protected(room_id));
     if (
       (await this.is_group_pswd_protected(room_id)) &&
       !(await this.check_password_match(room_id, password))
-    )
-      throw new ForbiddenException('bad password');
+    ) {
+      throw new ForbiddenException("bad password");
+    }
 
     // add to group
     await this.pool.query(`
@@ -514,12 +542,18 @@ export class ChatService {
     participants = participants.filter((value) => value !== me.id);
     if (!participants.length) {
       //last person in group
-      await this.pool.query(`DELETE FROM admins		WHERE room_id =	${room_id}`);
-      await this.pool.query(`DELETE FROM banned		WHERE room_id =	${room_id}`);
+      await this.pool.query(
+        `DELETE FROM admins		WHERE room_id =	${room_id}`,
+      );
+      await this.pool.query(
+        `DELETE FROM banned		WHERE room_id =	${room_id}`,
+      );
       await this.pool.query(
         `DELETE FROM participants	WHERE room_id =	${room_id}`,
       );
-      await this.pool.query(`DELETE FROM message		WHERE room_id =	${room_id}`);
+      await this.pool.query(
+        `DELETE FROM message		WHERE room_id =	${room_id}`,
+      );
       await this.pool.query(`DELETE FROM room			WHERE id =		${room_id}`);
       return;
     }
@@ -540,7 +574,9 @@ export class ChatService {
           `UPDATE room SET owner=${participants[i]} WHERE id=${room_id}`,
         );
         await this.pool.query(
-          `DELETE FROM admins WHERE user_id=${participants[i]} AND room_id=${room_id}`,
+          `DELETE FROM admins WHERE user_id=${
+            participants[i]
+          } AND room_id=${room_id}`,
         );
         await this.pool.query(
           `DELETE FROM participants WHERE user_id=${me.id} AND room_id=${room_id}`,
@@ -617,15 +653,17 @@ export class ChatService {
       `SELECT user_id FROM admins WHERE room_id=${room_id}`,
     );
     {
-      for (let i = 0; i < tmp.rowCount; i++)
+      for (let i = 0; i < tmp.rowCount; i++) {
         if (tmp.rows[i].user_id == id) return ADMIN;
+      }
     }
     tmp = await this.pool.query(
       `SELECT user_id FROM participants WHERE room_id=${room_id}`,
     );
     {
-      for (let i = 0; i < tmp.rowCount; i++)
+      for (let i = 0; i < tmp.rowCount; i++) {
         if (tmp.rows[i].user_id == id) return PARTICIPANT;
+      }
     }
     return -1;
   }
@@ -716,8 +754,9 @@ export class ChatService {
 			UNION SELECT user_id FROM blocked WHERE blocked_id=${my_id}`,
     );
     const blocked = [];
-    for (let i = 0; i < my_query.rowCount; i++)
+    for (let i = 0; i < my_query.rowCount; i++) {
       blocked.push(my_query.rows[i].blocked_id);
+    }
     return blocked;
   }
 

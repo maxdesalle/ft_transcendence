@@ -3,14 +3,14 @@ import {
   OnGatewayDisconnect,
   SubscribeMessage,
   WebSocketGateway,
-} from '@nestjs/websockets';
-import { IncomingMessage } from 'http';
-import { ChatService } from 'src/chat/chat.service';
-import { connected_users, playing, sockets } from 'src/pong/pong.gateway';
-import { User } from 'src/users/entities/user.entity';
-import { UsersService } from 'src/users/users.service';
-import { WebSocket } from 'ws';
-import { WsService } from './ws.service';
+} from "@nestjs/websockets";
+import { IncomingMessage } from "http";
+import { ChatService } from "src/chat/chat.service";
+import { connected_users, playing, sockets } from "src/pong/pong.gateway";
+import { User } from "src/users/entities/user.entity";
+import { UsersService } from "src/users/users.service";
+import { WebSocket } from "ws";
+import { WsService } from "./ws.service";
 
 @WebSocketGateway()
 export class WsGateway implements OnGatewayConnection, OnGatewayDisconnect {
@@ -28,48 +28,44 @@ export class WsGateway implements OnGatewayConnection, OnGatewayDisconnect {
     } catch (error) {
       client.send(
         JSON.stringify({
-          event: 'ws_auth_fail',
+          event: "ws_auth_fail",
           error: error,
         }),
       );
-      client.close(1008, 'Bad credentials');
-      console.log('Authentication to Notifications wss failed');
+      client.close(1008, "Bad credentials");
       return;
     }
     // avoid duplicate connection for same user
     if (this.wsService.isUserOnline(user.id)) {
       client.send(
         JSON.stringify({
-          event: 'ws_auth_fail',
-          reason: 'already connected',
+          event: "ws_auth_fail",
+          reason: "already connected",
         }),
       );
-      client.close(1008, 'user already connected via another socket');
+      client.close(1008, "user already connected via another socket");
       return;
     }
 
     // add to map of connected users
     this.wsService.setUserOnline(user.id, client);
     // log client and server side
-    console.log(
-      `User ${user.login42} (id: ${user.id}) connected to Notifications WSS`,
-    );
     client.send(
       JSON.stringify({
-        event: 'ws_auth_success',
+        event: "ws_auth_success",
       }),
     );
     // notify state change to friends
-    this.wsService.notifyStatusChangeToFriends(user.id, 'online');
+    this.wsService.notifyStatusChangeToFriends(user.id, "online");
     const rooms = await (
       await this.chatService.get_convs(user)
-    ).filter((room) => room.type !== 'DM');
+    ).filter((room) => room.type !== "DM");
     const users = rooms.map((room) => room.users.map((user) => user.id));
     const user_ids = users.reduce((prev, next) => {
       return prev.concat(next);
     }, []);
     this.wsService.sendMsgToUsersList(user_ids, {
-      event: 'group: online',
+      event: "group: online",
       data: { user_id: user.id },
     });
   }
@@ -78,32 +74,31 @@ export class WsGateway implements OnGatewayConnection, OnGatewayDisconnect {
     const user_id = this.wsService.getUserFromSocket(client);
     // remove entry from map
     if (this.wsService.setUserOffline(user_id)) {
-      console.log(`user ${user_id} disconnected from Notifications wss.`);
-      this.wsService.notifyStatusChangeToFriends(user_id, 'offline');
+      this.wsService.notifyStatusChangeToFriends(user_id, "offline");
     }
     const user = await this.usersService.findById(user_id);
     const rooms = await (
       await this.chatService.get_convs(user)
-    ).filter((room) => room.type !== 'DM');
+    ).filter((room) => room.type !== "DM");
     const users_ids = rooms
       .map((room) => room.users.map((user) => user.id))
       .reduce((prev, next) => prev.concat(next), []);
     this.wsService.sendMsgToUsersList(users_ids, {
-      event: 'group: offline',
+      event: "group: offline",
       data: { user_id: user.id },
     });
   }
 
-  @SubscribeMessage('isOnline')
+  @SubscribeMessage("isOnline")
   isOnline(client: WebSocket, data: { user_id: number; sender: number }) {
     const connectedUsers = this.wsService.getConnectedUsersIDs();
     this.wsService.sendMsgToUser(data.sender, {
-      event: 'isOnline',
+      event: "isOnline",
       data: connectedUsers,
     });
   }
 
-  @SubscribeMessage('isInGame')
+  @SubscribeMessage("isInGame")
   async isInGame(client: WebSocket, data: { sender: number }) {
     const inGame = Array.from(playing);
     const ids = sockets
@@ -117,7 +112,7 @@ export class WsGateway implements OnGatewayConnection, OnGatewayDisconnect {
       })
       .reduce((prev, next) => prev.concat(next), []);
     this.wsService.sendMsgToUser(data.sender, {
-      event: 'isInGame',
+      event: "isInGame",
       data: { inGame: inGame, usersSessionIds: ids },
     });
   }
